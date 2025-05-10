@@ -26,6 +26,7 @@ import UserDetailsPage from './pages/admin/UserDetailsPage'
 
 
 const App = () => {
+  // Uncomment this line for important usage
   // const { user } = useAuth();
   const { pathname } = useLocation();
   const hideCartOn = ['/auth', '/cart', '/checkout', '/admin/*'];
