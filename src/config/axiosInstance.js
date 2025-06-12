@@ -10,5 +10,4 @@ const apiGatewayAxiosInstance = axios.create({
     },
 });
 
-// No need to attach Authorization header manually
 export default apiGatewayAxiosInstance;

@@ -1,4 +1,3 @@
-import axios from "axios";
 import apiGatewayAxiosInstance from '../config/axiosInstance'
 
 

@@ -25,10 +25,10 @@ module.exports = {
       animation: {
         slide: 'slide 20s linear infinite',
         'slide-in': 'slide-in 1s ease-out forwards',
-        'fade-in': 'fade-in 1.5s ease-in forwards',
+        'fade-in': 'fade-in 1s ease-in forwards',
       },
       colors: {
-        primary: '#ff6600' // your orange theme
+        primary: '#ff6600' // orange theme
       }
     },
   },

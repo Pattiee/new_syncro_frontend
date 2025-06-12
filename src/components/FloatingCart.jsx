@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom';
 
 const FloatingCart = () => {
-    const cartItems = useSelector((state) => state?.cart?.items);
+    const cartItems = useSelector(state => state?.cart?.items);
     const navigate = useNavigate();
     const totalQuantity = cartItems?.reduce((sum, item) => sum + item?.quantity, 0);
     const uniqueItemCount = cartItems?.length;

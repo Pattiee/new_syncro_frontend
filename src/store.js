@@ -37,9 +37,9 @@ export const initApp = async () => {
     // persist store updates
     store.subscribe(() => {
         const state = store.getState();
-        localStorage.setItem('authState', JSON.stringify(state.auth));
-        localStorage.setItem('cartState', JSON.stringify(state.cart));
-        localStorage.setItem('themeState', JSON.stringify(state.theme));
+        localStorage.setItem('authState', JSON.stringify(state?.auth));
+        localStorage.setItem('cartState', JSON.stringify(state?.cart));
+        localStorage.setItem('themeState', JSON.stringify(state?.theme));
     });
 
     // now check auth

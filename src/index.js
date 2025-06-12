@@ -10,7 +10,7 @@ import { initApp } from './store';
 
 // ThemeWrapper component
 const ThemeWrapper = ({ children }) => {
-  const theme = useSelector((state) => state?.theme?.theme);
+  const theme = useSelector(state => state?.theme?.theme);
 
   React.useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -23,16 +23,16 @@ initApp().then((store) => {
   const root = ReactDOM.createRoot(document.getElementById('root'));
 
   root.render(
-    <React.StrictMode>
-      <Provider store={store}>
-        <ThemeWrapper>
-          <BrowserRouter>
-            <AuthProvider>
-              <App />
-            </AuthProvider>
-          </BrowserRouter>
-        </ThemeWrapper>
-      </Provider>
-    </React.StrictMode>
+      <>
+        <Provider store={store}>
+          <ThemeWrapper>
+            <BrowserRouter>
+              <AuthProvider>
+                <App />
+              </AuthProvider>
+            </BrowserRouter>
+          </ThemeWrapper>
+        </Provider>
+      </>
   );
 });

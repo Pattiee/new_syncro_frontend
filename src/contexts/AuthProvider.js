@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { login, logoutBackendApi } from '../services/auth.service';
 

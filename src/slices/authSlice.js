@@ -4,7 +4,7 @@ import { getCurrentUser } from "../services/auth.service";
 
 export const checkAuth = createAsyncThunk('auth/checkAuth', async () => {
     const res = await getCurrentUser();
-    return res.data;
+    return res?.data ? res.data : null;
 });
 
 const initialState = {
@@ -30,6 +30,7 @@ const authSlice = createSlice({
             .addCase(checkAuth.fulfilled, (state, action) => {
                 state.user = {
                     username: action.payload?.username || '',
+                    name: action.payload?.name || '',
                     roles: action.payload?.roles || [],
                 };
                 state.status = 'succeeded';
@@ -49,7 +50,7 @@ export const { logout } = authSlice.actions;
 export default authSlice.reducer;
 
 // Selectors
-export const selectCurrentUser = (state) => state.auth?.user;
-export const selectAuthStatus = (state) => state.auth?.status;
-export const selectAuthError = (state) => state.auth?.error;
-export const selectIsAuthenticated = (state) => !!state.auth.user;
+export const selectCurrentUser = state => state.auth?.user;
+export const selectAuthStatus = state => state.auth?.status;
+export const selectAuthError = state => state.auth?.error;
+export const selectIsAuthenticated = state => !!state?.auth?.user;

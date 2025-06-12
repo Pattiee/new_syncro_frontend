@@ -1,162 +1,149 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { productSchema } from '../../schemas/product.schema';
+import { addProduct, getCategories } from '../../services/products.service';
 import toast from 'react-hot-toast';
-import { addProduct } from '../../services/products.service';
 import { useNavigate } from 'react-router-dom';
 
 const AddProduct = () => {
   const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
 
-  const [form, setForm] = useState({
-    name: '',
-    category: '',
-    percent_discount: 0,
-    image_url: '',
-    price: 0,
-    condition: 'New',
-    desc: '',
-    featured: false,
-    stock: 1,
+  const { register, handleSubmit, reset, formState: { errors }, } = useForm({
+    resolver: zodResolver(productSchema),
   });
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    if ((type === 'number' && value < 0)) return;
-    setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value, }));
-  };
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await getCategories({});
+        setCategories(res?.data || []);
+      } catch (err) {
+        toast.error('Failed to load categories');
+      }
+    };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (form.percent_discount < 0 || form.stock <= 0 || form.price <= 0) {
-      toast.error("Invalid number values.");
-      return;
-    }
+    loadCategories();
+  }, []);
+
+  const onSubmit = async (data) => {
+    setSubmitting(true);
     try {
-      await addProduct(form).then((res) => {
-        toast.success('✅ Product added successfully!');
-        console.log("Add product: " + res.data);
-        setForm({
-          name: '',
-          category: '',
-          percent_discount: 0,
-          image_url: '',
-          price: 0,
-          condition: 'New',
-          desc: '',
-          featured: false,
-          stock: 1,
-        });
-        navigate('/');
-      });
+      const res = await addProduct(data);
+      toast.success('✅ Product added successfully!');
+      reset();
+      navigate('/');
     } catch (err) {
-      toast.error(err?.message);
-      console.error(err);
+      toast.error(err?.message || 'Error adding product');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 p-6 sm:p-8 md:p-10 lg:p-12 max-w-4xl mx-auto rounded-lg shadow-xl">
-      <h2 className="text-4xl font-semibold text-center text-orange-600 dark:text-orange-400 mb-8">
+    <div className="max-w-4xl p-6 mx-auto bg-white rounded-lg shadow-xl dark:bg-gray-900 sm:p-8 md:p-10 lg:p-12">
+      <h2 className="mb-8 text-4xl font-semibold text-center text-orange-600 dark:text-orange-400">
         Add New Product
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <input
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            placeholder="Product Name"
-            className="w-full p-4 rounded-lg border-2 border-gray-300 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white text-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-            required
-          />
-          <input
-            type="text"
-            name="category"
-            value={form.category}
-            onChange={handleChange}
-            placeholder="Category"
-            className="w-full p-4 rounded-lg border-2 border-gray-300 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white text-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-            required
-          />
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div>
+            <input
+              type="text"
+              placeholder="Product Name"
+              {...register('name')}
+              className="input-field"
+            />
+            {errors.name && <p className="text-red-500">{errors.name.message}</p>}
+          </div>
+
+          <div>
+            <select {...register('category')} className="input-field">
+              <option value="">Select category</option>
+              {categories.map((category) => (
+                <option key={category?.id} value={category.name}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+            {errors.category && <p className="text-red-500">{errors.category.message}</p>}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <input
-            type="number"
-            name="percent_discount"
-            value={form.percent_discount}
-            onChange={handleChange}
-            placeholder="Discount (%)"
-            className="w-full p-4 rounded-lg border-2 border-gray-300 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white text-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-          />
-          <input
-            type="text"
-            name="image_url"
-            value={form.image_url}
-            onChange={handleChange}
-            placeholder="Image URL"
-            className="w-full p-4 rounded-lg border-2 border-gray-300 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white text-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-            required
-          />
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div>
+            <input
+              type="number"
+              placeholder="Discount (%)"
+              {...register('percent_discount')}
+              className="input-field"
+            />
+            {errors.percent_discount && <p className="text-red-500">{errors.percent_discount.message}</p>}
+          </div>
+
+          <div>
+            <input
+              type="text"
+              placeholder="Image URL"
+              {...register('image_url')}
+              className="input-field"
+            />
+            {errors.image_url && <p className="text-red-500">{errors.image_url.message}</p>}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <input
-            type="number"
-            name="price"
-            value={form.price}
-            onChange={handleChange}
-            placeholder="Price"
-            className="w-full p-4 rounded-lg border-2 border-gray-300 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white text-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-            required
-          />
-          <select
-            name="condition"
-            value={form.condition}
-            onChange={handleChange}
-            className="w-full p-4 rounded-lg border-2 border-gray-300 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white text-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-          >
-            <option value="New">New</option>
-            <option value="Refurbished">Refurbished</option>
-          </select>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div>
+            <input
+              type="number"
+              placeholder="Price"
+              {...register('price')}
+              className="input-field"
+            />
+            {errors.price && <p className="text-red-500">{errors.price.message}</p>}
+          </div>
+
+          <div>
+            <select {...register('condition')} className="input-field">
+              <option value="">Select condition</option>
+              <option value="New">New</option>
+              <option value="Refurbished">Refurbished</option>
+            </select>
+            {errors.condition && <p className="text-red-500">{errors.condition.message}</p>}
+          </div>
         </div>
 
-        <textarea
-          name="desc"
-          value={form.desc}
-          onChange={handleChange}
-          placeholder="Product Description"
-          className="w-full p-4 rounded-lg border-2 border-gray-300 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white text-lg focus:outline-none focus:ring-2 focus:ring-orange-500 h-32 resize-none"
-          required
-        />
+        <div>
+          <textarea
+            placeholder="Product description"
+            {...register('desc')}
+            className="h-32 resize-none input-field"
+          />
+          {errors.desc && <p className="text-red-500">{errors.desc.message}</p>}
+        </div>
 
         <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            name="featured"
-            checked={form.featured}
-            onChange={handleChange}
-            className="h-6 w-6 text-orange-600"
-          />
-          <label className="text-gray-700 dark:text-gray-200 text-lg">
-            Featured Product
-          </label>
+          <input type="checkbox" {...register('featured')} className="w-6 h-6 text-orange-600" />
+          <label className="text-lg text-gray-700 dark:text-gray-200">Featured Product</label>
         </div>
 
-        <input
-          type="number"
-          name="stock"
-          value={form.stock}
-          onChange={handleChange}
-          placeholder="Stock"
-          className="w-full p-4 rounded-lg border-2 border-gray-300 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white text-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-          required
-        />
+        <div>
+          <input
+            type="number"
+            placeholder="Stock"
+            {...register('stock')}
+            className="input-field"
+          />
+          {errors.stock && <p className="text-red-500">{errors.stock.message}</p>}
+        </div>
 
         <button
+          disabled={submitting}
           type="submit"
-          className="w-full py-4 bg-orange-600 text-white text-xl font-semibold rounded-lg shadow-lg hover:bg-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-300"
+          className="w-full py-4 text-xl font-semibold text-white bg-orange-600 rounded-lg shadow-lg hover:bg-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-300"
         >
           Add Product
         </button>

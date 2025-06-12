@@ -8,13 +8,13 @@ export const getUsers = async ({ userId }) => {
     return await AxiosConfig.userAxiosInstance.get(USER_SERVICE_BASE_API_URL, { params });
 }
 
-export const patchUserRoles = async ({ userId, roleName }) => {
-    if (!userId || !roleName) return; 
+export const patchUserRoles = async ({ userId, roleId }) => {
+    if (!userId || !roleId) return; 
     const params = {};
     const body = {};
 
     params.id = userId;
-    body.roleName = roleName;
+    body.id = roleId;
 
-    return await AxiosConfig.userAxiosInstance.patch(USER_SERVICE_BASE_API_URL, roleName, { params });
+    return await AxiosConfig.userAxiosInstance.patch(USER_SERVICE_BASE_API_URL, body, { params });
 }

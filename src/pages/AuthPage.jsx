@@ -1,25 +1,28 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { checkIfExistEmail, login, register } from '../services/auth.service';
+import { checkIfExistEmail, login, register, verifyRegistration } from '../services/auth.service';
 import { useDispatch } from 'react-redux';
 import { checkAuth } from '../slices/authSlice';
+import Password from '../components/auth/Password';
 
 import toast from 'react-hot-toast';
+import Email from '../components/auth/Email';
+import { OneCharacterInput } from '../components/auth/OneCharacterInput';
+import { ChevronRight } from 'lucide-react';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [showOtpInput, setShowOtpInput] = useState(false);
+  const [otp, setOtp] = useState(Array(6).fill(''));
   const [username, setUsername] = useState('');
-  const [firstname, setFirstName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [existsEmail, setExistsEmail] = useState(false);
   const [step, setStep] = useState(1);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
 
 
   const handleValidateEmail = async (e) => {
@@ -28,22 +31,23 @@ const AuthPage = () => {
     setLoading(true);
 
     try {
-      const { data } = await checkIfExistEmail({ email: username });
+      const { exists, enabled, err } = await checkIfExistEmail({ username });
 
       if (isLogin) {
-        if (data === true) {
-          setExistsEmail(true);
+        if (!exists) throw new Error("Email not found.");
+        if (enabled) {
           setStep(2);
         } else {
-          toast.error("Email not found.");
-          setExistsEmail(false);
+          toast.error("Please verify your account to continue.");
         }
       } else {
-        if (data === true) {
+        if (err) {
+          toast.error(err);
+          return;
+        }
+        if (exists) {
           toast.error("Email already registered. You may consider resetting your password.");
-          setExistsEmail(true);
         } else {
-          setExistsEmail(false);
           setStep(2);
         }
       }
@@ -54,141 +58,216 @@ const AuthPage = () => {
     }
   };
 
+  useEffect(() => {
+    let updateErrMessage = async () => {
+      if (password && password.length < 8) {
+        setErrorMessage('Passwords must be at least 8 characters');
+      } else {
+        setErrorMessage('');
+      }
+    }
+    updateErrMessage();
+  }, [password, confirmPassword]);
+
 
 
   const handleSubmit = async (e) => {
+    e.preventDefault();
     setErrorMessage('');
     setLoading(true);
 
     try {
       if (isLogin) {
-        await login({ username, password }).then((res) => {
-          toast.success("Login success");
-          dispatch(checkAuth());
-          navigate('/');
-        }).catch((loginErr) => {
-          console.log(loginErr?.message);
-          toast.error(loginErr?.message ?? "Something went wrong.");
-          setErrorMessage(loginErr?.message ?? "Login failed");
-        });
+        const res = await login({ username, password });
+        toast.success(res.data);
+        dispatch(checkAuth());
+        navigate('/');
+      } else if (!isLogin && showOtpInput) { 
+        const otpBody = {
+          otp: otp,
+        }
+
+        const res = await verifyRegistration(otpBody);
+        if (res.data) {
+          toast.success(res.data);
+          setShowOtpInput(false);
+          navigate("/", { replace: true });
+        }
       } else {
-        await register({ firstname, username, password }).then((res) => {
-          toast.success("Account created successfully");
-          console.log("Account created successfully: ", res.data);
-          navigate('/login');
-        }).catch((registrationErr) => {
-          toast.error(registrationErr?.message ?? "Something went wrong.");
-          setErrorMessage(registrationErr?.message ?? "Registration failed");
-        });
+        if (password !== confirmPassword) {
+          throw new Error("Passwords must match.");
+        }
+        const res = await register({ username, password });
+        if (res.data) {
+          setShowOtpInput(true);
+          toast.success(res.data || "OTP sent via email.");
+        }
+        // navigate("/", { replace: true });
       }
-    } catch (error) {
-      console.error(error);
-      setErrorMessage("An unexpected error occurred.");
+    } catch (err) {
+      toast.error(err?.response?.data || err.message || "Something went wrong");
+      setErrorMessage(err?.response?.data || err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
+    
   };
 
+
+  const hasNumber = /\d/.test(password);
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasSpecialChar = /[^A-Za-z0-9]/.test(password);
+
+  const validationInfo = (
+    <div className="flex flex-col mt-2 text-sm">
+      <span className={`px-2 font-semibold ${password.length >= 8 ? 'text-green-600' : 'text-red-600'}`}>
+        At least 8 characters
+      </span>
+      <span className={`px-2 font-semibold ${hasSpecialChar ? 'text-green-600' : 'text-red-600'}`}>
+        Special character
+      </span>
+      <span className={`px-2 font-semibold ${hasUppercase ? 'text-green-600' : 'text-red-600'}`}>
+        Uppercase letter
+      </span>
+      <span className={`px-2 font-semibold ${hasNumber ? 'text-green-600' : 'text-red-600'}`}>
+        Include a number
+      </span>
+    </div>
+  )
+  
+
+  const handlePasswordChange = (e) => setPassword(e.target.value);
+
+  const handleConfirmPasswordChange = (e) => setConfirmPassword(e.target.value);
+
+  const handleUpdateHasAccount = () => {
+    setIsLogin(!isLogin);
+    setStep(1);
+    setErrorMessage('');
+    setPassword('');
+    setConfirmPassword('');
+  }
+
+  const handleUpdateUsername = (e) => setUsername(e.target.value);
+
+  const handleOtpChange = (index = 0) => (e) => {
+    e.stopPropagation();
+    const goodValue = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const newOtp = [...otp];
+    newOtp[index] = goodValue;
+    setOtp(newOtp);
+  };
+
+
+  const handleFormSubmit = (e) => {
+    if (step === 1) {
+      handleValidateEmail(e);
+    } else {
+      handleSubmit(e);
+    }
+  }
+    
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 px-4">
-      <div className='w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8'>
+    <div className="flex items-center justify-center min-h-screen px-4 bg-gray-100 dark:bg-gray-900">
+      <div className='w-full max-w-md p-8 bg-white shadow-lg dark:bg-gray-800 rounded-2xl'>
 
         <div className='mb-4 rounded-full'>
-          <h2 className='flex text-xl rounded-full px-4 items-center justify-center py-2 text-gray-900 dark:text-white'>
+          <h2 className='flex items-center justify-center px-4 py-2 text-xl font-semibold text-gray-900 rounded-full dark:text-white'>
             {isLogin ? "Login to your account" : "Create an account"}
           </h2>
         </div>
 
-        {isLogin && step === 2 && (<p className='text-gray-600 dark:text-gray-500 flex mx-auto my-2 justify-center' >{ username }</p>)}
-
-        {errorMessage && <p className='text-red-500 text-center mb-4'>{errorMessage}</p>}
-
-        <form className='space-y-4' onSubmit={step === 1 ? handleValidateEmail : handleSubmit}>
+        {step === 2 && (<p className='flex justify-center mx-auto my-2 font-bold text-green-600 dark:text-green-500' >{username}</p>)}
+        
+        <form className='space-y-4' onSubmit={handleFormSubmit}>
           {/* Email Field (Step 1) */}
           {step === 1 && (
-            <input
-              type='email'
-              placeholder='Enter username'
+            <Email
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              className='w-full px-4 py-2 bg-white dark:bg-gray-700 text-black dark:text-white autofill:bg-white autofill:text-black border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400'
-              autoComplete='username'
-            />
+              onChange={handleUpdateUsername} />
           )}
 
-          {/* Login Flow (Step 2) */}
-          {isLogin && step === 2 && (
-            <input
-              type='password'
-              placeholder='Enter your password'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className='w-full px-4 py-2 bg-white dark:bg-gray-700 text-black dark:text-white autofill:bg-white autofill:text-black border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400'
-              autoComplete='current-password'
-            />
+          
+
+          {/* (Step 2) */}
+          {/* Replace password with otp field after successful registration */}
+          {step === 2 && !showOtpInput && (
+            <Password
+            name='Password'
+            onChange={handlePasswordChange}
+            passwordValue={password} />
           )}
+
+          { password && !isLogin && !showOtpInput && validationInfo }
 
           {/* Registration Flow (Step 2) */}
-          {!isLogin && step === 2 && (
-            <>
-              <input
-                type='text'
-                placeholder='First Name'
-                value={firstname}
-                onChange={(e) => setFirstName(e.target.value)}
-                required
-                className='w-full px-4 py-2 bg-white dark:bg-gray-700 text-black dark:text-white autofill:bg-white autofill:text-black border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400'
-              />
-              <input
-                type='password'
-                placeholder='Create Password'
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className='w-full px-4 py-2 bg-white dark:bg-gray-700 text-black dark:text-white autofill:bg-white autofill:text-black border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400'
-              />
-              <input
+          {!isLogin && step === 2 && !showOtpInput && (
+            <>              
+              <Password
+                disabled={!password}
+                name='Confirm Password'
                 type='password'
                 placeholder='Confirm Password'
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className='w-full px-4 py-2 bg-white dark:bg-gray-700 text-black dark:text-white autofill:bg-white autofill:text-black border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400'
-              />
+                confirmingPassword={true}
+                passwordMatching={confirmPassword === password}
+                onChange={handleConfirmPasswordChange}
+                errMessage={ confirmPassword === password ? 'Matching' : 'Passwords must match.'}
+                passwordValue={confirmPassword} />
             </>
           )}
 
+          {step === 2 && !isLogin && showOtpInput && (
+            <label className="flex flex-col justify-between w-full mt-4">
+              <p className='py-2 text-gray-300'>OTP Code</p>
+              <ul className='flex flex-row w-full'>
+                {otp.map((value, index) => (
+                  <li key={index}
+                    className='flex items-center justify-center w-full mx-2'
+                  >
+                    <OneCharacterInput
+                      key={index}
+                      value={value}
+                      disabled={false}
+                      onChange={handleOtpChange(index)}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </label>
+          )}
+
+
           {/* Submit Button */}
-          <button type='submit' disabled={loading} className='w-full bg-orange-500 dark:bg-orange-600 text-white py-2 rounded-md hover:bg-orange-600 dark:hover:bg-orange-700 transition disabled:opacity-50'>
+          <button type='submit' disabled={loading} className='w-full py-2 text-white transition bg-orange-500 rounded-md dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700 disabled:opacity-50'>
             {loading ? (
-              <div className='flex mx-auto border-4 border-t-4 border-orange-500 border-solid w-6 h-6 rounded-full animate-spin'></div>
+              <div className='flex justify-center w-6 h-6 mx-auto border-4 border-t-4 border-orange-500 border-solid rounded-full animate-spin'></div>
             ) : step === 1 ? (
-              "Next >>>"
+                <span className='flex justify-center'>Next <ChevronRight/></span>
             ) : isLogin ? (
               "Login"
-            ) : (
-              "Register"
+                ) : (
+                    showOtpInput ? "Verify account" : "Register"
             )}
           </button>
         </form>
+        
 
+        <div className='flex items-center justify-between'>
+          <span className='mt-4 text-sm text-center text-gray-700 dark:text-gray-300'>
+            {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+            <button
+              onClick={handleUpdateHasAccount}
+              className='font-medium text-orange-500 dark:text-orange-400 hover:underline'
+            >
+              {isLogin ? "Register" : "Login"}
+            </button>
+          </span>
 
-        <p className='text-center text-sm mt-4 text-gray-700 dark:text-gray-300'>
-          {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-          <button
-            onClick={() => {
-              setIsLogin(!isLogin);
-              setStep(1);
-              setExistsEmail(false);
-              setErrorMessage('');
-            }}
-            className='text-orange-500 dark:text-orange-400 hover:underline font-medium'
-          >
-            {isLogin ? "Register" : "Login"}
-          </button>
-        </p>
+          <span className='mt-4 text-sm text-center text-gray-700 dark:text-gray-300'>
+            <button>Forgot password?</button>
+          </span>
+          </div>
       </div>
     </div>
   );

@@ -1,29 +1,35 @@
 // src/layouts/AdminLayout.jsx
-import React from 'react';
+import React, { Fragment } from 'react';
 import { Outlet, Link } from 'react-router-dom';
+import Navbar from '../components/NavBar';
+import { ADMIN_LINKS_FRONTEND } from '../links';
 
 const AdminLayout = () => {
   return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white dark:bg-gray-900 p-4 shadow-lg">
-        <h2 className="text-2xl font-bold mb-6">Admin Panel</h2>
-        <nav className="flex flex-col gap-4">
-          <Link to="/admin" className="hover:underline">Dashboard</Link>
-          <Link to="/admin/add-products" className="hover:underline">Add Products</Link>
-          <Link to="/admin/users" className="hover:underline">Users</Link>
-          <Link to="/admin/update-user" className="hover:underline">Update User</Link>
-        </nav>
-      </aside>
+    <>
+      {/* Navbar */}
+      <Navbar />
+      <div className="flex min-h-screen text-gray-900 bg-gray-100 dark:bg-gray-800 dark:text-white">      
+        {/* Sidebar */}
+        <aside className="w-64 p-4 bg-white shadow-lg dark:bg-gray-900">
+          <h2 className="mb-6 text-2xl font-bold">Admin Panel</h2>
+          <nav className="flex flex-col gap-4">
+            <Link to={ADMIN_LINKS_FRONTEND.INDEX} className="hover:underline">Dashboard</Link>
+            <Link to={ADMIN_LINKS_FRONTEND.CATEGORIES} className="hover:underline">Categories</Link>
+            <Link to={ADMIN_LINKS_FRONTEND.ADD_PRODUCTS} className="hover:underline">Add Products</Link>
+            <Link to={ADMIN_LINKS_FRONTEND.USERS} className="hover:underline">Users</Link>
+          </nav>
+        </aside>
 
-      {/* Content */}
-      <main className="flex-1 p-6">
-        <header className="mb-6">
-          <h1 className="text-3xl font-semibold">Admin Dashboard</h1>
-        </header>
-        <Outlet />
-      </main>
-    </div>
+        {/* Content */}
+        <main className="flex-1 p-6">
+          <header className="mb-6">
+            <h1 className="text-3xl font-semibold">Admin Dashboard</h1>
+          </header>
+          <Outlet />
+        </main>
+      </div>
+    </>
   );
 };
 

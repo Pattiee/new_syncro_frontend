@@ -15,27 +15,34 @@ const UserDetailsPage = () => {
   const [user, setUser] = useState(null);
   const [userRoles, setUserRoles] = useState([]);
   const [roles, setRoles] = useState([]);
-  const [selectedRole, setSelectedRole] = useState('');
+  const [selectedRoleId, setSelectedRoleId] = useState('');
 
-  const roleOptions = roles.map((role) => (
-    <option disabled={userRoles.includes(role?.name)} key={role?.roleId} value={role?.name}>{ role?.name }</option>
-  ))
+  const roleOptions = roles.map(({ id, name }) => (
+    <option disabled={userRoles.includes(name)} key={id} value={id}>{name}</option>
+  ));
 
-
-  const fetchRoles = async () => {
-    await getAllRoles({}).then(res => {
-      setRoles(res?.data);
-    }).catch(err => {
-      toast.error(err?.message);
-    })
-  }
+  useEffect(() => {
+    const fetchRoles = async () => {
+      if (!user || !user?.enabled) return;
+      await getAllRoles({ }).then(res => {
+        setRoles(res?.data || []);
+      }).catch(err => {
+        toast.error(err?.message);
+      });
+    }
+    fetchRoles();
+   }, [user]);
 
 
   const fetchUser = async (userId) => {
     await getUsers({ userId: userId }).then(res => {
       setUser(res.data?.details);
-      setUserRoles(res.data?.roles)
-    }).catch(err => toast.error(err?.message || 'Failed to fetch user details'));
+      setUserRoles(res.data?.roles);
+    }).catch(err => {
+      toast.error(err?.message || 'Failed to fetch user details')
+    }).finally(() => {
+      setLoading(false);
+    });
   }
 
   useEffect(() => {
@@ -45,86 +52,74 @@ const UserDetailsPage = () => {
       }, 500);
       return () => clearTimeout(timeout); // cleanup if component unmounts
     } else {
-      fetchRoles();
-      fetchUser(id).finally(() => {
-        setLoading(false);
-      });
+      fetchUser(id);
     }
   }, [id, navigate]);
 
   const handleShowUpdateRole = async () => {
-    if (!roles) await fetchRoles();
     setUpdateRoleHidden(!updateRoleHidden);
   }
 
   const handleCancelUpdateRole = async () => {
-    setSelectedRole('');
+    setSelectedRoleId('');
     setUpdateRoleHidden(true);
-    toast.success("You cancelled the action");
+    toast.success("Cancelled.");
   }
 
   const handleAcknowledgeAction = async () => {
-    // if (!selectedRole) return toast.error(`Please choose a role to add for ${user?.firstName}`);
-    await patchUserRoles({ userId: user?.userId, roleName: selectedRole }).then(res => {
+    if (!selectedRoleId) return;
+    await patchUserRoles({ userId: user.id, roleId: selectedRoleId }).then(res => {
+      window.location.reload();
       console.log("RESPONSE: " + res);
-      toast.success(res?.data);
-      navigate("/");
     }).catch(err => {
       console.error("ERROR: " + err)
-      toast.error(err?.message);
     }).finally(() => {
       setUpdateRoleHidden(true);
+      window.location.reload();
     });
   }
 
-  const handleUpdateRole = () => {
-    axios.patch(`/api/v1/users/${id}/role`, { role: selectedRole })
-      .then(() => {
-        toast.success('Role updated successfully');
-        setUser((prev) => ({ ...prev, role: selectedRole }));
-      })
-      .catch(() => toast.error('Failed to update role'));
-  };
-
   if (loading) {
     return (
-      <div className='flex items-center justify-center w-full h-screen bg-white dark:bg-gray-900 px-4'>
+      <div className='flex items-center justify-center w-full h-screen px-4 bg-white dark:bg-gray-900'>
         <div className="flex flex-col items-center">
           <div className='relative'>
 
             {/* Glow Pulse */}
-            <div className='absolute inset-0 rounded-full bg-orange-500 dark:bg-gray-500 opacity-50 blur-lg animate-ping' />
+            <div className='absolute inset-0 bg-orange-500 rounded-full opacity-50 dark:bg-gray-500 blur-lg animate-ping' />
             
             {/* Spinning ring */}
-            <div className='w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin'/>
+            <div className='w-16 h-16 border-4 border-orange-500 rounded-full border-t-transparent animate-spin'/>
           </div>
-          <p className='mt-4 text-gray-700 dark:text-gray-300 text-lg font-medium'>Loading...</p>
+          <p className='mt-4 text-lg font-medium text-gray-700 dark:text-gray-300'>Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-10 px-4 sm:px-8">
-      <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-2xl p-6 space-y-6">
+    <div className="min-h-screen px-4 py-10 bg-gray-50 dark:bg-gray-900 sm:px-8">
+      <div className="max-w-3xl p-6 mx-auto space-y-6 bg-white shadow-lg dark:bg-gray-800 rounded-2xl">
         <h2 className="text-2xl font-semibold text-orange-600 dark:text-orange-400">
           User Details
         </h2>
 
         {userRoles && (
-          <div>
-            {userRoles.map((r, idx) => (
-              <p className='text-orange-500 w-fit px-2' key={idx}>{r}</p>
+          <div className="mt-1">
+            {userRoles.map((authority, idx) => (
+              <span className="inline-block mx-2 rounded-full bg-orange-100 text-orange-800 dark:bg-orange-700 dark:text-orange-100 px-2 py-0.5 text-xs">
+                {authority}
+              </span>
             ))}
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700 dark:text-gray-300">
-          <div><strong>First Name:</strong> {user?.firstName}</div>
-          <div><strong>Last Name:</strong> {user?.lastName}</div>
-          <div><strong>Email:</strong> {user?.email}</div>
-          <div><strong>Phone:</strong> {user?.phoneNumber}</div>
-          <div><strong>Region:</strong> {user?.region}</div>
+        <div className="grid grid-cols-1 gap-4 text-gray-700 sm:grid-cols-2 dark:text-gray-300">
+          {user?.firstName && <div><strong>First Name:</strong> {user?.firstName}</div>}
+          {user?.lastName && <div><strong>Last Name:</strong> {user?.lastName}</div>}
+          {user?.username && <div><strong>Email:</strong> {user?.username}</div>}
+          {user?.phoneNumber && <div><strong>Phone:</strong> {user?.phoneNumber}</div>}
+          {user?.region && <div><strong>Region:</strong> {user?.region}</div>}
           <div>
             <strong>Status:</strong>{' '}
             <span className={`font-medium ${
@@ -137,36 +132,38 @@ const UserDetailsPage = () => {
 
         <div>
           <div className={`${updateRoleHidden ? 'hidden' : ''}`}>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
+            <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
             <select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value || null)}
-              className="w-full mt-1 p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              value={selectedRoleId}
+              onChange={(e) => setSelectedRoleId(e.target.value || null)}
+              className="w-full p-2 mt-1 text-gray-900 bg-white border border-gray-300 rounded-md dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100"
             >
-              <option value="" disabled>Select a role</option>
+              <option value={""} disabled>Select a role</option>
               { roleOptions }
             </select>
 
             {/* Action buttons */}
-            <div className='flex justify-between rounded-full dark:bg-gray-900 p-2 my-2 items-center'>
-              <button onClick={handleCancelUpdateRole} className='px-4 py-2 bg-transparent text-red-500 font-light rounded-full'>Cancel action</button>
+            <div className='flex items-center justify-between p-2 my-2 rounded-full dark:bg-gray-900'>
+              <button onClick={handleCancelUpdateRole} className='px-4 py-2 font-light text-red-500 bg-transparent rounded-full'>Cancel action</button>
               
-              <button onClick={handleAcknowledgeAction} className='px-4 py-2 bg-orange-500 font-light rounded-full'>Acknowledge action</button>
+              <button disabled={!selectedRoleId} onClick={handleAcknowledgeAction} className='px-4 py-2 font-light bg-orange-500 rounded-full disabled:dark:bg-orange-300'>Acknowledge action</button>
             </div>
           </div>
 
           {/* Show update roles button */}
-          <button
-            onClick={handleShowUpdateRole}
-            className={`${updateRoleHidden ? '' : 'hidden'} mt-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded shadow-md transition`}
-          >
-            Update Roles
-          </button>
+          {user && user?.enabled && (
+            <button
+              onClick={handleShowUpdateRole}
+              className={`${updateRoleHidden ? '' : 'hidden'} mt-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded shadow-md transition`}
+            >
+              Update Roles
+            </button>
+          )}
         </div>
 
         <button
           onClick={() => navigate(-1)}
-          className="text-sm text-orange-600 dark:text-orange-400 underline"
+          className="text-sm text-orange-600 underline dark:text-orange-400"
         >
           ← Back
         </button>

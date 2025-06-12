@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import { ROLES } from './roles'
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
 import { checkAuth } from './slices/authSlice';
 // import { fet };
@@ -15,14 +15,18 @@ import Home from './pages/Home';
 import Checkout from './pages/Checkout';
 import NotFound from './pages/NotFound';
 import AuthPage from './pages/AuthPage';
-import AdminDashboard from './pages/AdminDashboard'
+import AdminDashboard from './pages/admin/AdminDashboard'
 import AccountInfo from './pages/AccountInfo'
 import ProductDetailsPage from './pages/ProductDetailsPage';
 import Cart from './pages/Cart';
+import { AddCategory } from './pages/admin/AddCategory'
 import AdminLayout from './layouts/AdminLayout'
 import AddProduct from './pages/admin/AddProduct';
 import UsersPage from './pages/admin/UsersPage';
 import UserDetailsPage from './pages/admin/UserDetailsPage'
+import { Categories } from './pages/admin/Categories';
+import { ADMIN_LINKS_FRONTEND } from './links';
+import { OrderDetails } from './pages/orders/OrderDetails'
 
 
 const App = () => {
@@ -31,43 +35,48 @@ const App = () => {
   const { pathname } = useLocation();
   const hideCartOn = ['/auth', '/cart', '/checkout', '/admin/*'];
   const showFloatingCheckoutButton = ['/cart'];
+  const cartItems = useSelector(state => state?.cart?.items || []); 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   
   useEffect(() => {
     dispatch(checkAuth());
-  }, [dispatch]);                                                                                                                                                                                                                                                                                                                                                                                                           
+  }, [dispatch, navigate]);                                                                                                                                                                                                                                                                                                                                                                                                           
 
   return (
-    <div className="relative min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900">
-      <Toaster position='top-center' />
-      
+    <div className="relative min-h-screen text-gray-900 bg-gray-100 dark:bg-gray-900">
+      <Toaster position='top-center' />      
       <Routes>
         <Route index element={<Home />} />
         <Route path='/auth' element={<AuthPage />} />
         <Route path="/product" element={<ProductDetailsPage />} />
         <Route path='/checkout' element={ <Checkout/> } />
         <Route path='/cart' element={<Cart />} />
+        <Route path='/order' element={<OrderDetails />} />
+        <Route path='/account' element={<AccountInfo/> } />
         
         {/* Protected routes */}
         {/* <Route path='/admin/users' element={ <ProtectedRoute children={<UsersPage/>} roles={[ROLES.ADMIN]}/> } /> */}
 
         {/* ROLES.ADMIN NOT USER */}
-        <Route path='/admin' element={
-            <ProtectedRoute roles={[ROLES.ADMIN]}>
+        <Route path={ADMIN_LINKS_FRONTEND.INDEX} element={
+            <ProtectedRoute roles={[ROLES.ADMIN, ROLES.ADMIN]}>
               <AdminLayout/>
             </ProtectedRoute>}
         >
           <Route index element={<AdminDashboard />} />
           <Route path="add-products" element={<AddProduct />} />
+          <Route path='categories' element={<Categories />} />
+          <Route path='add-category' element={<AddCategory />} />
           <Route path="users" element={<UsersPage />} />
           <Route path='user' element={ <UserDetailsPage/> } />
         </Route>
 
-        <Route path='*' element={ <NotFound/> } />
+        <Route path={"/"} element={ <Home/> } />
         
       </Routes> 
       
-      {!hideCartOn.includes(pathname) && <FloatingCart />}
+      {!hideCartOn.includes(pathname) && cartItems?.length > 0 && <FloatingCart />}
       {showFloatingCheckoutButton.includes(pathname) && <FloatingCheckoutButton/>}
     </div>
   );
