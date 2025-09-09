@@ -48,7 +48,7 @@ const App = () => {
 
   return (
     <div className="relative min-h-screen text-gray-900 bg-gray-100 dark:bg-gray-900">
-      <Toaster position='bott' />      
+      <Toaster position='bottom-left' />      
       <Routes>
         <Route index element={<Home />} />
         <Route path='/auth' element={<AuthPage />} />
