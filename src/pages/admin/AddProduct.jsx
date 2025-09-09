@@ -16,6 +16,18 @@ const AddProduct = () => {
   });
 
   useEffect(() => {
+    const loadData = async () => {
+      try {
+        const promises = await Promise.allSettled([
+          getCategories({}),
+        ]);
+
+        const [ctgs] = promises.map(res => res.status === "fulfilled" ? res.value : []);
+        console.log(ctgs);
+      } catch (error) {
+        throw new Error('Failed to load data.');
+      }
+    }
     const loadCategories = async () => {
       try {
         const res = await getCategories({});
@@ -25,6 +37,7 @@ const AddProduct = () => {
       }
     };
 
+    loadData();
     loadCategories();
   }, []);
 
@@ -48,7 +61,7 @@ const AddProduct = () => {
         Add New Product
       </h2>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={() => handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
             <input

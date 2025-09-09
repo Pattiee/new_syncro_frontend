@@ -115,7 +115,7 @@ const CheckoutPage = () => {
 
           {/* Order Summary */}
           <div className="p-6 bg-white rounded-lg shadow dark:bg-gray-700">
-            <div className='px-4 py-2 bg-orange-100 rounded-xl'>
+            <div className='px-4 py-2 bg-orange-100 dark:bg-gray-800 rounded-xl'>
               <h2 className="mb-4 text-xl font-medium text-gray-800 dark:text-gray-100">Order Summary</h2>
               {cartItems && cartItems?.map(({ id, name, price, quantity }) => (
                 <div key={id} className="flex justify-between">
@@ -126,7 +126,7 @@ const CheckoutPage = () => {
             </div>
 
             {/* VAT */}
-            <div className="flex justify-between px-4 py-2 mt-2 border-b border-orange-300 rounded-t-full bg-orange-50">
+            <div className="flex justify-between px-4 py-2 mt-2 border-b border-orange-300 rounded-t-full bg-orange-50 dark:bg-gray-800">
               <span className="text-orange-600 dark:text-gray-600">VAT</span>
               <span className="flex text-gray-800 dark:text-gray-100">
                 <p className='px-2 text-orange-500'>({percentageFormater.format(valueAddedTaxPercent / 100)})</p>

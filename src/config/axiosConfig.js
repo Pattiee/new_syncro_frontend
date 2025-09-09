@@ -19,6 +19,9 @@ const ordersAxiosInstance = apiGatewayAxiosInstance;
 // Axios instance for products-related requests
 const productsAxiosInstance = apiGatewayAxiosInstance;
 
+// Axios instance for products-related requests
+const branchesAxiosInstance = apiGatewayAxiosInstance;
+
 
 const AxiosConfig = {
     authAxiosInstance,
@@ -27,6 +30,7 @@ const AxiosConfig = {
     adminAxiosInstance,
     productsAxiosInstance,
     ordersAxiosInstance,
+    branchesAxiosInstance,
 }
 
 export default AxiosConfig;

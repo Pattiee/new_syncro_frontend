@@ -26,7 +26,10 @@ import UsersPage from './pages/admin/UsersPage';
 import UserDetailsPage from './pages/admin/UserDetailsPage'
 import { Categories } from './pages/admin/Categories';
 import { ADMIN_LINKS_FRONTEND } from './links';
+import { Branches } from './pages/admin/company_branches/Branches'
+import { BranchDetails } from './pages/admin/company_branches/BranchDetails';
 import { OrderDetails } from './pages/orders/OrderDetails'
+import { AddBranch } from './pages/admin/company_branches/AddBranch'
 
 
 const App = () => {
@@ -45,7 +48,7 @@ const App = () => {
 
   return (
     <div className="relative min-h-screen text-gray-900 bg-gray-100 dark:bg-gray-900">
-      <Toaster position='top-center' />      
+      <Toaster position='bott' />      
       <Routes>
         <Route index element={<Home />} />
         <Route path='/auth' element={<AuthPage />} />
@@ -60,7 +63,7 @@ const App = () => {
 
         {/* ROLES.ADMIN NOT USER */}
         <Route path={ADMIN_LINKS_FRONTEND.INDEX} element={
-            <ProtectedRoute roles={[ROLES.ADMIN, ROLES.ADMIN]}>
+            <ProtectedRoute roles={[ROLES.ADMIN]}>
               <AdminLayout/>
             </ProtectedRoute>}
         >
@@ -68,6 +71,9 @@ const App = () => {
           <Route path="add-products" element={<AddProduct />} />
           <Route path='categories' element={<Categories />} />
           <Route path='add-category' element={<AddCategory />} />
+          <Route path="branch" element={<BranchDetails />} />
+          <Route path="branches" element={<Branches />} />
+          <Route path="add-branch" element={<AddBranch />} />
           <Route path="users" element={<UsersPage />} />
           <Route path='user' element={ <UserDetailsPage/> } />
         </Route>

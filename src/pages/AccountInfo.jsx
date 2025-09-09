@@ -51,7 +51,7 @@ const AccountInfo = () => {
     (async () => {
       setOrdersLoading(true);
       try {
-        const res = await getOrders({ username: user.username || undefined });
+        const res = await getOrders({ username: user?.username || undefined });
         setOrders(res.data || []);
       } catch (e) {
         console.error(e);

@@ -25,18 +25,19 @@ const AddToCartBtn = ({ product }) => {
     const productPrice = discounted
       ? product.price - (product.percent_discount / 100) * product.price
       : product.price;
+    
+    const item = {
+      id: product.id,
+      name: product.name,
+      price: productPrice,
+      quantity: 1,
+      skuCode: product.skuCode,
+      imageUrl: product?.imageUrl,
+      inStock: product?.stock > cartItem?.quantity && product?.stock > 0,
+    }
 
-    dispatch(
-      addItem({
-        id: product.id,
-        name: product.name,
-        price: productPrice,
-        quantity: 1,
-        skuCode: product.skuCode,
-        imageUrl: product?.imageUrl,
-      })
-    );
-  }, [dispatch, product, maxReached, outOfStock]);
+    dispatch(addItem(item));
+  }, [dispatch, product, maxReached, outOfStock, cartItem]);
 
   const handleDecrementQuantity = e => {
     e.stopPropagation();

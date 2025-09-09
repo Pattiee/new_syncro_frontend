@@ -15,8 +15,9 @@ const AdminLayout = () => {
           <h2 className="mb-6 text-2xl font-bold">Admin Panel</h2>
           <nav className="flex flex-col gap-4">
             <Link to={ADMIN_LINKS_FRONTEND.INDEX} className="hover:underline">Dashboard</Link>
-            <Link to={ADMIN_LINKS_FRONTEND.CATEGORIES} className="hover:underline">Categories</Link>
             <Link to={ADMIN_LINKS_FRONTEND.ADD_PRODUCTS} className="hover:underline">Add Products</Link>
+            <Link to={ADMIN_LINKS_FRONTEND.CATEGORIES} className="hover:underline">Product Categories</Link>
+            <Link to={ADMIN_LINKS_FRONTEND.BRANCHES} className="hover:underline">Branches</Link>
             <Link to={ADMIN_LINKS_FRONTEND.USERS} className="hover:underline">Users</Link>
           </nav>
         </aside>

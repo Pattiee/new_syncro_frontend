@@ -35,12 +35,12 @@ const cartSlice = createSlice({
                 return;
             }
             const existingItem = state.items.find(i => i.id === item.id);
-            const quantityToAddToCart = item.quantity || 1;
+            const quantityToAddToCart = item.quantity ?? 1;
 
             if (existingItem) {
                 existingItem.quantity += quantityToAddToCart;
             } else {
-                state.items.push({ ...item, quantity: quantityToAddToCart });
+                state.items.push({ ...item, quantity: quantityToAddToCart, });
                 toast.success(`${item?.name} added to your cart!`);
             }
         },

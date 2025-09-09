@@ -2,9 +2,11 @@ import { useEffect, useState, Suspense } from 'react';
 import ProductCard from '../components/Product/ProductCard'
 import { Loader } from '../components/Loader'
 import { getProducts } from '../services/products.service';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import { SearchBar } from '../components/SearchBar';
+import { useDebounce } from '../hooks/useDebounce'
+import { removeItem } from '../slices/cartSlice';
 
 export const Products = () => {
   const [message, setMessage] = useState('');
@@ -13,12 +15,27 @@ export const Products = () => {
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
+  const [query, setQuery] = useState('');
+  const [delay, setDelay] = useState(500);
+  const dispatch = useDispatch();
 
   const [categories, setCategories] = useState([]);
-  const [featuredProducts, setFeaturedProducts] = useState([]);
-  const [favoriteProducts, setFavoriteProducts] = useState([]);
 
-  const cartItems = useSelector(state => state?.cart?.items);
+  const cartItems = useSelector(state => state?.cart?.items || []);
+  
+  
+  useEffect(() => {
+    if (loading) setLoading(true);
+    const timeout = setTimeout(() => {
+      // setDebouncedQuery(query);
+      const filtered = allProducts.filter(product => product?.name?.toLowerCase().includes(query));
+  
+      setProducts(filtered);
+      setLoading(false);
+    }, delay);
+    
+    return () => clearTimeout(timeout);
+  }, [delay, query, allProducts, loading]);
 
   const handleUpdateFilter = (category = "") => (e) => {
     const current = (filter ?? '').trim().toLowerCase();
@@ -52,34 +69,36 @@ export const Products = () => {
           setMessage('No products found');
         }
       }).catch(err => {
-        toast.error(err?.message);
+        // toast.error(err?.message);
       }).finally(() => {
         setLoading(false);
       });
     }
     loadProducts();
   }, [featured, filter]);
-  
 
-  const handleSearch = (query) => {
+  useEffect(() => {
     if (!query.trim()) {
       setProducts(allProducts); // reset to full list
       return;
-    }
+    };
+    
     const lowerQuery = query.toLowerCase();
-    const filtered = allProducts.filter(product =>
-      product.name.toLowerCase().includes(lowerQuery)
-    );
-    setProducts(filtered);
-  };
+    setQuery(lowerQuery);
+  }, [allProducts, query]);
+  
+
+  const handleSearch = (query) => setQuery(query);
   
   
-  // if (loading) return <Loader />
+  if (loading) return <Loader />
 
   return (
     <> 
       <SearchBar onSearch={handleSearch} />
       {!loading && products.length <= 0 && <span className='flex items-center justify-center mx-auto w-fit animate-ping'>No products.</span>}
+
+      {/* TODO: Loader here. */}
       <Suspense fallback={<Loader/>} name='products suspense'>
         {categories && (
             <>
@@ -95,7 +114,7 @@ export const Products = () => {
               {categories && categories.map((category, idx) => (
                 <button
                   key={idx}
-                  onClick={handleUpdateFilter(category)}
+                  onClick={() => handleUpdateFilter(category)}
                   className={`flex px-6 py-3 rounded-full font-medium transition hover:bg-orange-200 dark:hover:bg-orange-700 cursor-pointer ${filter.toLowerCase() === category?.name.toLowerCase()
                     ? 'bg-orange-500 text-white dark:bg-orange-400 dark:text-black'
                     : 'bg-orange-100 text-orange-700 dark:bg-gray-700 dark:text-orange-300'}`}
@@ -112,11 +131,11 @@ export const Products = () => {
           { products && (
             <div>
               <div className="px-6 py-12">
-                {filter && (<h2 className="mb-6 text-2xl font-semibold text-orange-600 dark:text-orange-400">{filter}</h2>)}
+                {filter && (<h2 className="mb-6 text-2xl font-semibold text-orange-600 dark:text-orange-400">{ filter }</h2>)}
                 <div className="grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
                   {products.length > 0
                     ? products.map(product => <ProductCard key={product.id} product={product} />)
-                    : <div>{message}</div>
+                    : <div>{ message }</div>
                   }
                 </div>
               </div>

@@ -58,22 +58,8 @@ const AuthPage = () => {
     }
   };
 
-  useEffect(() => {
-    let updateErrMessage = async () => {
-      if (password && password.length < 8) {
-        setErrorMessage('Passwords must be at least 8 characters');
-      } else {
-        setErrorMessage('');
-      }
-    }
-    updateErrMessage();
-  }, [password, confirmPassword]);
-
-
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMessage('');
     setLoading(true);
 
     try {
@@ -143,7 +129,6 @@ const AuthPage = () => {
   const handleUpdateHasAccount = () => {
     setIsLogin(!isLogin);
     setStep(1);
-    setErrorMessage('');
     setPassword('');
     setConfirmPassword('');
   }
@@ -159,14 +144,14 @@ const AuthPage = () => {
   };
 
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     if (step === 1) {
-      handleValidateEmail(e);
+      await handleValidateEmail(e);
     } else {
-      handleSubmit(e);
+      await handleSubmit(e);
     }
   }
-    
+
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4 bg-gray-100 dark:bg-gray-900">
