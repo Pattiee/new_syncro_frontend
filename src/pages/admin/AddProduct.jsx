@@ -18,41 +18,38 @@ const AddProduct = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const promises = await Promise.allSettled([
-          getCategories({}),
-        ]);
+        const requests = [
+          await getCategories({}),
+        ];
+        const result = await Promise.allSettled(requests);
 
-        const [ctgs] = promises.map(res => res.status === "fulfilled" ? res.value : []);
-        console.log(ctgs);
+        const [ctgs] = result;
+
+        if (ctgs.status === 'fulfilled') {
+          setCategories(ctgs.value.data ?? []);
+        } else {
+          console.error("Categories error: ", ctgs.reason);
+          toast.error(ctgs.reason);
+        }
       } catch (error) {
         throw new Error('Failed to load data.');
       }
     }
-    const loadCategories = async () => {
-      try {
-        const res = await getCategories({});
-        setCategories(res?.data || []);
-      } catch (err) {
-        toast.error('Failed to load categories');
-      }
-    };
 
     loadData();
-    loadCategories();
   }, []);
 
   const onSubmit = async (data) => {
     setSubmitting(true);
-    try {
-      const res = await addProduct(data);
-      toast.success('✅ Product added successfully!');
+    await addProduct(data).then(res => {
+      toast.success('Product added successfully!');
       reset();
       navigate('/');
-    } catch (err) {
+    }).catch(err => {
       toast.error(err?.message || 'Error adding product');
-    } finally {
+    }).finally(() => {
       setSubmitting(false);
-    }
+    });
   };
 
   return (
@@ -61,7 +58,7 @@ const AddProduct = () => {
         Add New Product
       </h2>
 
-      <form onSubmit={() => handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
             <input

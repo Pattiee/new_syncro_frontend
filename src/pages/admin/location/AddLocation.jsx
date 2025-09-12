@@ -19,9 +19,6 @@ export const AddLocation = () => {
 
     useEffect(() => {
       const loadCategories = async () => {
-        // const =[
-        //   await get
-        // ]
           await Promise.all()
         };
     
@@ -33,7 +30,7 @@ export const AddLocation = () => {
         try {
             console.log(data);
         //   const res = await createLocation(data);
-          toast.success('✅ Location added successfully!');
+          toast.success('Location added successfully!');
           reset();
         //   navigate('/');
         } catch (err) {

@@ -243,7 +243,7 @@ const AuthPage = () => {
             {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
             <button
               onClick={handleUpdateHasAccount}
-              className='font-medium text-orange-500 dark:text-orange-400 hover:underline'
+              className='font-medium text-orange-500 dark:text-orange-400 hover:underline disabled:bg-orange-300'
             >
               {isLogin ? "Register" : "Login"}
             </button>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { clearCart, placeOrder } from '../slices/cartSlice'
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { createNewOrder } from '../services/order.service';
 import { currencyFormater, percentageFormater } from '../helpers/formater';
@@ -173,9 +173,16 @@ const CheckoutPage = () => {
         >
           {placingOrder
             ? <div className='flex justify-center w-6 h-6 mx-auto border-4 border-t-4 border-orange-500 border-solid rounded-full animate-spin'></div>
-            : <span>Complete Checkout</span>
+            : <span>Checkout</span>
           }
         </button>
+
+        <Link
+          to={"/"}
+          className='flex justify-center mx-auto border-none w-full py-2 px-4 mt-4 text-white transition rounded-lg bg-primary dark:bg-primary-600 hover:bg-primary-600 dark:hover:bg-primary-700'
+          >
+            Home
+        </Link>
       </div>
     </div>
   );
