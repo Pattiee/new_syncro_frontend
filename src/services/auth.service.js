@@ -5,28 +5,32 @@ import Validator from "../helpers/Validator";
 const AUTH_SERVICE_BASE_API_URL = process.env.REACT_APP_AUTH_URL;
 
 export const checkIfExistEmail = async ({ username }) => {
-    const response = { exists: false, enabled: false, err: ''};
-    if (username) {      
-        const emailValid = Validator.isEmailValid(username);
-        if (emailValid) {
-            const requestBody = {};
-            requestBody.username = username;
-            await AxiosConfig.authAxiosInstance.post(`${AUTH_SERVICE_BASE_API_URL}/existsEmail`, requestBody).then(res => {
-                response.exists = res.data?.exists || false;
-                response.enabled = res.data?.enabled || false;
-            }).catch(error => {
-                console.error(error);
-                response.err = error?.message || "Unknown error occured.";
-            }).finally(() => {
-                return response;
-            });
+    try {
+        const response = { exists: false, enabled: false, err: ''};
+        if (username) {      
+            const emailValid = Validator.isEmailValid(username);
+            if (emailValid) {
+                const requestBody = {};
+                requestBody.username = username;
+                await AxiosConfig.authAxiosInstance.post(`${AUTH_SERVICE_BASE_API_URL}/existsEmail`, requestBody).then(res => {
+                    response.exists = res.data?.exists || false;
+                    response.enabled = res.data?.enabled || false;
+                }).catch(error => {
+                    response.err = error?.message || "Unknown error occured.";
+                }).finally(() => {
+                    return response;
+                });
+            } else {
+                response.err = 'Invalid email';
+            }
         } else {
-            response.err = 'Invalid email';
+            response.err = 'Missing email';
         }
-    } else {
-        response.err = 'Missing email';
+        return response;
+
+    } catch (error) {
+        return;
     }
-    return response;
 }
 
 export const register = async (registrationRequest) => {

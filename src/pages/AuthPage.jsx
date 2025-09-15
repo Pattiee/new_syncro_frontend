@@ -34,7 +34,7 @@ const AuthPage = () => {
       const { exists, enabled, err } = await checkIfExistEmail({ username });
 
       if (isLogin) {
-        if (!exists) throw new Error("Email not found.");
+        if (!exists) throw new Error(err);
         if (enabled) {
           setStep(2);
         } else {

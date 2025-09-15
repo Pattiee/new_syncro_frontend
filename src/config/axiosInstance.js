@@ -6,10 +6,6 @@ axios.defaults.withCredentials=true;
 
 const apiGatewayAxiosInstance = axios.create({
     baseURL: GATEWAY_BASE_URL,
-    withCredentials: true,
-    headers: {
-        'Content-Type': 'application/json',
-    },
 });
 
 export default apiGatewayAxiosInstance;

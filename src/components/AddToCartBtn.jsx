@@ -52,7 +52,7 @@ const AddToCartBtn = ({ product }) => {
   const containerMinWidth = 'min-w-[140px]';
 
   return (
-    <div className={`flex justify-center ${containerMinWidth}`}>
+    <div className={`flex w-full justify-center ${containerMinWidth}`}>
       {inCart ? (
         <div className="flex items-center justify-center w-full gap-3 sm:gap-4">
           {/* Decrement */}

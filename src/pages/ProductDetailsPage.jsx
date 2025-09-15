@@ -43,6 +43,7 @@ const ProductDetailsPage = () => {
   useEffect(() => {
     const fetchProduct = async () => {      
       await getProducts({ id: productId }).then(res => {
+        // console.log(res.data?.body)
         if (res) setProduct(res.data?.body);
       }).catch(err => {
         toast.error(err?.message || "Error fetching product");
@@ -82,7 +83,7 @@ const ProductDetailsPage = () => {
               <div
                 className="w-full h-full transition-all duration-300 ease-in-out transform bg-center bg-cover hover:scale-105"
                 style={{
-                  backgroundImage: `url(${product?.imageUrl || 'https://via.placeholder.com/500'})`,
+                  backgroundImage: `url(${product?.imageUrls[0] || 'https://via.placeholder.com/500'})`,
                 }}/>
             </div>
 

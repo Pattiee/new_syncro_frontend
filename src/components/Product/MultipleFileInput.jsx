@@ -18,7 +18,7 @@ const MultipleFileInput = ({ name }) => {
                         const files = Array.from(e.target.files);
                         onChange(files);
                     }}
-                    className="input-field" />
+                    className="input-field bg-orange-600" />
                     {error && <span className='text-red-500 text-sm mt-1'>{error.message}</span>}
                 </div>
             )}

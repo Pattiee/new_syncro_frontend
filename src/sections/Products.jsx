@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { SearchBar } from '../components/SearchBar';
 import { useDebounce } from '../hooks/useDebounce'
 import { removeItem } from '../slices/cartSlice';
+import axios from 'axios';
 
 export const Products = () => {
   const [message, setMessage] = useState('');
@@ -14,32 +15,17 @@ export const Products = () => {
   const [featured, setFeatured] = useState(false);
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
-  const [allProducts, setAllProducts] = useState([]);
-  const [query, setQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [delay, setDelay] = useState(500);
   const dispatch = useDispatch();
 
   const [categories, setCategories] = useState([]);
 
   const cartItems = useSelector(state => state?.cart?.items || []);
-  
-  
-  useEffect(() => {
-    if (loading) setLoading(true);
-    const timeout = setTimeout(() => {
-      // setDebouncedQuery(query);
-      const filtered = allProducts.filter(product => product?.name?.toLowerCase().includes(query));
-  
-      setProducts(filtered);
-      setLoading(false);
-    }, delay);
-    
-    return () => clearTimeout(timeout);
-  }, [delay, query, allProducts, loading]);
 
-  const handleUpdateFilter = (category = "") => (e) => {
+  const handleUpdateFilter = (category) => {
     const current = (filter ?? '').trim().toLowerCase();
-    const selected = category?.name.trim().toLowerCase();
+    const selected = category?.name?.trim().toLowerCase();
     setFilter(current === selected ? '' : category?.name);
   };
 
@@ -57,39 +43,43 @@ export const Products = () => {
 
   useEffect(() => {
     const loadProducts = async () => {
-      await getProducts({ category: filter ? filter : null, isFeatured: featured }).then(res => {
-        const categoriesData = res?.data?.categories;
-        const productsData = res?.data?.products;
-        setCategories(categoriesData || []);
-        if (productsData) {
-          setMessage('');
-          setProducts(productsData); // filtered list
-          setAllProducts(productsData); // full unfiltered list
-        } else {
-          setMessage('No products found');
+      const requestList = [
+        await getProducts({ category: filter ? filter : null, isFeatured: featured, search: searchQuery ? searchQuery : null }),
+      ];
+
+      try {
+        const [productResponse, ] = await Promise.allSettled(requestList);
+  
+        if (productResponse.status === "fulfilled") {
+          const responseData = productResponse.value.data;
+  
+          const categoriesData = responseData?.categories ?? [];
+          const productsData = responseData?.products ?? [];
+  
+          setCategories(categoriesData);
+          setProducts(productsData);
         }
-      }).catch(err => {
-        // toast.error(err?.message);
-      }).finally(() => {
+      } catch (error) {
+        // toast.error(error?.message);
+      } finally {
         setLoading(false);
-      });
+      }
     }
+
     loadProducts();
-  }, [featured, filter]);
+  }, [featured, filter, searchQuery]);
 
-  useEffect(() => {
-    if (!query.trim()) {
-      setProducts(allProducts); // reset to full list
-      return;
-    };
+  // Handle search query
+  const handleSearch = (query) => {
+    const timeout = setTimeout(() => {
+      setSearchQuery(query);
+    }, delay);
     
-    const lowerQuery = query.toLowerCase();
-    setQuery(lowerQuery);
-  }, [allProducts, query]);
-  
-
-  const handleSearch = (query) => setQuery(query);
-  
+    const lowerQuery = searchQuery.toLowerCase();
+    setSearchQuery(lowerQuery);
+    
+    return () => clearTimeout(timeout);
+  }
   
   if (loading) return <Loader />
 
@@ -127,14 +117,14 @@ export const Products = () => {
           </>
           )}
         
-          {/* All Products */}
+          {/* Products */}
           { products && (
             <div>
               <div className="px-6 py-12">
                 {filter && (<h2 className="mb-6 text-2xl font-semibold text-orange-600 dark:text-orange-400">{ filter }</h2>)}
                 <div className="grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
                   {products.length > 0
-                    ? products.map(product => <ProductCard key={product.id} product={product} />)
+                    ? products.map((product, idx) => <ProductCard key={product?.id ?? idx} product={product} />)
                     : <div>{ message }</div>
                   }
                 </div>

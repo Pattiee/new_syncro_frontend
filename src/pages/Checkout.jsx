@@ -44,30 +44,27 @@ const CheckoutPage = () => {
     if (!cartItems) navigate(MAIN_LINKS_FRONTEND.HOME, { replace: true });
 
     setPlacingOrder(true);
-    const data = {}
-    
-    // Get personal info from the cookies...backend/db.
-    // May add shipping address or get existing addresses from db.
-    
-    data.username = username;
-    data.items = cartItems;
-    data.shippingAddress = {};
 
-    data.shippingAddress.addressId = "1234567890";
-    data.shippingAddress.city = "Eldoret";
-    data.shippingAddress.zip = "3160";
-    data.shippingAddress.country = "Kenya";
+    const formData = new FormData();
 
-    // if (data.username && data.items && data.shippingAddress) placeOrder(data);
-    await createNewOrder(data).then(res => {
+    console.log(cartItems);
+
+    formData.append("username", username);
+    formData.append("items", new Blob([JSON.stringify(cartItems)], { type: "application/json" }));
+    formData.append("shipping-address", new Blob([JSON.stringify({
+      id: "1234567890",
+      city: "Eldoret",
+      zip: "3160",
+      country: "Kenya"
+    })], {type: "application/json"}));
+
+    await createNewOrder(formData).then(res => {
       console.log(res);
-      dispatch(clearCart());
-      navigate(MAIN_LINKS_FRONTEND.HOME, { replace: true });
-    }).catch(err => {
-      toast.error(err?.message || "Unknown error occured")
+      if (res?.data) dispatch(clearCart());
     }).finally(() => {
       setPlacingOrder(false);
-    })
+      navigate(MAIN_LINKS_FRONTEND.HOME, { replace: true });
+    });
   }
 
   return (
@@ -120,7 +117,7 @@ const CheckoutPage = () => {
               {cartItems && cartItems?.map(({ id, name, price, quantity }) => (
                 <div key={id} className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-300">{name} @{ price } x { quantity }</span>
-                  <span className="text-gray-800 dark:text-gray-100">{ currencyFormater.format(price*quantity) }</span>
+                  <span className="text-gray-800 dark:text-gray-100">{ currencyFormater.format(price  * quantity) }</span>
               </div>
               ))}
             </div>

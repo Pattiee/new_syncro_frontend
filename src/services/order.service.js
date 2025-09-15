@@ -1,8 +1,17 @@
+import toast from "react-hot-toast";
 import AxiosConfig from "../config/axiosConfig";
 
 const ORDER_SERVICE_BASE_URL = process.env.REACT_APP_ORDERS_URL;
 
-export const createNewOrder = async (orderData) => await AxiosConfig.ordersAxiosInstance.post(ORDER_SERVICE_BASE_URL, orderData);
+export const createNewOrder = async (formData) => {
+    try {
+        return await AxiosConfig.ordersAxiosInstance.post(ORDER_SERVICE_BASE_URL, formData);
+    } catch (error) {
+        console.error(error);
+        toast.error(error?.message);
+        return;
+    }
+}
 
 
 export const getOrders = async ({ username, orderId }) => {

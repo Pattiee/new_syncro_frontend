@@ -6,6 +6,7 @@ import { addProduct, getCategories } from '../../services/products.service';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import MultipleFileInput from '../../components/Product/MultipleFileInput'
+import axios from 'axios';
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -15,24 +16,12 @@ const AddProduct = () => {
   const methods = useForm({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      percent_discount: 0,
-      stock: 1,
       images: [],
     }
   });
 
-  // const { methods.register, handleSubmit, reset, formState: { methods.errors }, } = useForm({
-  //   resolver: zodResolver(productSchema),
-  //   defaultValues: {
-  //     percent_discount: 0,
-  //     stock: 1,
-  //     images: [],
-  //   }
-  // });
-
   useEffect(() => {
     const loadData = async () => {
-      try {
         const requests = [
           await getCategories({}),
         ];
@@ -41,27 +30,40 @@ const AddProduct = () => {
         const [ctgs] = result;
 
         if (ctgs.status === 'fulfilled') {
-          setCategories(ctgs.value.data ?? []);
+          setCategories(ctgs.value?.data ?? []);
+          return;
         } else {
           console.error("Categories error: ", ctgs.reason);
           toast.error(ctgs.reason);
+          return;
         }
-      } catch (error) {
-        throw new Error('Failed to load data.');
-      }
     }
 
     loadData();
   }, []);
 
   const onSubmit = async (data) => {
+    const formData = new FormData();
+
+    formData.append("product", new Blob([JSON.stringify({
+      name: data?.name,
+      category: data?.category,
+      percent_discount: data?.percent_discount,
+      price: data?.price,
+      condition: data?.condition,
+      desc: data?.desc,
+      featured: data?.featured,
+      stock: data?.stock,
+    })], { type: "application/json"}));
+
+    data?.images?.forEach(file => formData.append("images", file));
+
     setSubmitting(true);
-    await addProduct(data).then(res => {
+    await addProduct(formData).then(res => {
+      console.log(res.data);
       toast.success('Product added successfully!');
       methods.reset();
       navigate('/');
-    }).catch(err => {
-      toast.error(err?.message || 'Error adding product');
     }).finally(() => {
       setSubmitting(false);
     });
@@ -82,7 +84,7 @@ const AddProduct = () => {
               {...methods.register("name")}
               className="input-field"
             />
-            {methods.formState.errors.name && <p className="text-red-500">{methods.formState.errors.name.message}</p>}
+            {methods.formState.errors.name && <p className="text-red-500 text-sm mt-1">{methods.formState.errors.name.message}</p>}
           </div>
 
           <div>
@@ -95,7 +97,7 @@ const AddProduct = () => {
                 </option>
               ))}
             </select>
-            {methods.formState.errors.category && <p className="text-red-500">{methods.formState.errors.category.message}</p>}
+            {methods.formState.errors.category && <p className="text-red-500 text-sm mt-1">{methods.formState.errors.category.message}</p>}
           </div>
         </div>
 
@@ -109,11 +111,11 @@ const AddProduct = () => {
               {...methods.register('percent_discount')}
               className="input-field"
             />
-            {methods.formState.errors.percent_discount && <p className="text-red-500">{methods.formState.errors.percent_discount.message}</p>}
+            {methods.formState.errors.percent_discount && <p className="text-red-500 text-sm mt-1">{methods.formState.errors.percent_discount.message}</p>}
           </div>
 
           <div>
-            <label htmlFor="images">Images</label>
+            {/* <label htmlFor="images">Images</label> */}
             <MultipleFileInput name={"images"}/>
           </div>
         </div>
@@ -127,7 +129,7 @@ const AddProduct = () => {
               {...methods.register('price')}
               className="input-field"
             />
-            {methods.formState.errors.price && <p className="text-red-500">{methods.formState.errors.price.message}</p>}
+            {methods.formState.errors.price && <p className="text-red-500 text-sm mt-1">{methods.formState.errors.price.message}</p>}
           </div>
 
           <div>
@@ -136,7 +138,7 @@ const AddProduct = () => {
               <option value="New">1. New</option>
               <option value="Refurbished">2. Refurbished</option>
             </select>
-            {methods.formState.errors.condition && <p className="text-red-500">{methods.formState.errors.condition.message}</p>}
+            {methods.formState.errors.condition && <p className="text-red-500 text-sm mt-1">{methods.formState.errors.condition.message}</p>}
           </div>
         </div>
 
@@ -146,7 +148,7 @@ const AddProduct = () => {
             {...methods.register('desc')}
             className="h-32 resize-none input-field"
           />
-          {methods.formState.errors.desc && <p className="text-red-500">{methods.formState.errors.desc.message}</p>}
+          {methods.formState.errors.desc && <p className="text-red-500 text-sm mt-1">{methods.formState.errors.desc.message}</p>}
         </div>
 
         <div className="flex items-center gap-2">
@@ -162,7 +164,7 @@ const AddProduct = () => {
             {...methods.register('stock')}
             className="input-field"
           />
-          {methods.formState.errors.stock && <p className="text-red-500">{methods.formState.errors.stock.message}</p>}
+          {methods.formState.errors.stock && <p className="text-red-500 text-sm mt-1">{methods.formState.errors.stock.message}</p>}
         </div>
 
         <button

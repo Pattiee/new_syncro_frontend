@@ -65,27 +65,38 @@ const ProductCard = ({ product }) => {
 
   return (
     <motion.div
-      className="relative overflow-hidden transition duration-300 ease-in-out bg-white rounded-lg shadow-md cursor-pointer dark:bg-gray-800 hover:shadow-xl group"
+      className="flex justify-center p-4 shadow-md overflow-hidden transition duration-300 ease-in-out rounded-lg cursor-pointer bg-white dark:bg-gray-800 hover:shadow-xl"
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
     >
-      {/* Badge Section */}
-      <div className="absolute flex flex-row items-center justify-between w-full gap-1 px-2 bg-transparent top-2">
-        <div className="flex flex-col top-2 left-2">
-          {product?.percent_discount > 0 && (
-            <span className="px-2 py-1 text-xs text-white bg-orange-500 rounded-full">
-              -{percentageFormater.format(product?.percent_discount / 100)}
-            </span>
-          )}
-          {product?.offerExpiresAt && (
-            <span className={`text-xs px-2 py-1 rounded-full ${offerExpired ? 'bg-gray-500' : 'bg-red-500 text-white'}`}>
-              {offerExpired ? 'Offer Expired' : 'Limited Offer'}
-            </span>
-          )}
-        </div>
+      <div className='flex flex-col h-full w-full rounded-lg'>
+      {/* Image */}
+      <div
+        onClick={handleCardClick}
+        className="w-full p-2 h-40 bg-white rounded-t-lg dark:bg-gray-600"
+        style={{
+          // backgroundImage: `url(${product?.imageUrl || "https://via.placeholder.com/500"})`,
+          // backgroundSize: 'cover',
+          // backgroundPosition: 'center',
+        }}
+        >
 
-        <div className="px-2">
+        {/* Badge Section */}
+        <div className="flex flex-row items-center justify-between w-full bg-transparent top-0">
+          <div className="flex flex-col top-2 left-2">
+            {product?.percent_discount > 0 && (
+              <span className="px-2 py-1 text-xs text-white bg-orange-500 rounded-full">
+                -{percentageFormater.format(product?.percent_discount / 100)}
+              </span>
+              )
+            }
+            {product?.offerExpiresAt && (
+              <span className={`text-xs px-2 py-1 rounded-full ${offerExpired ? 'bg-gray-500' : 'bg-red-500 text-white'}`}> {offerExpired ? 'Offer Expired' : 'Limited Offer'} </span>
+            )}
+          </div>
+          
+          <div className="px-2">
           {product?.featured && (
             <span className="flex items-center justify-center text-orange-500 transition-all duration-300 transform bg-transparent rounded-full dark:text-orange-500 active:scale-90">
               <FiStar size={20} color="orange" />
@@ -94,30 +105,27 @@ const ProductCard = ({ product }) => {
         </div>
       </div>
 
-      {/* Image */}
-      <div
-        onClick={handleCardClick}
-        className="w-full h-40 bg-gray-200 rounded-t-lg dark:bg-gray-600"
-        style={{
-          backgroundImage: `url(${Array.isArray(product?.imageUrls) ? product.imageUrls[0] : product?.imageUrls || "https://via.placeholder.com/500"})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      ></div>
+        {/* Image section */}
+        <img 
+          src={product?.imageUrl} 
+          alt={product?.name} 
+          style={{ objectFit: "cover" }}
+          className='w-full object-cover rounded-md'/>
+      </div>
 
       {/* Info */}
-      <div className="p-2">
+      <div className="p-2 rounded-b-lg bottom-0">
         <div className='flex justify-between'>
 
           {/* Name */}
           <div className='flex flex-col justify-between mt-2'>
-            <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">{product?.name}</h3>
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">{product?.name}</h3>
             <p className="text-sm font-thin text-gray-500 dark:text-gray-500">{product?.category}</p>
           </div>
           
           {/* Price */}
           <div className='flex flex-col items-center justify-between mt-2'>
-            <p className="text-lg font-bold text-orange-500 dark:text-orange-400">{currencyFormater.format(discountedPrice)}</p>
+            <p className="text-lg font-semibold text-orange-600 dark:text-orange-400">{currencyFormater.format(discountedPrice)}</p>
             {product?.percent_discount > 0 && (
               <p className="text-sm text-gray-400 line-through dark:text-gray-600">${product?.price.toFixed(2)}</p>
             )}
@@ -150,7 +158,10 @@ const ProductCard = ({ product }) => {
           {product.desc}
         </span>
 
-        <AddToCartBtn product={product} />
+        <div className='flex w-full rounded-2xl'>
+          <AddToCartBtn product={product} />
+        </div>
+      </div>
       </div>
     </motion.div>
   );
