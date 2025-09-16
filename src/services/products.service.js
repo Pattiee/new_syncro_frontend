@@ -36,9 +36,7 @@ export const getProducts = async ({ id, category = "", isFeatured, search = "" }
       return await AxiosConfig.productsAxiosInstance.get(PRODUCTS_SERVICE_BASE_URL, { params });
     } catch (error) {
       toast.error(error.message);
-      return;
     }
-    
 };
 
 // getCategories
