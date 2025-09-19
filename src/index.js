@@ -6,6 +6,8 @@ import { Provider, useSelector } from 'react-redux';
 import { AuthProvider } from './contexts/AuthProvider';
 import { BrowserRouter } from 'react-router-dom';
 import { initApp } from './store';
+import keycloak, { initKeycloak } from '../src/config/keycloak-config';
+import { ReactKeycloakProvider } from '@react-keycloak/web';
 
 
 // ThemeWrapper component
@@ -23,7 +25,7 @@ initApp().then((store) => {
   const root = ReactDOM.createRoot(document.getElementById('root'));
 
   root.render(
-      <>
+      <ReactKeycloakProvider authClient={keycloak} initOptions={initKeycloak}>
         <Provider store={store}>
           <ThemeWrapper>
             <BrowserRouter>
@@ -33,6 +35,6 @@ initApp().then((store) => {
             </BrowserRouter>
           </ThemeWrapper>
         </Provider>
-      </>
+      </ReactKeycloakProvider>
   );
 });

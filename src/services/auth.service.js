@@ -35,22 +35,53 @@ export const checkIfExistEmail = async ({ username }) => {
 
 export const register = async (registrationRequest) => {
     const rawPassword = registrationRequest?.password || "";
-    if (!Validator.isPasswordValid(rawPassword)) return Promise.reject("Bad password");
-   return await AxiosConfig.authAxiosInstance.post(`${AUTH_SERVICE_BASE_API_URL}/register`, registrationRequest);
+    try {
+        if (!Validator.isPasswordValid(rawPassword)) return Promise.reject("Bad password");
+        return await AxiosConfig.authAxiosInstance.post(`${AUTH_SERVICE_BASE_API_URL}/register`, registrationRequest);
+    } catch (error) {
+        toast.error(error?.message);
+        console.error(error);
+        return;
+    }
 }
 
 // Verify registration-otp
 export const verifyRegistration = async (otp) => {
-    // const rawPassword = registrationRequest?.password || "";
-    // if (!Validator.isPasswordValid(rawPassword)) return Promise.reject("Bad password");
-   return await AxiosConfig.authAxiosInstance.post(`${AUTH_SERVICE_BASE_API_URL}/verify-account`, otp);
+    try {
+        return await AxiosConfig.authAxiosInstance.post(`${AUTH_SERVICE_BASE_API_URL}/verify-account`, otp);
+    } catch (error) {
+        toast.error(error?.message);
+        console.error(error);
+        return;
+    }
 }
 
 export const login = async (loginRequest) => {
-    // if (!Validator.isPasswordValid(loginRequest?.password || "")) return Promise.reject("Bad password");
-    return await AxiosConfig.authAxiosInstance.post(`${AUTH_SERVICE_BASE_API_URL}/login`, loginRequest);
+    try {
+        return await AxiosConfig.authAxiosInstance.post(`${AUTH_SERVICE_BASE_API_URL}/login`, loginRequest);
+    } catch (error) {
+        toast.error(error?.message);
+        console.error(error);
+        return;
+    }
 }
 
-export const logoutBackendApi = async () => await AxiosConfig.authAxiosInstance.post(`${AUTH_SERVICE_BASE_API_URL}/logout`);
+export const logoutBackendApi = async () => {
+    try {
+        return await AxiosConfig.authAxiosInstance.post(`${AUTH_SERVICE_BASE_API_URL}/logout`);
+    } catch (error) {
+        toast.error(error?.message);
+        console.error(error);
+        return;
+    }
+}
 
-export const getCurrentUser = async () => await AxiosConfig.authAxiosInstance.get(`${AUTH_SERVICE_BASE_API_URL}/me`);
+export const getCurrentUser = async () => {
+    try {
+        return await AxiosConfig.authAxiosInstance.get(`${AUTH_SERVICE_BASE_API_URL}/me`);
+    } catch (error) {
+        toast.error(error?.message);
+        console.error(error);
+        return;
+    }
+}

@@ -8,7 +8,7 @@ import { currencyFormater, percentageFormater } from '../helpers/formater';
 import { MAIN_LINKS_FRONTEND } from '../links';
 
 const required = value => {
-  if(!value) return <span className='invalid-feedback d-block' >This field is required</span>
+  if(!value) return <span className='invalid-feedback d-block text-red-500 text-sm mt-1' >This field is required</span>
 }
 
 const CheckoutPage = () => {
@@ -45,20 +45,29 @@ const CheckoutPage = () => {
 
     setPlacingOrder(true);
 
-    const formData = new FormData();
+    const orderRequestItems = [];
 
-    console.log(cartItems);
+    cartItems?.forEach(item=> {
+      const i = {};
+      i.id = item?.id;
+      i.skuCode = item.skuCode;
+      i.quantity = item.quantity;
 
-    formData.append("username", username);
-    formData.append("items", new Blob([JSON.stringify(cartItems)], { type: "application/json" }));
-    formData.append("shipping-address", new Blob([JSON.stringify({
-      id: "1234567890",
-      city: "Eldoret",
-      zip: "3160",
-      country: "Kenya"
-    })], {type: "application/json"}));
+      orderRequestItems.push(i);
+    });
 
-    await createNewOrder(formData).then(res => {
+    const data = {
+      username,
+      items: orderRequestItems,
+      shippingAddress: {
+        id: "1234567890",
+        city: "Eldoret",
+        zip: "3160",
+        country: "Kenya"
+      }
+    };
+
+    await createNewOrder(data).then(res => {
       console.log(res);
       if (res?.data) dispatch(clearCart());
     }).finally(() => {
@@ -136,11 +145,23 @@ const CheckoutPage = () => {
               <span className='text-lg'>Total Checkout</span>
               <span className='text-lg'>{currencyFormater.format(totalCheckout)}</span>
             </div>
+
+            {/* Checkout */}
+            <button
+              disabled={placingOrder}
+              onClick={handlePlaceOrder}
+              className="w-full py-3 mt-8 text-white transition rounded-lg bg-primary dark:bg-primary-600 hover:bg-primary-600 dark:hover:bg-primary-700"
+            >
+              {placingOrder
+                ? <div className='flex justify-center w-6 h-6 mx-auto border-4 border-t-4 border-orange-500 border-solid rounded-full animate-spin'></div>
+                : <span>Checkout</span>
+              }
+            </button>
           </div>
         </div>
 
         {/* Cart Summary */}
-        <div className="p-6 mt-8 bg-white rounded-lg shadow dark:bg-gray-700">
+        {/* <div className="p-6 mt-8 bg-white rounded-lg shadow dark:bg-gray-700">
         <h2 className="mb-4 text-xl font-medium text-gray-800 dark:text-gray-100">Shipping details</h2>
           <div className="space-y-4">
             <div className="flex justify-between">
@@ -160,19 +181,9 @@ const CheckoutPage = () => {
               <span>$85.00</span>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Checkout Button */}
-        <button
-          disabled={placingOrder}
-          onClick={handlePlaceOrder}
-          className="w-full py-3 mt-8 text-white transition rounded-lg bg-primary dark:bg-primary-600 hover:bg-primary-600 dark:hover:bg-primary-700"
-        >
-          {placingOrder
-            ? <div className='flex justify-center w-6 h-6 mx-auto border-4 border-t-4 border-orange-500 border-solid rounded-full animate-spin'></div>
-            : <span>Checkout</span>
-          }
-        </button>
 
         <Link
           to={"/"}

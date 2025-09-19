@@ -110,7 +110,7 @@ const ProductCard = ({ product }) => {
           src={product?.imageUrl} 
           alt={product?.name} 
           style={{ objectFit: "cover" }}
-          className='w-full object-cover rounded-md'/>
+          className='flex w-full object-cover rounded-md text-sm font-sans'/>
       </div>
 
       {/* Info */}
@@ -119,16 +119,14 @@ const ProductCard = ({ product }) => {
 
           {/* Name */}
           <div className='flex flex-col justify-between mt-2'>
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">{product?.name}</h3>
+            <h3 className="text-lg text-gray-700 dark:text-gray-300">{product?.name}</h3>
             <p className="text-sm font-thin text-gray-500 dark:text-gray-500">{product?.category}</p>
           </div>
           
           {/* Price */}
           <div className='flex flex-col items-center justify-between mt-2'>
             <p className="text-lg font-semibold text-orange-600 dark:text-orange-400">{currencyFormater.format(discountedPrice)}</p>
-            {product?.percent_discount > 0 && (
-              <p className="text-sm text-gray-400 line-through dark:text-gray-600">${product?.price.toFixed(2)}</p>
-            )}
+            {product?.percent_discount > 0 && <p className="text-sm text-gray-400 line-through dark:text-gray-600">${product?.price.toFixed(2)}</p> }
           </div>
         </div>
 
@@ -154,9 +152,11 @@ const ProductCard = ({ product }) => {
           </>
         )}
 
-        <span className='text-sm text-gray-500'>
-          {product.desc}
-        </span>
+        <div className='rounded-sm my-2'>
+          <span className='text-nowrap overflow-hidden text-gray-500'>
+            {product?.desc}
+          </span>
+        </div>
 
         <div className='flex w-full rounded-2xl'>
           <AddToCartBtn product={product} />

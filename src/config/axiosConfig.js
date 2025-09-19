@@ -1,8 +1,8 @@
-import apiGatewayAxiosInstance from '../config/axiosInstance'
+import apiGatewayAxiosInstance, { apiKeycloakAxiosInstance } from '../config/axiosInstance'
 
 
 // Axios instance for auth-related requests
-const authAxiosInstance = apiGatewayAxiosInstance;
+const authAxiosInstance = apiKeycloakAxiosInstance;
 
 // Axios instance for user-related requests
 const userAxiosInstance = apiGatewayAxiosInstance;

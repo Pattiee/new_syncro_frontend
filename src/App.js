@@ -39,12 +39,7 @@ const App = () => {
   const hideCartOn = ['/auth', '/cart', '/checkout', '/admin/*'];
   const showFloatingCheckoutButton = ['/cart'];
   const cartItems = useSelector(state => state?.cart?.items || []); 
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  
-  useEffect(() => {
-    dispatch(checkAuth());
-  }, [dispatch, navigate]);                                                                                                                                                                                                                                                                                                                                                                                                           
+                                                                                                                                                                                                                                                                                                                                                                                                          
 
   return (
     <div className="relative min-h-screen text-gray-900 bg-gray-100 dark:bg-gray-900">

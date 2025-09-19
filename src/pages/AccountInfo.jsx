@@ -1,5 +1,4 @@
 import React, { useEffect, useState, Suspense, useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../slices/authSlice';
 import { logoutBackendApi } from '../services/auth.service';
@@ -12,55 +11,47 @@ import { ProfileArticle } from '../articles/ProfileArticle'
 import { AddressArticle } from '../articles/AddressArticle'
 import { TabButton } from '../components/TabButton';
 import { MAIN_LINKS_FRONTEND } from '../links';
+import { useKeycloak } from '@react-keycloak/web';
 
 
 const SHOP_NAME = process.env.REACT_APP_SHOP_NAME
 const year = new Date().getFullYear();
 
 const AccountInfo = () => {
-  const user = useSelector(s => s.auth?.user);
-  const dispatch = useDispatch();
+
+  const { keycloak, initialized } = useKeycloak();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
   const [logoutLoading, setLogoutLoading] = useState(false);
   const [ordersLoading, setOrdersLoading] = useState(false);
 
-  const [orders, setOrders] = useState([]);
-  
+  const [orders, setOrders] = useState([]);  
 
   // Separate logout handler
-  const handleLogout = useCallback(async () => {
-    if (logoutLoading) return;
-    setLogoutLoading(true);
-    try {
-      const res = await logoutBackendApi();
-      dispatch(logout());
-      localStorage.removeItem('authState');
-      toast.success(res.data);
-      navigate(MAIN_LINKS_FRONTEND.HOME);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLogoutLoading(false);
-    }
-  }, [dispatch, navigate, logoutLoading]);
+  const handleLogout = () => keycloak.logout();
 
   // Fetch orders
   useEffect(() => {
-    if (!user || !user?.username) navigate(MAIN_LINKS_FRONTEND.HOME, { replace: true });
-    (async () => {
-      setOrdersLoading(true);
-      try {
-        const res = await getOrders({ username: user?.username || undefined });
-        setOrders(res.data || []);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setOrdersLoading(false);
-      }
-    })();
-  }, [user, navigate]);
+    console.log(keycloak.authenticated);
+    if (!keycloak.authenticated) {
+      return navigate(MAIN_LINKS_FRONTEND.HOME, { replace: true });
+    } else {
+      (async () => {
+        setOrdersLoading(true);
+        try {
+          const res = await getOrders({ username: keycloak.tokenParsed?.email || undefined });
+          setOrders(res.data || []);
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setOrdersLoading(false);
+        }
+      })();
+    }
+  }, [keycloak, navigate]);
 
+  // Initialize auth state
+  if (!initialized) return <Loader message='Loading current user'/>
 
   /* ───────────────── UI ──────────────────── */
   return (
@@ -69,11 +60,11 @@ const AccountInfo = () => {
         <header className="bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
           <div className="flex items-center gap-4 mt-4">
             <div className="flex items-center justify-center w-10 h-10 text-lg font-semibold text-white bg-orange-500 rounded-full">
-              {user?.username?.[0]?.toUpperCase() || 'U'}
+              {keycloak.tokenParsed?.preferred_username}
             </div>
             <div>
               <p className="font-medium text-gray-700 dark:text-gray-200">Welcome,</p>
-              <p className="font-semibold text-gray-900 dark:text-white">{user?.name || user?.username}</p>
+              <p className="font-semibold text-gray-900 dark:text-white">{keycloak.tokenParsed?.preferred_username}</p>
             </div>
           </div>
           <nav className="flex items-center justify-between max-w-6xl px-4 py-3 mx-auto"></nav>
@@ -104,7 +95,7 @@ const AccountInfo = () => {
           </aside>
 
           <div className="md:col-span-4">
-            {activeTab === 'profile' && <ProfileArticle user={user} />}
+            {/* {activeTab === 'profile' && <ProfileArticle user={user} />} */}
             {activeTab === 'orders' && <OrdersArticle loading={ordersLoading} orders={orders} />}
             {activeTab === 'address' && <AddressArticle />}
             {activeTab === 'settings' && <p>Settings coming soon...</p>}

@@ -41,11 +41,10 @@ const AddToCartBtn = ({ product }) => {
 
   const handleDecrementQuantity = e => {
     e.stopPropagation();
-    dispatch(decrementCartItemQuantity(product.id));
+    dispatch(decrementCartItemQuantity(product?.id ?? ''));
   };
 
-  const baseButtonStyles =
-    'h-10 w-10 flex items-center justify-center rounded-full text-white shadow transition-all duration-300 transform active:scale-90 select-none';
+  const baseButtonStyles = 'h-10 w-10 flex items-center justify-center rounded-full text-white shadow transition-all duration-300 transform active:scale-90 select-none';
   const disabledStyles = maxReached || outOfStock ? 'opacity-50 cursor-not-allowed' : '';
 
   // Fixed width for container — tweak as needed to fit your layout nicely
@@ -86,16 +85,15 @@ const AddToCartBtn = ({ product }) => {
       ) : (
           <>
             <button
-  onClick={handleAddToCart}
-  disabled={outOfStock}
-  aria-label={outOfStock ? 'Out of Stock' : 'Add to Cart'}
-  className={`h-10 px-6 bg-orange-500 hover:bg-orange-600 text-white text-sm sm:text-base font-medium 
-    rounded-full shadow transition-all duration-300 transform active:scale-95 select-none w-full 
-    flex items-center justify-center gap-2 ${disabledStyles}`}
->
-  <ShoppingCart size={20} />
-  {outOfStock ? 'Out of Stock' : 'Add'}
-</button>
+            onClick={handleAddToCart}
+            disabled={outOfStock}
+            aria-label={outOfStock ? 'Out of Stock' : 'Add to Cart'}
+            className={`h-10 px-6 bg-orange-500 hover:bg-orange-600 text-white text-sm sm:text-base font-medium 
+              rounded-full shadow transition-all duration-300 transform active:scale-95 select-none w-full 
+              flex items-center justify-center gap-2 ${disabledStyles}`}>
+                <ShoppingCart size={20} />
+                { outOfStock ? 'Out of Stock' : 'Add' }
+                </button>
 
           </>
       )}

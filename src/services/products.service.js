@@ -36,15 +36,15 @@ export const getProducts = async ({ id, category = "", isFeatured, search = "" }
       return await AxiosConfig.productsAxiosInstance.get(PRODUCTS_SERVICE_BASE_URL, { params });
     } catch (error) {
       toast.error(error.message);
+      return;
     }
 };
 
 // getCategories
 export const getCategories = async ({ id }) => {
-  const params = {};
-  params.id = id;
-  
   try {
+    const params = {};
+    params.id = id;
     return await AxiosConfig.productsAxiosInstance.get(`${PRODUCTS_SERVICE_BASE_URL}/categories`, { params });
   } catch (error) {
     toast.error(error.message);
@@ -85,7 +85,6 @@ export const getProductById = async (productId) => {
       return;
     }
   };
-  return;
 };
 
 // Delete product using path variable `id`
@@ -100,5 +99,4 @@ export const deleteProductById = async (productId) => {
       return;
     }
   };
-  return;
 };

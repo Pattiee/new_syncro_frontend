@@ -1,5 +1,5 @@
 import React, { Fragment, Suspense, useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from 'framer-motion';
 import ProductReviews from '../components/Product/ProductReviews';
 import RelatedProducts from '../components/Product/RelatedProducts';
@@ -41,28 +41,22 @@ const ProductDetailsPage = () => {
   } 
 
   useEffect(() => {
-    const fetchProduct = async () => {      
-      await getProducts({ id: productId }).then(res => {
-        // console.log(res.data?.body)
+    const fetchProduct = async () => {
+      try {
+        const res = await getProducts({ id: productId });
         if (res) setProduct(res.data?.body);
-      }).catch(err => {
-        toast.error(err?.message || "Error fetching product");
-        navigate("/cart");
-      }).finally(() => {
+      } catch (error) {
+        navigate("/", {replace: true, })
+      } finally {
         setLoading(false);
-      });
+      }
     };
     
     if (productId) fetchProduct();
-  }, [productId, navigate, product]);
+  }, [productId, navigate]);
 
   if (loading) return (<Loader message={"Loading."}/>);
 
-  // if (loading) return (
-  //   <div className="flex items-center justify-center p-6">
-  //     <div className="w-8 h-8 border-4 border-t-4 border-orange-500 border-solid rounded-full animate-spin"></div>
-  //   </div>
-  // );
 
   const discounted = product?.percent_discount > 0;
   const discountPrice = discounted
@@ -87,8 +81,8 @@ const ProductDetailsPage = () => {
                 }}/>
             </div>
 
-            <div className="flex flex-col justify-between">
-              <div>
+            <div className="h-full p-2 rounded-2xl">
+              <div className='p-2 rounded-lg justify-between'>
                 <h1 className="mb-3 text-3xl font-bold text-gray-800 dark:text-white">{product?.name}</h1>
 
                 {product?.condition && (
@@ -106,21 +100,18 @@ const ProductDetailsPage = () => {
                 )}
 
                 <div className="mb-3">
-                  {discounted && (
-                    <p className="text-base text-gray-400 line-through">{ currencyFormater.format(product?.price.toFixed(2)) }</p>
-                  )}
                   <div className="flex items-center gap-2">
-                    {product && (
-                      <p className="text-2xl font-semibold text-orange-600 dark:text-orange-400">
-                        {currencyFormater.format(discountPrice)}
-                      </p>
-                    )}
+                    {product && <p className="text-2xl font-semibold text-orange-600 dark:text-orange-400"> {currencyFormater.format(discountPrice)} </p> }
                     
                     {discounted && (
                       <span className="px-2 py-1 text-xs font-medium text-green-600 bg-green-100 rounded-full dark:bg-green-200">
                         -{product?.percent_discount}% OFF
                       </span>
                     )}
+                  </div>
+
+                  <div>
+                    {discounted && <p className="text-sm text-gray-400 line-through">{ currencyFormater.format(product?.price.toFixed(2)) }</p> }
                   </div>
                 </div>
 
@@ -145,17 +136,25 @@ const ProductDetailsPage = () => {
                 </p>
               </div>
 
-              <div className="flex flex-row justify-between">
-                { product && <AddToCartBtn product={product}/>}             
-                {user && user?.roles?.includes(ROLES.ADMIN) && (
-                  <button
-                    disabled={deleting || loading}
-                    onClick={handleDeleteProduct}
-                    className={`${ deleting || loading ? 'bg-red-300 hover:bg-red-400' : 'bg-red-500 hover:bg-red-600' } px-6 py-3 text-sm font-medium text-white transition-all duration-300 rounded-full shadow`}
-                  >
-                    Delete
-                  </button>
-                )}
+              <div className="flex px-4 py-2 rounded-lg justify-between">
+                
+                {/* Add to cart */}
+                <div>
+                  { product && <AddToCartBtn product={product}/>}             
+                </div>
+
+                {/* Delete product */}
+                <div>
+                  {user && user?.roles?.includes(ROLES.ADMIN) && (
+                    <button
+                      disabled={deleting || loading}
+                      onClick={handleDeleteProduct}
+                      className={`${ deleting || loading ? 'bg-red-300 hover:bg-red-400' : 'bg-red-500 hover:bg-red-600' } px-6 py-3 text-sm font-medium text-white transition-all duration-300 rounded-full shadow`}
+                    >
+                      Delete
+                    </button>
+                  )}
+                  </div>
                 </div>
 
 

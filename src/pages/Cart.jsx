@@ -14,16 +14,14 @@ const Cart = () => {
 
     const cartTotals = cartItems?.reduce((sum, item) => sum + item?.price * item?.quantity, 0);
 
-    const handleClearCart = () => {
-        dispatch(clearCart());
-    }
+    const handleClearCart = () => dispatch(clearCart());
 
     const handleRemoveCartItem = (id) => (e) => {
         e.stopPropagation();
         dispatch(removeItem(id ?? ''));
     }
 
-    const handleNavigateToProduct = (id) => {
+    const handleNavigateToProduct = id => {
         if (id) navigate(`/product?id=${id}`);
     }
 
@@ -38,7 +36,7 @@ const Cart = () => {
     const handleNavigateHome = () => navigate('/');
 
     return (
-        <div className='max-w-xl p-6 mx-auto mt-10 bg-white shadow-lg dark:bg-gray-800 rounded-2xl sm:px-8 sm:py-10'>
+        <div className='max-w-xl p-6 m-auto bg-white shadow-xl dark:bg-gray-800 rounded-2xl sm:px-8 sm:py-10'>
             <h2 className='mb-6 text-2xl font-bold text-center text-orange-600 dark:text-orange-400'>Your cart</h2>
             {cartItems?.length > 0 && (
                 <>
@@ -83,23 +81,23 @@ const Cart = () => {
                 <p className='mt-6 text-center text-gray-400'>Your cart is empty.</p>
             )}
 
-            <div className='flex justify-between mt-6'>
+            <div className='flex rounded-3xl justify-between mt-3'>
                 {/* Clear cart */}
-                <button
+                <p
                     disabled={ cartItems?.length <= 0 }
                     onClick={handleClearCart}
-                    className='px-4 py-2 text-red-500 transition border-none rounded-full dark:text-red-400 hover:bg-red-100 dark:hover:bg-orange-900 disabled:opacity-50 disabled:cursor-not-allowed hover:disabled:bg-transparent dark:hover:disabled:bg-transparent'
+                    className='px-4 font-mono py-2 text-red-500 transition border-none rounded-full dark:text-red-400 hover:bg-red-100 dark:hover:bg-orange-900 disabled:opacity-50 disabled:cursor-not-allowed hover:disabled:bg-transparent dark:hover:disabled:bg-transparent'
                 >
                     Clear cart
-                </button>
+                </p>
 
                 {/* Continue shopping */}
-                <button
+                <p
                     onClick={handleNavigateHome}
-                    className='flex px-4 py-2 text-orange-600 transition border border-orange-500 rounded-full float-end just dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900'
+                    className='flex px-4 py-2 text-orange-600 transition border-none border-orange-500 rounded-full float-end font-mono dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900'
                 >
                     Continue Shopping
-                </button>
+                </p>
             </div>
         </div>
     )

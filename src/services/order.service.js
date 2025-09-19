@@ -16,17 +16,26 @@ export const createNewOrder = async (formData) => {
 
 export const getOrders = async ({ username, orderId }) => {
     if (username) {
-        const body = {};
-        
-        body.username = username;
-        if (orderId) body.oid = orderId;
-        return await AxiosConfig.ordersAxiosInstance.post(`${ORDER_SERVICE_BASE_URL}/my-orders`, body);
+        try {
+            const body = {};
+            
+            body.username = username;
+            if (orderId) body.oid = orderId;
+            return await AxiosConfig.ordersAxiosInstance.post(`${ORDER_SERVICE_BASE_URL}/my-orders`, body);
+        } catch (error) {
+            console.error(error);
+            return;
+        }
     }
 }
 
 
 export const cancelOrder = async ({ orderId }) => {
-    const params = {};
-    if (orderId) params.id = orderId;
-    return await AxiosConfig.ordersAxiosInstance.patch(ORDER_SERVICE_BASE_URL, null, { params });
+    try {
+        const params = {};
+        if (orderId) params.id = orderId;
+        return await AxiosConfig.ordersAxiosInstance.patch(ORDER_SERVICE_BASE_URL, null, { params });
+    } catch (error) {
+        console.error(error);
+    }
 }

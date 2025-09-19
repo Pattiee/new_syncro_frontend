@@ -66,7 +66,6 @@ const AuthPage = () => {
       if (isLogin) {
         const res = await login({ username, password });
         toast.success(res.data);
-        dispatch(checkAuth());
         navigate('/');
       } else if (!isLogin && showOtpInput) { 
         const otpBody = {
