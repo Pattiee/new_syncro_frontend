@@ -1,13 +1,11 @@
-import React, { Fragment, Suspense, useEffect, useState } from 'react';
-import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { Fragment, Suspense, useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from 'framer-motion';
 import ProductReviews from '../components/Product/ProductReviews';
 import RelatedProducts from '../components/Product/RelatedProducts';
 import ProductDetails from '../components/Product/ProductDetails'
-import NavBar from '../components/NavBar'
-import { deleteProductById, getProductById, getProducts } from '../services/products.service';
+import { deleteProductById, getProducts } from '../services/products.service';
 import { useDispatch, useSelector } from 'react-redux';
-import { addItem, decrementCartItemQuantity } from '../slices/cartSlice';
 import toast from 'react-hot-toast';
 import { ROLES } from '../roles';
 import AddToCartBtn from '../components/AddToCartBtn';
@@ -21,12 +19,12 @@ const ProductDetailsPage = () => {
   const [ searchParams ] = useSearchParams();
   const productId = searchParams.get('id');
 
-  const user = useSelector(state => state?.auth?.user);
+  const userProfile = useSelector(state => state?.auth?.userProfile);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleDeleteProduct = async () => {
-    if (!product || !user?.roles?.includes(ROLES.ADMIN)) return;
+    if (!product || !userProfile?.roles?.includes(ROLES.ADMIN)) return;
     const { id } = product;
 
     setDeleting(true);
@@ -41,6 +39,10 @@ const ProductDetailsPage = () => {
   } 
 
   useEffect(() => {
+    
+  }, [productId, navigate]);
+
+  useEffect(() => {
     const fetchProduct = async () => {
       try {
         const res = await getProducts({ id: productId });
@@ -53,7 +55,14 @@ const ProductDetailsPage = () => {
     };
     
     if (productId) fetchProduct();
-  }, [productId, navigate]);
+  }, [navigate, productId]);
+
+  // useEffect(() => {
+  //   const timeout = setTimeout(() => {
+      
+  //   }, 5000);
+  //   return () => clearTimeout(timeout);
+  // }, []);
 
   if (loading) return (<Loader message={"Loading."}/>);
 
@@ -65,7 +74,7 @@ const ProductDetailsPage = () => {
 
   return (
     <Fragment>
-      <Suspense name='Product details suspense' fallback={<Loader />}>
+      <Suspense name='Product details suspense'>
         <motion.div
           className="max-w-6xl px-6 py-24 mx-auto bg-gray-50 dark:bg-gray-900"
           initial={{ opacity: 0, y: 30 }}
@@ -78,7 +87,13 @@ const ProductDetailsPage = () => {
                 className="w-full h-full transition-all duration-300 ease-in-out transform bg-center bg-cover hover:scale-105"
                 style={{
                   backgroundImage: `url(${product?.imageUrls[0] || 'https://via.placeholder.com/500'})`,
-                }}/>
+                }}
+                >
+                  <img src={product?.imageUrls[0] ?? product?.imageUrls[1]} alt={product?.name} />
+                  
+                  {/* Images section */}
+                  {/* {product?.imageUrls?.forEach(imageUrl => <img src={imageUrl} alt={product?.name}/>)} */}
+                </div>
             </div>
 
             <div className="h-full p-2 rounded-2xl">
@@ -145,7 +160,7 @@ const ProductDetailsPage = () => {
 
                 {/* Delete product */}
                 <div>
-                  {user && user?.roles?.includes(ROLES.ADMIN) && (
+                  {userProfile && userProfile?.roles?.includes(ROLES.ADMIN) && (
                     <button
                       disabled={deleting || loading}
                       onClick={handleDeleteProduct}

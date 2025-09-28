@@ -1,7 +1,7 @@
 // src/layouts/AdminLayout.jsx
 import React, { Fragment } from 'react';
 import { Outlet, Link } from 'react-router-dom';
-import Navbar from '../components/NavBar';
+import Navbar from '../components/nav/NavBar';
 import { ADMIN_LINKS_FRONTEND } from '../links';
 
 const AdminLayout = () => {

@@ -1,40 +1,61 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import { Provider, useSelector } from 'react-redux';
-import { AuthProvider } from './contexts/AuthProvider';
-import { BrowserRouter } from 'react-router-dom';
-import { initApp } from './store';
-import keycloak, { initKeycloak } from '../src/config/keycloak-config';
-import { ReactKeycloakProvider } from '@react-keycloak/web';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import { Provider } from "react-redux";
+import { AuthProvider } from "./contexts/AuthProvider";
+import { BrowserRouter } from "react-router-dom";
+import { initStore } from "./store";
+import keycloak, { initKeycloak } from "./config/keycloak";
+import { ReactKeycloakProvider } from "@react-keycloak/web";
+import { clearAuth, setAuth, setLoading } from "./slices/authSlice";
+import { ThemeProvider } from "./contexts/ThemeProvider";
+import { setStore } from "./services/apiClient";
 
+const root = ReactDOM.createRoot(document.getElementById("root"));
 
-// ThemeWrapper component
-const ThemeWrapper = ({ children }) => {
-  const theme = useSelector(state => state?.theme?.theme);
+const bootstrap = async () => {
 
-  React.useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-  }, [theme]);
+  // 2. Use token to load store from Redis
+  const store = await initStore(keycloak.token);
+  
+  setStore(store); // inject store into apiClient
 
-  return children;
-}
+  const onKeycloakEvent = (event) => {
+    if (event === "onAuthSuccess" || event === "onAuthRefreshSuccess") {
+      store.dispatch(
+        setAuth({
+          isAuthenticated: keycloak.authenticated ?? false,
+          token: keycloak?.token ?? "",
+          refreshToken: keycloak?.refreshToken ?? "",
+          userProfile: keycloak?.tokenParsed,
+        })
+      );
+    } else if (event === "onAuthLogout") {
+      store.dispatch(clearAuth());
+    } else if (event === "onReady") {
+      store.dispatch(setLoading(false));
+    }
+  };
 
-initApp().then((store) => {
-  const root = ReactDOM.createRoot(document.getElementById('root'));
-
+  // 3. Render App
   root.render(
-      <ReactKeycloakProvider authClient={keycloak} initOptions={initKeycloak}>
-        <Provider store={store}>
-          <ThemeWrapper>
-            <BrowserRouter>
-              <AuthProvider>
-                <App />
-              </AuthProvider>
-            </BrowserRouter>
-          </ThemeWrapper>
-        </Provider>
+    <Provider store={store}>
+      <ReactKeycloakProvider
+        authClient={keycloak}
+        initOptions={initKeycloak}
+        onEvent={onKeycloakEvent}
+      >
+        <ThemeProvider>
+          <BrowserRouter>
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+          </BrowserRouter>
+        </ThemeProvider>
       </ReactKeycloakProvider>
+    </Provider>
   );
-});
+};
+
+bootstrap();

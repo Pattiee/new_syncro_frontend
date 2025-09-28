@@ -1,56 +1,52 @@
-// import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-// import { getCurrentUser } from "../services/auth.service";
+import { createSlice } from "@reduxjs/toolkit";
 
+const initialState = {
+  isAuthenticated: false,
+  token: null,
+  refreshToken: null,
+  isLoading: true,
+  userProfile: null,
+  status: "idle",   // added to support async flows
+  error: null,      // added to support error tracking
+};
 
-// export const checkAuth = createAsyncThunk('auth/checkAuth', async () => {
-//     const res = await getCurrentUser();
-//     return res?.data ? res.data : null;
-// });
+export const authSlice = createSlice({
+  name: "auth",
+  initialState,
+  reducers: {
+    setAuth: (state, action) => {
+      state.isAuthenticated = action.payload?.isAuthenticated ?? false;
+      state.token = action.payload?.token ?? "";
+      state.refreshToken = action.payload?.refreshToken ?? "";
+      state.userProfile = action.payload?.userProfile ?? null;
+    },
+    clearAuth: (state) => {
+      state.isAuthenticated = false;
+      state.token = null;
+      state.refreshToken = null;
+      state.userProfile = null;
+    },
+    setLoading: (state, action) => {
+      state.isLoading = action.payload;
+    },
+    setStatus: (state, action) => {
+      state.status = action.payload;
+    },
+    setError: (state, action) => {
+      state.error = action.payload;
+    },
+  },
+});
 
-// const initialState = {
-//     user: null,
-//     status: 'idle', // 'loading' | 'succeeded' | 'failed'
-//     error: null,
-// };
+// Actions
+export const { setAuth, clearAuth, setLoading, setStatus, setError } =
+  authSlice.actions;
 
-// const authSlice = createSlice({
-//     name: 'auth',
-//     initialState,
-//     reducers: {
-//         logout(state) {
-//             state.user = null;
-//         },
-//     },
-//     extraReducers: (builder) => {
-//         builder
-//             .addCase(checkAuth.pending, (state) => {
-//                 state.status = 'loading';
-//                 state.error = null;
-//             })
-//             .addCase(checkAuth.fulfilled, (state, action) => {
-//                 state.user = {
-//                     username: action.payload?.username || '',
-//                     name: action.payload?.name || '',
-//                     roles: action.payload?.roles || [],
-//                 };
-//                 state.status = 'succeeded';
-//             })
-//             .addCase(checkAuth.rejected, (state, action) => {
-//                 state.user = null;
-//                 state.status = 'failed';
-//                 state.error = action.error.message;
-//             });
-//     }
-// });
+// Reducer
+export default authSlice.reducer;
 
-// // Actions
-// export const { logout } = authSlice.actions;
-
-// // Reducer
-// export default authSlice.reducer;
-
-// // Selectors
-// export const selectCurrentUser = state => state?.auth?.user;
-// export const selectAuthStatus = state => state?.auth?.status;
-// export const selectAuthError = state => state?.auth?.error;
-// export const selectIsAuthenticated = state => !!state?.auth?.user;
+// Selectors
+export const selectCurrentUser = state => state?.auth?.userProfile;
+export const selectAuthStatus = state => state?.auth?.status;
+export const selectAuthError = state => state?.auth?.error;
+export const selectIsAuthenticated = state => state?.auth?.isAuthenticated;

@@ -1,27 +1,27 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useQuery } from '../../hooks/useQuery'
 import { cancelOrder, getOrders } from '../../services/order.service';
-import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { ShippingAddress } from '../../components/shipping/ShippingAddress';
 import { Loader } from '../../components/Loader';
 import { OrderItems } from '../../components/orders/OrderItems';
 import { PaymentDetails } from '../../components/payment/PaymentDetails';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { MAIN_LINKS_FRONTEND } from '../../links';
 import toast from 'react-hot-toast';
+import { useKeycloak } from '@react-keycloak/web';
 
 export const OrderDetails = () => {
   const [order, setOrder] = useState(null);
   const [loadingOrder, setLoadingOrder] = useState(true);
   const query = useQuery();
-  const username = useSelector(state => state?.auth?.user?.username);
+  const { keycloak } = useKeycloak();
   const orderId = query.get("id");
   const navigate = useNavigate();
 
   useEffect(() => {
     const loadOrder = async () => {
-      await getOrders({ username, orderId }).then(res => {
+      await getOrders({ username: keycloak.tokenParsed?.email, orderId }).then(res => {
         if (res) {
           console.log(res.data);
           setOrder(res.data);
@@ -33,9 +33,9 @@ export const OrderDetails = () => {
       });
     }
     loadOrder();
-  }, [orderId, username]);
+  }, [orderId, keycloak.tokenParsed?.email]);
 
-  if (!loadingOrder && !order) navigate(MAIN_LINKS_FRONTEND.HOME, { replace: true });
+  // if (!loadingOrder && !order) navigate(MAIN_LINKS_FRONTEND.HOME, { replace: true });
   
   const handleCancelOrder = async () => {
     await cancelOrder({ orderId }).then(res => {

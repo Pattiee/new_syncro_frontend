@@ -1,10 +1,7 @@
-import React, { useEffect, useState, Suspense, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { logout } from '../slices/authSlice';
-import { logoutBackendApi } from '../services/auth.service';
-import toast from 'react-hot-toast';
+import { useEffect, useState, Suspense } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { getOrders } from '../services/order.service';
-import { ChevronRight, MapPinIcon, Settings, TruckIcon, User } from 'lucide-react';
+import { MapPinIcon, Settings, TruckIcon, User } from 'lucide-react';
 import { OrdersArticle } from '../articles/OrdersArticle';
 import { Loader } from '../components/Loader'
 import { ProfileArticle } from '../articles/ProfileArticle'
@@ -22,7 +19,6 @@ const AccountInfo = () => {
   const { keycloak, initialized } = useKeycloak();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
-  const [logoutLoading, setLogoutLoading] = useState(false);
   const [ordersLoading, setOrdersLoading] = useState(false);
 
   const [orders, setOrders] = useState([]);  
@@ -32,22 +28,19 @@ const AccountInfo = () => {
 
   // Fetch orders
   useEffect(() => {
-    console.log(keycloak.authenticated);
-    if (!keycloak.authenticated) {
-      return navigate(MAIN_LINKS_FRONTEND.HOME, { replace: true });
-    } else {
-      (async () => {
-        setOrdersLoading(true);
-        try {
-          const res = await getOrders({ username: keycloak.tokenParsed?.email || undefined });
-          setOrders(res.data || []);
-        } catch (e) {
-          console.error(e);
-        } finally {
-          setOrdersLoading(false);
-        }
-      })();
-    }
+    if (!keycloak.authenticated) return navigate(MAIN_LINKS_FRONTEND.HOME, { replace: true });
+    
+    (async () => {
+      setOrdersLoading(true);
+      try {
+        const res = await getOrders({ username: keycloak.tokenParsed?.preferred_username || undefined });
+        setOrders(res.data || []);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setOrdersLoading(false);
+      }
+    })();
   }, [keycloak, navigate]);
 
   // Initialize auth state
@@ -57,17 +50,35 @@ const AccountInfo = () => {
   return (
     <Suspense fallback={<Loader/>}>
       <main className="min-h-screen text-gray-800 bg-gray-50 dark:bg-gray-900 dark:text-gray-100">
-        <header className="bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-          <div className="flex items-center gap-4 mt-4">
-            <div className="flex items-center justify-center w-10 h-10 text-lg font-semibold text-white bg-orange-500 rounded-full">
-              {keycloak.tokenParsed?.preferred_username}
+        <header className="flex bg-orange-500 shadow border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+          <div className="flex p-1 items-center px-2">
+            <div className="flex items-center justify-center m-2 w-12 h-12 text-lg font-semibold dark:text-gray-700 text-orange-500 bg-white rounded-full">
+              {keycloak.tokenParsed?.email[0]?.toUpperCase()}
             </div>
-            <div>
-              <p className="font-medium text-gray-700 dark:text-gray-200">Welcome,</p>
-              <p className="font-semibold text-gray-900 dark:text-white">{keycloak.tokenParsed?.preferred_username}</p>
+            <div className='p-1'>
+              <p className="font-medium text-lg text-gray-100">{keycloak.tokenParsed?.given_name}</p>
             </div>
           </div>
-          <nav className="flex items-center justify-between max-w-6xl px-4 py-3 mx-auto"></nav>
+
+          {/* Navigation bar */}
+          <nav className="flex items-center flex-1 justify-center px-4 py-3 mx-auto">
+            <div className=''>
+              <ul className='flex px-2 py-4'>
+                <li className='flex items-center text-base font-light px-2 text-white dark:text-gray-100 dark:hover:text-gray-50 hover:text-pretty hover:text-gray-700 transition'>
+                  <Link to={'/'}>Home</Link>
+                </li>
+                <li className='flex items-center text-base font-light px-2 text-white dark:text-gray-100 dark:hover:text-gray-50 hover:text-pretty hover:text-gray-700 transition'>
+                  <Link to={'/'}>Contact us</Link>
+                </li>
+              </ul>
+            </div>
+          </nav>
+
+          {/* InquerySection */}
+          <div className='flex flex-row items-center px-4 py-3 mx-auto'>
+            <span className='flex text-lg text-white font-medium'>Inquery?:</span>
+            <span className='flex text-gray-50 font-light px-2'>+254103877620</span>
+          </div>
         </header>
 
         <section className="max-w-6xl px-4 py-8 mx-auto md:grid md:grid-cols-5 md:gap-8">
@@ -79,23 +90,11 @@ const AccountInfo = () => {
               <TabButton icon={TruckIcon} isActive={activeTab === "orders"} label={"Orders"} onClick={() => setActiveTab('orders')} />
               <TabButton icon={MapPinIcon} isActive={activeTab === "address"} label={"Address"} onClick={() => setActiveTab('address')} />
               <TabButton icon={Settings} isActive={activeTab === "settings"} label={"Settings"} onClick={() => setActiveTab('settings')} />
-              
-              {/* Logout */}
-              <button
-                onClick={handleLogout}
-                disabled={logoutLoading}
-                className="flex items-center w-full gap-3 px-4 py-3 text-red-600 transition border border-red-400 rounded-lg dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900 disabled:opacity-60 focus:outline-none"
-              >
-                <ChevronRight className="w-5 h-5" />
-                <span className="flex-1 text-left">
-                  {logoutLoading ? 'Logging out…' : 'Logout'}
-                </span>
-              </button>
             </nav>
           </aside>
 
           <div className="md:col-span-4">
-            {/* {activeTab === 'profile' && <ProfileArticle user={user} />} */}
+            {activeTab === 'profile' && <ProfileArticle />}
             {activeTab === 'orders' && <OrdersArticle loading={ordersLoading} orders={orders} />}
             {activeTab === 'address' && <AddressArticle />}
             {activeTab === 'settings' && <p>Settings coming soon...</p>}

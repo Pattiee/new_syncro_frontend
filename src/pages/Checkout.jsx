@@ -1,21 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
-import { clearCart, placeOrder } from '../slices/cartSlice'
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { clearCart } from '../slices/cartSlice'
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { createNewOrder } from '../services/order.service';
 import { currencyFormater, percentageFormater } from '../helpers/formater';
 import { MAIN_LINKS_FRONTEND } from '../links';
+import { useKeycloak } from '@react-keycloak/web';
 
 const required = value => {
   if(!value) return <span className='invalid-feedback d-block text-red-500 text-sm mt-1' >This field is required</span>
 }
 
 const CheckoutPage = () => {
+  const { keycloak } = useKeycloak();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  // const user = useSelector(state => state.auth?.user);
-  const username = useSelector(state => state.auth?.user?.username);
   const cartItems = useSelector(state => state.cart?.items || []);
   const cartTotals = cartItems?.reduce((sum, item) => sum + item?.price * item?.quantity, 0).toFixed(2);
   const [valueAddedTaxPercent, setValueAddedTaxPercent] = useState(0);
@@ -25,12 +24,12 @@ const CheckoutPage = () => {
 
 
   useEffect(() => {
-    if (!username) navigate(MAIN_LINKS_FRONTEND.HOME, { replace: true });
+    if (!keycloak.authenticated) navigate(MAIN_LINKS_FRONTEND.HOME, { replace: true });
     const vatAmount = (valueAddedTaxPercent / 100) * cartTotals;
     setVatCharges(vatAmount);
     const gt = Number(cartTotals) + Number(vatAmount);
     setTotalCheckout(gt);
-  }, [cartTotals, valueAddedTaxPercent, username, navigate]);
+  }, [cartTotals, valueAddedTaxPercent, navigate, keycloak.authenticated]);
 
   useEffect(() => {
     const loadVATPercentage = async () => {
@@ -40,7 +39,7 @@ const CheckoutPage = () => {
   }, []);
 
   const handlePlaceOrder = async () => {
-    if (!username) navigate(MAIN_LINKS_FRONTEND.AUTH, { replace: true });
+    if (!keycloak.authenticated) return keycloak.login();
     if (!cartItems) navigate(MAIN_LINKS_FRONTEND.HOME, { replace: true });
 
     setPlacingOrder(true);
@@ -57,7 +56,7 @@ const CheckoutPage = () => {
     });
 
     const data = {
-      username,
+      username: keycloak.tokenParsed?.email ?? '',
       items: orderRequestItems,
       shippingAddress: {
         id: "1234567890",
@@ -68,7 +67,6 @@ const CheckoutPage = () => {
     };
 
     await createNewOrder(data).then(res => {
-      console.log(res);
       if (res?.data) dispatch(clearCart());
     }).finally(() => {
       setPlacingOrder(false);

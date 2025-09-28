@@ -1,47 +1,65 @@
 // store.js
 import { configureStore } from "@reduxjs/toolkit";
-import cartReducer from './slices/cartSlice';
-import themeReducer from './slices/themeSlice';
+import cartReducer, { setCart } from "./slices/cartSlice";
+import themeReducer from "./slices/themeSlice";
+import authReducer, { setAuth } from "./slices/authSlice";
+import { loadState, saveState } from "./config/persist";
 
-const loadState = async () => {
-    try {
-        const cart = localStorage.getItem('cartState');
-        const theme = localStorage.getItem('themeState');
-
-        return {
-            cart: cart ? JSON.parse(cart) : undefined,
-            theme: theme ? JSON.parse(theme) : undefined,
-        };
-    } catch (e) {
-        return undefined;
-    }
+// --- THEME from localStorage ---
+const loadThemeFromLocal = () => {
+  try {
+    return JSON.parse(localStorage.getItem("themeState")) || "light";
+  } catch {
+    return "light";
+  }
 };
 
-let store;
+// --- CREATE STORE synchronously (theme only initially) ---
+export const store = configureStore({
+  reducer: {
+    auth: authReducer,
+    cart: cartReducer,
+    theme: themeReducer,
+  },
+  preloadedState: {
+    theme: loadThemeFromLocal(),
+  },
+});
 
-export const initApp = async () => {
-    try {
-        const preloadedState = await loadState();
-    
-        store = configureStore({
-            reducer: {
-                cart: cartReducer,
-                theme: themeReducer,
-            },
-            preloadedState,
-        });
-    
-        // persist store updates
-        store.subscribe(() => {
-            const state = store.getState();
-            localStorage.setItem('cartState', JSON.stringify(state?.cart));
-            localStorage.setItem('themeState', JSON.stringify(state?.theme));
-        });
-        
-        return store;
-    } catch (error) {
-        
-    }
+// --- TOKEN for Redis persistence (set after Keycloak ready) ---
+let persistenceToken = null;
+export const setPersistenceToken = token => {
+  persistenceToken = token;
 };
 
-export const getStore = async () => store;
+// --- SUBSCRIBE: persist theme + Redis ---
+store.subscribe(() => {
+  const state = store.getState();
+
+  // Persist theme locally (always works even if Redis is down)
+  try {
+    localStorage.setItem("themeState", JSON.stringify(state.theme));
+  } catch (e) {
+    console.warn("Failed to persist theme:", e?.message || e);
+  }
+
+  // Persist cart/auth to Redis
+  if (persistenceToken) saveState(persistenceToken, { cart: state.cart, auth: state.auth });
+});
+
+// --- HYDRATE from Redis ---
+export const hydrateFromServer = async (token) => {
+  if (!token) return;
+  setPersistenceToken(token);
+
+  const serverState = await loadState(token);
+  if (!serverState) return;
+
+  if (serverState.auth) store.dispatch(setAuth(serverState.auth));
+  if (serverState.cart) store.dispatch(setCart(serverState.cart));
+};
+
+export const initStore = async token => {
+  await hydrateFromServer(token);
+  return store;
+};

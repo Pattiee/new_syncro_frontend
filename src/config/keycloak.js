@@ -8,9 +8,10 @@ const keycloakConfig = {
 
 const keycloak = new Keycloak(keycloakConfig);
 
-export const initKeycloak = (onAuthenticatedCallback) => {
+export const initKeycloak = onAuthenticatedCallback => {
     keycloak.init({ 
-        onLoad: 'check-sso', pkceMethod: 'S256',
+        onLoad: 'check-sso', 
+        pkceMethod: 'S256',
         silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
     }).then(authenticated => {
         if (authenticated) {

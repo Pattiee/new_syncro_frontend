@@ -1,12 +1,17 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addItem, decrementCartItemQuantity } from '../slices/cartSlice';
 import toast from 'react-hot-toast';
 import { FiMinus, FiPlus } from 'react-icons/fi';
 import { ShoppingCart } from 'lucide-react';
+import { useKeycloak } from '@react-keycloak/web';
+import { addToCart } from '../services/cart.service';
 
 const AddToCartBtn = ({ product }) => {
   const dispatch = useDispatch();
+  const { keycloak } = useKeycloak();
+  const [desiredQty, setDesiredQty] = useState(1);
+  const userId = keycloak.authenticated ? keycloak.tokenParsed.sub : '';
   const cartItems = useSelector(state => state?.cart?.items);
   const cartItem = useMemo(() => cartItems.find(i => i.id === product.id), [cartItems, product.id]);
   const quantityInCart = cartItem?.quantity || 0;
@@ -16,10 +21,9 @@ const AddToCartBtn = ({ product }) => {
   const inCart = !!cartItem;
 
   const handleAddToCart = useCallback(() => {
-    if (maxReached || outOfStock) {
-      toast.error('No more stock available');
-      return;
-    }
+    if (maxReached || outOfStock) return toast.error('No more stock available');
+    if (!userId) return keycloak.login();
+
 
     const discounted = product?.percent_discount > 0;
     const productPrice = discounted
@@ -28,16 +32,19 @@ const AddToCartBtn = ({ product }) => {
     
     const item = {
       id: product.id,
+      uid: userId,
       name: product.name,
-      price: productPrice,
-      quantity: 1,
+      unitPrice: productPrice,
+      quantity: desiredQty,
       skuCode: product.skuCode,
-      imageUrl: product?.imageUrl,
-      inStock: product?.stock > cartItem?.quantity && product?.stock > 0,
-    }
+    };
 
-    dispatch(addItem(item));
-  }, [dispatch, product, maxReached, outOfStock, cartItem]);
+    addToCart(item).then(res => {
+      console.log(res);
+    });
+
+    // dispatch(addItem(item));
+  }, [product, keycloak, userId, maxReached, outOfStock, desiredQty]);
 
   const handleDecrementQuantity = e => {
     e.stopPropagation();

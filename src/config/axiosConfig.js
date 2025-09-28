@@ -1,33 +1,37 @@
-import apiGatewayAxiosInstance, { apiKeycloakAxiosInstance } from '../config/axiosInstance'
+import { apiKeycloakAxiosClient, apiGatewayClient } from '../services/apiClient'
 
 
 // Axios instance for auth-related requests
-const authAxiosInstance = apiKeycloakAxiosInstance;
+const authAxiosInstance = apiKeycloakAxiosClient;
 
-// Axios instance for user-related requests
-const userAxiosInstance = apiGatewayAxiosInstance;
+// Axios instance for account-related requests
+const accountAxiosInstance = apiGatewayClient;
 
 // Axios instance for role-related requests
-const roleAxiosInstance = apiGatewayAxiosInstance;
+const roleAxiosInstance = apiGatewayClient;
 
 // Axios instance for admin-related requests
-const adminAxiosInstance = apiGatewayAxiosInstance;
+const adminAxiosInstance = apiGatewayClient;
 
 // Axios instance for orders-related requests
-const ordersAxiosInstance = apiGatewayAxiosInstance;
+const ordersAxiosInstance = apiGatewayClient;
 
 // Axios instance for products-related requests
-const productsAxiosInstance = apiGatewayAxiosInstance;
+const productsAxiosInstance = apiGatewayClient;
+
+// Axios instance for cart-related requests
+const cartAxiosInstance = apiGatewayClient;
 
 // Axios instance for products-related requests
-const branchesAxiosInstance = apiGatewayAxiosInstance;
+const branchesAxiosInstance = apiGatewayClient;
 
 
 const AxiosConfig = {
     authAxiosInstance,
-    userAxiosInstance,
+    accountAxiosInstance,
     roleAxiosInstance,
     adminAxiosInstance,
+    cartAxiosInstance,
     productsAxiosInstance,
     ordersAxiosInstance,
     branchesAxiosInstance,

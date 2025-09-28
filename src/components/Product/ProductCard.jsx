@@ -74,7 +74,7 @@ const ProductCard = ({ product }) => {
       {/* Image */}
       <div
         onClick={handleCardClick}
-        className="w-full p-2 h-40 bg-white rounded-t-lg dark:bg-gray-600"
+        className="w-full h-40 bg-white rounded-t-lg dark:bg-gray-600"
         style={{
           // backgroundImage: `url(${product?.imageUrl || "https://via.placeholder.com/500"})`,
           // backgroundSize: 'cover',
@@ -108,9 +108,9 @@ const ProductCard = ({ product }) => {
         {/* Image section */}
         <img 
           src={product?.imageUrl} 
-          alt={product?.name} 
+          alt={product?.name}
           style={{ objectFit: "cover" }}
-          className='flex w-full object-cover rounded-md text-sm font-sans'/>
+          className='flex justify-center items-center w-full object-contain rounded-md text-sm font-sans'/>
       </div>
 
       {/* Info */}

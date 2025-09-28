@@ -7,7 +7,7 @@ export const OrdersArticle = ({ loading, orders = [] }) => {
     <>
       <article className="md:col-span-2">
         <h2 className="mb-4 text-xl font-semibold text-gray-700 dark:text-gray-200">
-          Your Orders [{orders.length}]
+          <span>{orders?.length > 0 ? `You have ${orders?.length ?? 0} orders.` : 'You currently have no orders.'}</span>
         </h2>
 
         {loading

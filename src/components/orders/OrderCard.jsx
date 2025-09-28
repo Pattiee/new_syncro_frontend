@@ -13,7 +13,7 @@ export const OrderCard = ({ order }) => {
   return (
     <motion.div onClick={handleShowOrderDetails} className="flex flex-col gap-2 p-4 bg-gray-100 rounded-lg shadow dark:bg-gray-800">
       <div className="flex items-center justify-between">
-        <span className="font-semibold text-orange-600 dark:text-orange-400">Order #{code}</span>
+        <span className="font-semibold text-orange-600 dark:text-orange-400">Order code: {code}</span>
         <span
           className={`text-sm px-2 py-1 rounded-full ${
             status === 'Cancelled'
@@ -27,7 +27,7 @@ export const OrderCard = ({ order }) => {
       </div>
 
       <div className="text-sm text-gray-700 dark:text-gray-300">
-        Placed on: <span className="font-medium">{timeStamp}</span>
+        Order date: <span className="font-medium">{timeStamp}</span>
       </div>
 
       {totals != null && (

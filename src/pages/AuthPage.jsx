@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { checkIfExistEmail, login, register, verifyRegistration } from '../services/auth.service';
-import { useDispatch } from 'react-redux';
-import { checkAuth } from '../slices/authSlice';
 import Password from '../components/auth/Password';
 
 import toast from 'react-hot-toast';
@@ -22,7 +20,6 @@ const AuthPage = () => {
   const [step, setStep] = useState(1);
 
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
 
   const handleValidateEmail = async (e) => {

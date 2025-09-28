@@ -2,12 +2,7 @@ import { useEffect, useState, Suspense } from 'react';
 import ProductCard from '../components/Product/ProductCard'
 import { Loader } from '../components/Loader'
 import { getProducts } from '../services/products.service';
-import { useDispatch, useSelector } from 'react-redux';
-import toast from 'react-hot-toast';
 import { SearchBar } from '../components/SearchBar';
-import { useDebounce } from '../hooks/useDebounce'
-import { removeItem } from '../slices/cartSlice';
-import axios from 'axios';
 
 export const Products = () => {
   const [message, setMessage] = useState('');
@@ -17,11 +12,8 @@ export const Products = () => {
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [delay, setDelay] = useState(500);
-  const dispatch = useDispatch();
 
   const [categories, setCategories] = useState([]);
-
-  const cartItems = useSelector(state => state?.cart?.items || []);
 
   const handleUpdateFilter = (category) => {
     const current = (filter ?? '').trim().toLowerCase();
@@ -51,7 +43,7 @@ export const Products = () => {
         const [productResponse, ] = await Promise.allSettled(requestList);
   
         if (productResponse.status === "fulfilled") {
-          const responseData = productResponse.value.data;
+          const responseData = productResponse?.value?.data;
   
           const categoriesData = responseData?.categories ?? [];
           const productsData = responseData?.products ?? [];
@@ -60,7 +52,7 @@ export const Products = () => {
           setProducts(productsData);
         }
       } catch (error) {
-        // toast.error(error?.message);
+        console.error(error);
       } finally {
         setLoading(false);
       }
@@ -89,7 +81,7 @@ export const Products = () => {
       {!loading && products.length <= 0 && <span className='flex items-center justify-center mx-auto w-fit animate-ping'>No products.</span>}
 
       {/* TODO: Loader here. */}
-      <Suspense fallback={<Loader/>} name='products suspense'>
+      <Suspense name='products suspense'>
         {categories && (
             <>
               <h2 className="mb-6 text-2xl font-semibold text-orange-600 dark:text-orange-400">Browse by Category</h2>
@@ -124,7 +116,7 @@ export const Products = () => {
                 {filter && (<h2 className="mb-6 text-2xl font-semibold text-orange-600 dark:text-orange-400">{ filter }</h2>)}
                 <div className="grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
                   {products.length > 0
-                    ? products.map((product, idx) => <ProductCard key={product?.id ?? idx} product={product} />)
+                    ? products.map((product, idx) => <ProductCard key={product?.id || idx} product={product} />)
                     : <div>{ message }</div>
                   }
                 </div>

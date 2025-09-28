@@ -29,7 +29,10 @@ module.exports = {
       },
       colors: {
         primary: '#ff6600' // orange theme
-      }
+      },
+      transitionProperty: {
+        'bg-color': 'background-color, color',
+      },
     },
   },
   plugins: [],

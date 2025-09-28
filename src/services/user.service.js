@@ -6,7 +6,7 @@ export const getUsers = async ({ userId }) => {
     try {
         const params = {};
         if (userId) params.id = userId;
-        return await AxiosConfig.userAxiosInstance.get(USER_SERVICE_BASE_API_URL, { params });
+        return await AxiosConfig.accountAxiosInstance.get(USER_SERVICE_BASE_API_URL, { params });
     } catch (error) {
         console.error(error);
         return;

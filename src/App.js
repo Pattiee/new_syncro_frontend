@@ -1,11 +1,8 @@
 import React, { useEffect } from 'react';
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from './hooks/useAuth';
+import { Routes, Route, useLocation, } from 'react-router-dom';
 import { ROLES } from './roles'
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
-import { checkAuth } from './slices/authSlice';
-// import { fet };
 import ProtectedRoute from './utils/ProtectedRoute';
 import FloatingCart from './components/FloatingCart'
 import FloatingCheckoutButton from './components/FloatingCheckoutButton'
@@ -37,8 +34,8 @@ const App = () => {
   // const { user } = useAuth();
   const { pathname } = useLocation();
   const hideCartOn = ['/auth', '/cart', '/checkout', '/admin/*'];
-  const showFloatingCheckoutButton = ['/cart'];
-  const cartItems = useSelector(state => state?.cart?.items || []); 
+  const showFloatingCheckoutButton = ['/cart', '/checkout', '/', '/product'];
+  const cartItems = useSelector(state => state?.cart?.items ?? []); 
                                                                                                                                                                                                                                                                                                                                                                                                           
 
   return (
@@ -78,7 +75,7 @@ const App = () => {
       </Routes> 
       
       {!hideCartOn.includes(pathname) && cartItems?.length > 0 && <FloatingCart />}
-      {showFloatingCheckoutButton.includes(pathname) && <FloatingCheckoutButton/>}
+      {!showFloatingCheckoutButton.includes(pathname) && <FloatingCheckoutButton/>}
     </div>
   );
 };

@@ -1,4 +1,3 @@
-import React, { Fragment, useId } from 'react';
 import { motion } from 'framer-motion';
 
 export const Loader = ({ message = "Loading..." }) => {
