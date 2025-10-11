@@ -1,29 +1,27 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addItem, decrementCartItemQuantity } from '../slices/cartSlice';
 import toast from 'react-hot-toast';
 import { FiMinus, FiPlus } from 'react-icons/fi';
 import { ShoppingCart } from 'lucide-react';
-import { useKeycloak } from '@react-keycloak/web';
-import { addToCart } from '../services/cart.service';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 const AddToCartBtn = ({ product }) => {
   const dispatch = useDispatch();
-  const { keycloak } = useKeycloak();
-  const [desiredQty, setDesiredQty] = useState(1);
-  const userId = keycloak.authenticated ? keycloak.tokenParsed.sub : '';
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const cartItems = useSelector(state => state?.cart?.items);
   const cartItem = useMemo(() => cartItems.find(i => i.id === product.id), [cartItems, product.id]);
-  const quantityInCart = cartItem?.quantity || 0;
+  const quantityInCart = cartItem?.qty || 0;
 
   const maxReached = quantityInCart >= product.stock;
   const outOfStock = product.stock <= 0;
   const inCart = !!cartItem;
 
   const handleAddToCart = useCallback(() => {
+    if (!user && !loading) return navigate('/login');
     if (maxReached || outOfStock) return toast.error('No more stock available');
-    if (!userId) return keycloak.login();
-
 
     const discounted = product?.percent_discount > 0;
     const productPrice = discounted
@@ -32,51 +30,37 @@ const AddToCartBtn = ({ product }) => {
     
     const item = {
       id: product.id,
-      uid: userId,
       name: product.name,
       unitPrice: productPrice,
-      quantity: desiredQty,
-      skuCode: product.skuCode,
+      qty: 1,
     };
 
-    addToCart(item).then(res => {
-      console.log(res);
-    });
-
-    // dispatch(addItem(item));
-  }, [product, keycloak, userId, maxReached, outOfStock, desiredQty]);
+    dispatch(addItem(item));
+  }, [maxReached, outOfStock, product, dispatch]);
 
   const handleDecrementQuantity = e => {
     e.stopPropagation();
-    dispatch(decrementCartItemQuantity(product?.id ?? ''));
+    dispatch(decrementCartItemQuantity(product.id));
   };
 
-  const baseButtonStyles = 'h-10 w-10 flex items-center justify-center rounded-full text-white shadow transition-all duration-300 transform active:scale-90 select-none';
-  const disabledStyles = maxReached || outOfStock ? 'opacity-50 cursor-not-allowed' : '';
-
-  // Fixed width for container — tweak as needed to fit your layout nicely
-  const containerMinWidth = 'min-w-[140px]';
-
   return (
-    <div className={`flex w-full justify-center ${containerMinWidth}`}>
+    <div className="flex w-full justify-center">
       {inCart ? (
-        <div className="flex items-center justify-center w-full gap-3 sm:gap-4">
+        <div className="flex items-center justify-between w-full gap-2">
           {/* Decrement */}
           <button
             onClick={handleDecrementQuantity}
-            className={`${baseButtonStyles} ${
-              quantityInCart <= 1 ? 'bg-red-500 hover:bg-red-600' : 'bg-orange-500 hover:bg-orange-600'
-            }`}
+            className={`h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center rounded-full text-white shadow
+              transition-all duration-300 transform active:scale-90 select-none
+              ${quantityInCart <= 1 ? 'bg-red-500 hover:bg-red-600' : 'bg-orange-500 hover:bg-orange-600'}`}
           >
-            <FiMinus size={20} />
+            <FiMinus size={16} />
           </button>
 
           {/* Quantity */}
-          <div
-            className="h-10 sm:h-12 min-w-[40px] sm:min-w-[48px] px-2 flex items-center justify-center 
-              rounded-full shadow text-sm sm:text-base font-medium select-none
-              bg-white dark:bg-neutral-800 text-black dark:text-white border border-orange-500"
-          >
+          <div className="h-8 sm:h-10 min-w-[36px] sm:min-w-[40px] flex items-center justify-center 
+            rounded-full shadow text-xs sm:text-sm font-medium select-none bg-white dark:bg-neutral-800
+            text-black dark:text-white border border-orange-500">
             {quantityInCart}
           </div>
 
@@ -84,25 +68,25 @@ const AddToCartBtn = ({ product }) => {
           <button
             onClick={handleAddToCart}
             disabled={maxReached}
-            className={`${baseButtonStyles} bg-orange-500 hover:bg-orange-600 font-bold ${disabledStyles}`}
+            className={`h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center rounded-full text-white shadow
+              transition-all duration-300 transform active:scale-90 select-none bg-orange-500 hover:bg-orange-600
+              ${maxReached ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            <FiPlus size={20} />
+            <FiPlus size={16} />
           </button>
         </div>
       ) : (
-          <>
-            <button
-            onClick={handleAddToCart}
-            disabled={outOfStock}
-            aria-label={outOfStock ? 'Out of Stock' : 'Add to Cart'}
-            className={`h-10 px-6 bg-orange-500 hover:bg-orange-600 text-white text-sm sm:text-base font-medium 
-              rounded-full shadow transition-all duration-300 transform active:scale-95 select-none w-full 
-              flex items-center justify-center gap-2 ${disabledStyles}`}>
-                <ShoppingCart size={20} />
-                { outOfStock ? 'Out of Stock' : 'Add' }
-                </button>
-
-          </>
+        <button
+          onClick={handleAddToCart}
+          disabled={outOfStock}
+          aria-label={outOfStock ? 'Out of Stock' : 'Add to Cart'}
+          className={`w-full h-8 sm:h-10 px-2 sm:px-4 bg-orange-500 hover:bg-orange-600 text-white text-xs sm:text-sm
+            font-medium rounded-full shadow transition-all duration-300 transform active:scale-95 flex items-center justify-center gap-1
+            ${outOfStock ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          <ShoppingCart size={16} />
+          {outOfStock ? 'Out of Stock' : 'Add'}
+        </button>
       )}
     </div>
   );

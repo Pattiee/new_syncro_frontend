@@ -1,7 +1,5 @@
-import React, { useEffect } from 'react';
 import { Routes, Route, useLocation, } from 'react-router-dom';
 import { ROLES } from './roles'
-import { useSelector } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
 import ProtectedRoute from './utils/ProtectedRoute';
 import FloatingCart from './components/FloatingCart'
@@ -9,13 +7,8 @@ import FloatingCheckoutButton from './components/FloatingCheckoutButton'
 
 // Pages
 import Home from './pages/Home';
-import Checkout from './pages/Checkout';
-import NotFound from './pages/NotFound';
-import AuthPage from './pages/AuthPage';
 import AdminDashboard from './pages/admin/AdminDashboard'
-import AccountInfo from './pages/AccountInfo'
 import ProductDetailsPage from './pages/ProductDetailsPage';
-import Cart from './pages/Cart';
 import { AddCategory } from './pages/admin/AddCategory'
 import AdminLayout from './layouts/AdminLayout'
 import AddProduct from './pages/admin/AddProduct';
@@ -27,57 +20,114 @@ import { Branches } from './pages/admin/company_branches/Branches'
 import { BranchDetails } from './pages/admin/company_branches/BranchDetails';
 import { OrderDetails } from './pages/orders/OrderDetails'
 import { AddBranch } from './pages/admin/company_branches/AddBranch'
+import { useCart } from './hooks/useCart';
+import { Register } from './pages/auth/Register';
+import { Login } from './pages/auth/Login';
+import { ContactsNavbar } from './components/nav/ContactsNavbar';
+import Navbar from './components/nav/NavBar';
+import Footer from './sections/Footer';
+import CartSummary from './pages/CartSummary';
+import Account from './pages/account/Account';
+import { VerifyEmail } from './pages/auth/VerifyEmail';
+import { CreatePassword } from './pages/auth/CreatePassword';
+import { CheckoutPage } from './pages/CheckoutPage';
 
 
 const App = () => {
-  // Uncomment this line for important usage
-  // const { user } = useAuth();
   const { pathname } = useLocation();
-  const hideCartOn = ['/auth', '/cart', '/checkout', '/admin/*'];
-  const showFloatingCheckoutButton = ['/cart', '/checkout', '/', '/product'];
-  const cartItems = useSelector(state => state?.cart?.items ?? []); 
-                                                                                                                                                                                                                                                                                                                                                                                                          
+  const { cart } = useCart();
+
+  const hideFooterOn = ['/auth', '/login', '/verify', '/create-password', '/register', '/checkout'];
+  const hideCartOn = ['/auth', '/login', '/verify', '/create-password', '/account', '/admin', '/register', '/cart-summary', '/checkout', '/admin/*'];
+  const hideNavbarOn = ['/auth', '/staff', '/admin', '/verify', '/create-password', '/login', '/register', '/contact', '/account', '/cart-summary', '/checkout', '/admin/*'];
+  const showFloatingCheckoutButton = ['/checkout', '/verify', '/create-password', '/login', '/admin', '/account', '/register', '/', '/product'];
+  const hideContactsNavOn = ['/login', '/register'];
+
+   // check if navbar should render
+  const isFooterVisible = !hideFooterOn.includes(pathname);
+  const isNavbarVisible = !hideNavbarOn.includes(pathname);
+  const isContactNavVisible = !hideContactsNavOn.includes(pathname);
+  const isFloatingCartVisible = !hideCartOn.includes(pathname) && cart?.items?.length > 0;
+  const isFloatingCheckoutBtnVisible = !showFloatingCheckoutButton.includes(pathname);
+
+  // contacts strip ~2rem (h-8), navbar ~4rem (h-16)
+  const paddingTopClass = isNavbarVisible ? 'pt-24' : 'pt-0';
 
   return (
-    <div className="relative min-h-screen text-gray-900 bg-gray-100 dark:bg-gray-900">
-      <Toaster position='bottom-left' />      
-      <Routes>
-        <Route index element={<Home />} />
-        <Route path='/auth' element={<AuthPage />} />
-        <Route path="/product" element={<ProductDetailsPage />} />
-        <Route path='/checkout' element={ <Checkout/> } />
-        <Route path='/cart' element={<Cart />} />
-        <Route path='/order' element={<OrderDetails />} />
-        <Route path='/account' element={<AccountInfo/> } />
-        
-        {/* Protected routes */}
-        {/* <Route path='/admin/users' element={ <ProtectedRoute children={<UsersPage/>} roles={[ROLES.ADMIN]}/> } /> */}
+    <div className="flex flex-col relative min-h-screen text-gray-900 bg-white dark:bg-gray-900">
+      <Toaster position="bottom-left" />
 
-        {/* ROLES.ADMIN NOT USER */}
-        <Route path={ADMIN_LINKS_FRONTEND.INDEX} element={
-            <ProtectedRoute roles={[ROLES.ADMIN]}>
-              <AdminLayout/>
-            </ProtectedRoute>}
-        >
-          <Route index element={<AdminDashboard />} />
-          <Route path="add-products" element={<AddProduct />} />
-          <Route path='categories' element={<Categories />} />
-          <Route path='add-category' element={<AddCategory />} />
-          <Route path="branch" element={<BranchDetails />} />
-          <Route path="branches" element={<Branches />} />
-          <Route path="add-branch" element={<AddBranch />} />
-          <Route path="users" element={<UsersPage />} />
-          <Route path='user' element={ <UserDetailsPage/> } />
-        </Route>
+      {/* Contacts strip always pinned */}
+      {isContactNavVisible && (
+        <div className="fixed top-0 left-0 right-0 z-50">
+          <ContactsNavbar />
+        </div>
+      )}
 
-        <Route path={"/"} element={ <Home/> } />
-        
-      </Routes> 
-      
-      {!hideCartOn.includes(pathname) && cartItems?.length > 0 && <FloatingCart />}
-      {!showFloatingCheckoutButton.includes(pathname) && <FloatingCheckoutButton/>}
+      {/* Main Navbar sits below contacts strip */}
+      {isNavbarVisible && (
+        <div className="fixed left-0 right-0 z-40 top-8 mb-24"> 
+          <Navbar />
+        </div>
+      )}
+
+      {/* Push content down so it’s not hidden behind header */}
+      <div className={paddingTopClass}> 
+        <div className="mx-auto">
+          <Routes>
+            <Route index element={<Home />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/product" element={<ProductDetailsPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/cart-summary" element={<CartSummary />} />
+            <Route path="/order" element={<OrderDetails />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/verify" element={<VerifyEmail />} />
+            <Route path="/create-password" element={<CreatePassword />} />
+
+            <Route
+              path={ADMIN_LINKS_FRONTEND.INDEX}
+              element={
+                <ProtectedRoute roles={[ROLES.ADMIN]}>
+                  <AdminLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="add-products" element={<AddProduct />} />
+              <Route path="categories" element={<Categories />} />
+              <Route path="add-category" element={<AddCategory />} />
+              <Route path="branch" element={<BranchDetails />} />
+              <Route path="branches" element={<Branches />} />
+              <Route path="add-branch" element={<AddBranch />} />
+              <Route path="users" element={<UsersPage />} />
+              <Route path="user" element={<UserDetailsPage />} />
+            </Route>
+
+            {/* Unknown routes */}
+            <Route path='*' element={<Home/>} />
+          </Routes>
+        </div>
+      </div>
+
+      {isFloatingCartVisible && (
+        <FloatingCart cart={cart} />
+      )}
+      {isFloatingCheckoutBtnVisible && (
+        <FloatingCheckoutButton />
+      )}
+
+      {/* Footer */}
+      {isFooterVisible && (
+      <div className="mt-auto">
+        <Footer/>
+      </div>
+
+      )}
     </div>
   );
 };
+
 
 export default App;

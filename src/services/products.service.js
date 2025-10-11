@@ -5,12 +5,7 @@ const PRODUCTS_SERVICE_BASE_URL = process.env.REACT_APP_PRODUCTS_URL;
 
 // AddProduct
 export const addProduct = async (formData) => {
-    try {
-      return await AxiosConfig.productsAxiosInstance.post(PRODUCTS_SERVICE_BASE_URL, formData);
-    } catch (error) {
-      toast.error(error?.message);
-      return;
-    }
+    return await AxiosConfig.productsAxiosInstance.post(PRODUCTS_SERVICE_BASE_URL, formData);
 }
 
 // addCategory

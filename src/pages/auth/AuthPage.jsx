@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { checkIfExistEmail, login, register, verifyRegistration } from '../services/auth.service';
-import Password from '../components/auth/Password';
+import { checkIfExistEmail, login, register, verifyRegistration } from '../../services/auth.service';
+import Password from '../../components/auth/Password';
 
 import toast from 'react-hot-toast';
-import Email from '../components/auth/Email';
-import { OneCharacterInput } from '../components/auth/OneCharacterInput';
+import Email from '../../components/auth/Email';
+import { OneCharacterInput } from '../../components/auth/OneCharacterInput';
 import { ChevronRight } from 'lucide-react';
 
 const AuthPage = () => {
@@ -20,40 +20,6 @@ const AuthPage = () => {
   const [step, setStep] = useState(1);
 
   const navigate = useNavigate();
-
-
-  const handleValidateEmail = async (e) => {
-    e.preventDefault();
-    setErrorMessage('');
-    setLoading(true);
-
-    try {
-      const { exists, enabled, err } = await checkIfExistEmail({ username });
-
-      if (isLogin) {
-        if (!exists) throw new Error(err);
-        if (enabled) {
-          setStep(2);
-        } else {
-          toast.error("Please verify your account to continue.");
-        }
-      } else {
-        if (err) {
-          toast.error(err);
-          return;
-        }
-        if (exists) {
-          toast.error("Email already registered. You may consider resetting your password.");
-        } else {
-          setStep(2);
-        }
-      }
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -142,7 +108,7 @@ const AuthPage = () => {
 
   const handleFormSubmit = async (e) => {
     if (step === 1) {
-      await handleValidateEmail(e);
+      // await handleValidateEmail(e);
     } else {
       await handleSubmit(e);
     }

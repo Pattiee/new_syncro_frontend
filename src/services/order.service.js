@@ -3,9 +3,9 @@ import AxiosConfig from "../config/axiosConfig";
 
 const ORDER_SERVICE_BASE_URL = process.env.REACT_APP_ORDERS_URL;
 
-export const createNewOrder = async (formData) => {
+export const createNewOrder = async (data) => {
     try {
-        return await AxiosConfig.ordersAxiosInstance.post(ORDER_SERVICE_BASE_URL, formData);
+        return await AxiosConfig.ordersAxiosInstance.post(ORDER_SERVICE_BASE_URL, data);
     } catch (error) {
         console.error(error);
         toast.error(error?.message);
@@ -14,19 +14,11 @@ export const createNewOrder = async (formData) => {
 }
 
 
-export const getOrders = async ({ username, orderId }) => {
-    if (username) {
-        try {
-            const body = {};
-            
-            body.username = username;
-            if (orderId) body.oid = orderId;
-            return await AxiosConfig.ordersAxiosInstance.post(`${ORDER_SERVICE_BASE_URL}/my-orders`, body);
-        } catch (error) {
-            console.error(error);
-            return;
-        }
-    }
+export const getOrders = async ({ orderId }) => {
+    const params = {};
+    if (orderId) params.oid = orderId;
+
+    return await AxiosConfig.ordersAxiosInstance.get(`${ORDER_SERVICE_BASE_URL}/me`, null, { params });
 }
 
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery } from '../../hooks/useQuery'
 import { cancelOrder, getOrders } from '../../services/order.service';
 import { motion } from 'framer-motion';
@@ -9,19 +9,20 @@ import { PaymentDetails } from '../../components/payment/PaymentDetails';
 import { useNavigate } from 'react-router-dom';
 import { MAIN_LINKS_FRONTEND } from '../../links';
 import toast from 'react-hot-toast';
-import { useKeycloak } from '@react-keycloak/web';
+import { useAuth } from '../../hooks/useAuth';
 
 export const OrderDetails = () => {
   const [order, setOrder] = useState(null);
   const [loadingOrder, setLoadingOrder] = useState(true);
   const query = useQuery();
-  const { keycloak } = useKeycloak();
+  const { user, loading} = useAuth();
   const orderId = query.get("id");
   const navigate = useNavigate();
 
   useEffect(() => {
     const loadOrder = async () => {
-      await getOrders({ username: keycloak.tokenParsed?.email, orderId }).then(res => {
+      if (!user && !loading) navigate("/", { replace: true });
+      await getOrders({ username: user?.email || user?.username, orderId }).then(res => {
         if (res) {
           console.log(res.data);
           setOrder(res.data);
@@ -33,7 +34,7 @@ export const OrderDetails = () => {
       });
     }
     loadOrder();
-  }, [orderId, keycloak.tokenParsed?.email]);
+  }, [orderId, user?.email, user?.username]);
 
   // if (!loadingOrder && !order) navigate(MAIN_LINKS_FRONTEND.HOME, { replace: true });
   

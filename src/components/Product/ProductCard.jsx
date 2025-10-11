@@ -1,167 +1,73 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import AddToCartBtn from '../AddToCartBtn';
+import { useNavigate } from 'react-router-dom';
 import { FiStar } from 'react-icons/fi';
-import { currencyFormater, percentageFormater } from '../../helpers/formater';
+import { currencyFormater } from '../../helpers/formater';
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, index }) => {
   const navigate = useNavigate();
-  const [timeLeft, setTimeLeft] = useState('');
-  const [progress, setProgress] = useState(100);
-  const [offerExpired, setOfferExpired] = useState(false);
+  const discountedPrice =
+    product?.percent_discount > 0
+      ? (product.price - product.price * (product.percent_discount / 100)).toFixed(2)
+      : product?.price?.toFixed(2);
 
-  const discountedPrice = useMemo(() => {
-    const discounted = product?.percent_discount > 0;
-    if (discounted) return (product.price - (product.price * (product.percent_discount / 100))).toFixed(2);
-    return product?.price?.toFixed(2);
-  }, [product]);
-
-  useEffect(() => {
-    if (!product?.offerExpiresAt) return;
-
-    const end = new Date(product.offerExpiresAt);
-    if (isNaN(end.getTime())) return;
-
-    const start = new Date();
-    const totalTime = end - start;
-
-    const updateCountdown = () => {
-      const now = new Date();
-      const timeRemaining = end - now;
-
-      if (timeRemaining <= 0) {
-        setTimeLeft('');
-        setOfferExpired(true);
-        setProgress(0);
-        return false;
-      }
-
-      const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
-      const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
-
-      setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
-
-      const percent = Math.max(0, (timeRemaining / totalTime) * 100);
-      setProgress(percent.toFixed(0));
-
-      return true;
-    };
-
-    updateCountdown();
-    const interval = setInterval(() => {
-      const shouldContinue = updateCountdown();
-      if (!shouldContinue) clearInterval(interval);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [product?.offerExpiresAt]);
-
-  const handleCardClick = () => {
-    const targetProductId = product?.id ?? '';
-    if (targetProductId) navigate(`/product?id=${targetProductId}`);
-  };
+  const handleCardClick = () => navigate(`/product?id=${product?.id ?? ''}`);
 
   return (
     <motion.div
-      className="flex justify-center p-4 shadow-md overflow-hidden transition duration-300 ease-in-out rounded-lg cursor-pointer bg-white dark:bg-gray-800 hover:shadow-xl"
-      initial={{ opacity: 0, y: 5 }}
+      className="relative flex flex-col justify-between shadow-md rounded-xl cursor-pointer bg-white dark:bg-gray-800 hover:shadow-lg overflow-hidden"
+      style={{ aspectRatio: '3/4' }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
+      transition={{ delay: index * 0.05, duration: 0.4 }}
+      whileHover={{ scale: 1.03 }}
     >
-      <div className='flex flex-col h-full w-full rounded-lg'>
+      {/* Featured Star */}
+      {product.featured && (
+        <FiStar
+          size={20}
+          color="orange"
+          className="absolute top-2 left-2 z-10"
+          title="Featured"
+        />
+      )}
+
+      {/* Discount Text */}
+      {product?.percent_discount > 0 && (
+        <span className="absolute top-2 right-2 text-orange-500 font-semibold text-sm z-10">
+          -{product.percent_discount}%
+        </span>
+      )}
+
       {/* Image */}
       <div
         onClick={handleCardClick}
-        className="w-full h-40 bg-white rounded-t-lg dark:bg-gray-600"
-        style={{
-          // backgroundImage: `url(${product?.imageUrl || "https://via.placeholder.com/500"})`,
-          // backgroundSize: 'cover',
-          // backgroundPosition: 'center',
-        }}
-        >
-
-        {/* Badge Section */}
-        <div className="flex flex-row items-center justify-between w-full bg-transparent top-0">
-          <div className="flex flex-col top-2 left-2">
-            {product?.percent_discount > 0 && (
-              <span className="px-2 py-1 text-xs text-white bg-orange-500 rounded-full">
-                -{percentageFormater.format(product?.percent_discount / 100)}
-              </span>
-              )
-            }
-            {product?.offerExpiresAt && (
-              <span className={`text-xs px-2 py-1 rounded-full ${offerExpired ? 'bg-gray-500' : 'bg-red-500 text-white'}`}> {offerExpired ? 'Offer Expired' : 'Limited Offer'} </span>
-            )}
-          </div>
-          
-          <div className="px-2">
-          {product?.featured && (
-            <span className="flex items-center justify-center text-orange-500 transition-all duration-300 transform bg-transparent rounded-full dark:text-orange-500 active:scale-90">
-              <FiStar size={20} color="orange" />
-            </span>
-          )}
-        </div>
-      </div>
-
-        {/* Image section */}
-        <img 
-          src={product?.imageUrl} 
+        className="w-full h-3/4 flex items-center justify-center overflow-hidden"
+      >
+        <img
+          src={product?.imageUrl || product?.imageUrls?.[0] || 'https://via.placeholder.com/300x400'}
           alt={product?.name}
-          style={{ objectFit: "cover" }}
-          className='flex justify-center items-center w-full object-contain rounded-md text-sm font-sans'/>
+          className="w-full h-full object-cover"
+        />
       </div>
 
       {/* Info */}
-      <div className="p-2 rounded-b-lg bottom-0">
-        <div className='flex justify-between'>
-
-          {/* Name */}
-          <div className='flex flex-col justify-between mt-2'>
-            <h3 className="text-lg text-gray-700 dark:text-gray-300">{product?.name}</h3>
-            <p className="text-sm font-thin text-gray-500 dark:text-gray-500">{product?.category}</p>
-          </div>
-          
-          {/* Price */}
-          <div className='flex flex-col items-center justify-between mt-2'>
-            <p className="text-lg font-semibold text-orange-600 dark:text-orange-400">{currencyFormater.format(discountedPrice)}</p>
-            {product?.percent_discount > 0 && <p className="text-sm text-gray-400 line-through dark:text-gray-600">${product?.price.toFixed(2)}</p> }
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between mt-2">
-          
-          
-        </div>
-
-        {/* Countdown */}
-        {product?.offerExpiresAt && (
-          <>
-            <p className={`text-xs mt-1 ${offerExpired ? 'text-gray-400 dark:text-gray-500' : 'text-red-500 dark:text-red-400'}`}>
-              {offerExpired ? 'Deal has ended' : `Ends in ${timeLeft}`}
+      <div className="p-2 h-1/4 flex flex-col justify-between">
+        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
+          {product?.name}
+        </h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+          {product?.desc || 'No description'}
+        </p>
+        <div className="flex items-center justify-between mt-1">
+          <p className="text-orange-600 dark:text-orange-400 font-semibold text-sm">
+            {currencyFormater.format(discountedPrice)}
+          </p>
+          {product?.percent_discount > 0 && (
+            <p className="text-xs text-gray-400 line-through dark:text-gray-600">
+              {currencyFormater.format(product.price)}
             </p>
-
-            {/* Progress Bar */}
-            <div className="w-full h-2 mt-1 overflow-hidden bg-gray-200 rounded-full dark:bg-gray-700">
-              <div
-                className="h-full transition-all duration-1000 ease-linear bg-red-500"
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
-          </>
-        )}
-
-        <div className='rounded-sm my-2'>
-          <span className='text-nowrap overflow-hidden text-gray-500'>
-            {product?.desc}
-          </span>
+          )}
         </div>
-
-        <div className='flex w-full rounded-2xl'>
-          <AddToCartBtn product={product} />
-        </div>
-      </div>
       </div>
     </motion.div>
   );

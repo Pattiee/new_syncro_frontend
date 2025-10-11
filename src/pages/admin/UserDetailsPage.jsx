@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { getUsers, patchUserRoles } from '../../services/user.service'
+import { getUsers } from '../../services/user.service'
+import { patchUserRoles } from '../../services/auth.service'
 import { getAllRoles } from '../../services/role.service';
 import { useQuery } from '../../hooks/useQuery'
 

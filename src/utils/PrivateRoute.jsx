@@ -1,17 +1,13 @@
 // src/components/PrivateRoute.js
 import React from 'react';
-import { useKeycloak } from '@react-keycloak/web';
 import { Navigate } from 'react-router-dom';
 import { Loader } from '../components/Loader';
 
 const PrivateRoute = ({ children }) => {
-    const { keycloak, initialized } = useKeycloak();
+    const { user, loading } = useAuth();
+    if (loading) return <Loader/>; // Or a more sophisticated loading component
 
-    if (!initialized) {
-    return <Loader/>; // Or a more sophisticated loading component
-    }
-
-    return keycloak.authenticated ? children : <Navigate to="/" />;
+    return user ? children : <Navigate to="/" />;
 };
 
 export default PrivateRoute;

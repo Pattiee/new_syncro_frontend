@@ -1,12 +1,10 @@
-import React from 'react';
-
 const SHOP_NAME = process.env.REACT_APP_SHOP_NAME
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="px-6 py-12 mt-16 text-gray-700 transition-colors duration-300 bg-gray-100 dark:bg-gray-900 dark:text-gray-300">
+    <footer className="px-6 py-16 text-gray-700 transition-colors duration-300 bg-gray-100 dark:bg-gray-900 dark:text-gray-300">
       <div className="grid max-w-6xl grid-cols-1 gap-10 mx-auto md:grid-cols-3">
         {/* About */}
         <div>
@@ -21,10 +19,10 @@ const Footer = () => {
         <div>
           <h3 className="mb-4 text-xl font-bold text-orange-600 dark:text-orange-400">Customer Service</h3>
           <ul className="space-y-2 text-sm">
-            <li><a href="#" className="transition hover:text-orange-500 dark:hover:text-orange-300">Contact Us</a></li>
-            <li><a href="#" className="transition hover:text-orange-500 dark:hover:text-orange-300">Shipping & Returns</a></li>
-            <li><a href="#" className="transition hover:text-orange-500 dark:hover:text-orange-300">FAQs</a></li>
-            <li><a href="#" className="transition hover:text-orange-500 dark:hover:text-orange-300">Support</a></li>
+            <li><a href="/contact" className="transition hover:text-orange-500 dark:hover:text-orange-300">Contact Us</a></li>
+            <li><a href="/" className="transition hover:text-orange-500 dark:hover:text-orange-300">Shipping & Returns</a></li>
+            <li><a href="/faq" className="transition hover:text-orange-500 dark:hover:text-orange-300">FAQs</a></li>
+            <li><a href="/support" className="transition hover:text-orange-500 dark:hover:text-orange-300">Support</a></li>
           </ul>
         </div>
 

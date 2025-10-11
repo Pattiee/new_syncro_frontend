@@ -1,19 +1,21 @@
-import { useEffect, useState, Suspense } from 'react';
-import ProductCard from '../components/Product/ProductCard'
-import { Loader } from '../components/Loader'
-import { getProducts } from '../services/products.service';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Loader } from '../components/Loader';
 import { SearchBar } from '../components/SearchBar';
+import ProductCard from '../components/Product/ProductCard';
+import { useProducts } from '../hooks/useProducts';
 
 export const Products = () => {
-  const [message, setMessage] = useState('');
-  const [filter, setFilter] = useState('');
-  const [featured, setFeatured] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [delay, setDelay] = useState(500);
-
-  const [categories, setCategories] = useState([]);
+  const {
+    products,
+    categories,
+    loading,
+    errMessage,
+    filter,
+    setFilter,
+    featured,
+    setFeatured,
+    setSearchQuery
+  } = useProducts();
 
   const handleUpdateFilter = (category) => {
     const current = (filter ?? '').trim().toLowerCase();
@@ -22,108 +24,105 @@ export const Products = () => {
   };
 
   const handleIsFeatured = () => setFeatured(!featured);
+  const handleSearch = (query = '') => setSearchQuery(query.trim().toLowerCase());
 
-  function sortByPrice (data, order = "asc") {
-    data?.sort((a, b) => {
-      if (order === "asc") {
-        return a.price - b.price;
-      } else {
-        return b.price - a.price;
-      }
-    });
-  }
+  if (loading) return <Loader />;
 
-  useEffect(() => {
-    const loadProducts = async () => {
-      const requestList = [
-        await getProducts({ category: filter ? filter : null, isFeatured: featured, search: searchQuery ? searchQuery : null }),
-      ];
-
-      try {
-        const [productResponse, ] = await Promise.allSettled(requestList);
-  
-        if (productResponse.status === "fulfilled") {
-          const responseData = productResponse?.value?.data;
-  
-          const categoriesData = responseData?.categories ?? [];
-          const productsData = responseData?.products ?? [];
-  
-          setCategories(categoriesData);
-          setProducts(productsData);
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadProducts();
-  }, [featured, filter, searchQuery]);
-
-  // Handle search query
-  const handleSearch = (query) => {
-    const timeout = setTimeout(() => {
-      setSearchQuery(query);
-    }, delay);
-    
-    const lowerQuery = searchQuery.toLowerCase();
-    setSearchQuery(lowerQuery);
-    
-    return () => clearTimeout(timeout);
-  }
-  
-  if (loading) return <Loader />
+  const filteredProducts = products.filter(product => {
+    if (featured && !product.featured) return false;
+    if (filter && product.category.toLowerCase() !== filter.toLowerCase()) return false;
+    return true;
+  });
 
   return (
-    <> 
+    <div className="mx-auto max-w-7xl px-4 py-8">
+      {/* Search */}
       <SearchBar onSearch={handleSearch} />
-      {!loading && products.length <= 0 && <span className='flex items-center justify-center mx-auto w-fit animate-ping'>No products.</span>}
 
-      {/* TODO: Loader here. */}
-      <Suspense name='products suspense'>
-        {categories && (
-            <>
-              <h2 className="mb-6 text-2xl font-semibold text-orange-600 dark:text-orange-400">Browse by Category</h2>
-              <div className="flex flex-wrap gap-3">
-                <p
-                  onClick={handleIsFeatured}
-                  className={`flex px-6 py-3 rounded-full font-medium transition hover:bg-orange-200 dark:hover:bg-orange-700 cursor-pointer ${featured
-                    ? 'bg-orange-500 text-white dark:bg-orange-400 dark:text-black'
-                    : 'bg-orange-100 text-orange-700 dark:bg-gray-700 dark:text-orange-300'}`}>
-                  Featured
-              </p>
-              {categories && categories.map((category, idx) => (
-                <button
-                  key={idx}
+      {/* Categories / Featured */}
+      {categories.length > 0 && (
+        <div className="mb-8">
+          <h2 className="mb-4 text-2xl font-semibold text-orange-600 dark:text-orange-400">
+            Browse by Category
+          </h2>
+          <div className="flex flex-wrap gap-3">
+            {/* Featured Button */}
+            <motion.button
+              onClick={handleIsFeatured}
+              whileTap={{ scale: 0.95 }}
+              animate={{ scale: featured ? 1.05 : 1 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+              className={`flex px-6 py-3 rounded-full font-medium transition-colors hover:bg-orange-200 dark:hover:bg-orange-700 cursor-pointer ${
+                featured
+                  ? 'bg-orange-500 text-white dark:bg-orange-400 dark:text-black'
+                  : 'bg-orange-100 text-orange-700 dark:bg-gray-700 dark:text-orange-300'
+              }`}
+            >
+              Featured
+            </motion.button>
+
+            {/* Categories */}
+            {categories.map(category => {
+              const isSelected = filter.toLowerCase() === category.name.toLowerCase();
+              const productCount = products.filter(p => p.category.toLowerCase() === category.name.toLowerCase()).length;
+
+              return (
+                <motion.button
+                  key={category.id}
                   onClick={() => handleUpdateFilter(category)}
-                  className={`flex px-6 py-3 rounded-full font-medium transition hover:bg-orange-200 dark:hover:bg-orange-700 cursor-pointer ${filter.toLowerCase() === category?.name.toLowerCase()
-                    ? 'bg-orange-500 text-white dark:bg-orange-400 dark:text-black'
-                    : 'bg-orange-100 text-orange-700 dark:bg-gray-700 dark:text-orange-300'}`}
+                  whileTap={{ scale: 0.95 }}
+                  animate={{ scale: isSelected ? 1.05 : 1 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
+                  className={`flex px-6 py-3 rounded-full font-medium transition-colors hover:bg-orange-200 dark:hover:bg-orange-700 cursor-pointer ${
+                    isSelected
+                      ? 'bg-orange-500 text-white dark:bg-orange-400 dark:text-black'
+                      : 'bg-orange-100 text-orange-700 dark:bg-gray-700 dark:text-orange-300'
+                  }`}
                 >
-                  {category?.name}
-                  {filter.toLowerCase() === category?.name.toLowerCase() && products.length > 0 && (<p className='px-2'>{products.length}</p>)}
-                </button>
+                  {category.name}
+                  {isSelected && productCount > 0 && (
+                    <span className="ml-2 px-2 bg-white dark:bg-gray-900 rounded-full text-xs">{productCount}</span>
+                  )}
+                </motion.button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Filtered Products with animated transitions */}
+      {filteredProducts.length > 0 ? (
+        <div>
+          {filter && (
+            <h2 className="mb-4 text-2xl font-semibold text-orange-600 dark:text-orange-400">{filter}</h2>
+          )}
+          <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+            <AnimatePresence>
+              {filteredProducts.map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ delay: index * 0.03, duration: 0.4 }}
+                >
+                  <ProductCard product={product} />
+                </motion.div>
               ))}
-            </div>
-          </>
+            </AnimatePresence>
+          </div>
+        </div>
+      ) : (
+        <div className="text-center mt-16">
+          {errMessage ? (
+            <p className="text-red-500">{errMessage}</p>
+          ) : (
+            <span className="inline-block px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-500 dark:text-gray-400 animate-pulse">
+              No products found.
+            </span>
           )}
-        
-          {/* Products */}
-          { products && (
-            <div>
-              <div className="px-6 py-12">
-                {filter && (<h2 className="mb-6 text-2xl font-semibold text-orange-600 dark:text-orange-400">{ filter }</h2>)}
-                <div className="grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
-                  {products.length > 0
-                    ? products.map((product, idx) => <ProductCard key={product?.id || idx} product={product} />)
-                    : <div>{ message }</div>
-                  }
-                </div>
-              </div>
-            </div>
-          )}
-        </Suspense>
-    </>
-  )
-}
+        </div>
+      )}
+    </div>
+  );
+};

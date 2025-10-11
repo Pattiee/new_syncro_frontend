@@ -6,11 +6,12 @@ import { Link } from 'react-router-dom';
 import { ADMIN_LINKS_FRONTEND } from '../../../links';
 
 export const Branches = () => {
-    const [loadingBranches, setLoadingBranches] = useState(true);
+    const [loadingBranches, setLoadingBranches] = useState(false);
     const [branches, setBranches] = useState([]);
 
     useEffect(() => {
         const loadData = async () => {
+            if (!loadingBranches) setLoadingBranches(true);
             const requests = [
                 await getBranches({}),
             ];

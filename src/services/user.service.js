@@ -1,30 +1,14 @@
 import AxiosConfig from "../config/axiosConfig";
 
-const USER_SERVICE_BASE_API_URL = process.env.REACT_APP_USER_URL;
+const USER_SERVICE_BASE_URL = process.env.REACT_APP_USERS_API_BASE_URL;
 
 export const getUsers = async ({ userId }) => {
-    try {
-        const params = {};
-        if (userId) params.id = userId;
-        return await AxiosConfig.accountAxiosInstance.get(USER_SERVICE_BASE_API_URL, { params });
-    } catch (error) {
-        console.error(error);
-        return;
-    }
+    const params = {};
+    if (userId) params.id = userId;
+    return await AxiosConfig.usersAxiosInstance.get(USER_SERVICE_BASE_URL, { params });
 }
 
-export const patchUserRoles = async ({ userId, roleId }) => {
-    try {
-        if (!userId || !roleId) return; 
-        const params = {};
-        const body = {};
-    
-        params.id = userId;
-        body.id = roleId;
-    
-        return await AxiosConfig.userAxiosInstance.patch(USER_SERVICE_BASE_API_URL, body, { params });
-    } catch (error) {
-        console.error(error);
-        return;
-    }
+// Get userProfile
+export const getUserProfile = async () => {
+    return await AxiosConfig.usersAxiosInstance.get(`${USER_SERVICE_BASE_URL}/u/profile`);
 }

@@ -1,5 +1,6 @@
 // components/SearchBar.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useDebounce } from '../hooks/useDebounce';
 
 export const SearchBar = ({ onSearch }) => {
   const [query, setQuery] = useState('');

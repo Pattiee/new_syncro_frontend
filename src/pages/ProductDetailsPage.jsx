@@ -11,20 +11,37 @@ import { ROLES } from '../roles';
 import AddToCartBtn from '../components/AddToCartBtn';
 import { currencyFormater } from '../helpers/formater'
 import { Loader } from '../components/Loader';
+import { useAuth } from '../hooks/useAuth';
 
 const ProductDetailsPage = () => {
   const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loadingProduct, setLoadingProduct] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [ searchParams ] = useSearchParams();
   const productId = searchParams.get('id');
+  const { user, loading } = useAuth();
 
-  const userProfile = useSelector(state => state?.auth?.userProfile);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    if (!product?.imageUrls?.length) return;
+
+    const interval = setInterval(() => {
+      setCurrentImageIndex(prev =>
+        prev === product.imageUrls.length - 1 ? 0 : prev + 1
+      );
+    }, 3000); // 3 seconds
+
+    return () => clearInterval(interval);
+  }, [product]);
+
+
   const handleDeleteProduct = async () => {
-    if (!product || !userProfile?.roles?.includes(ROLES.ADMIN)) return;
+    if (!product || !user.roles?.includes(ROLES.ADMIN)) return;
     const { id } = product;
 
     setDeleting(true);
@@ -50,7 +67,7 @@ const ProductDetailsPage = () => {
       } catch (error) {
         navigate("/", {replace: true, })
       } finally {
-        setLoading(false);
+        setLoadingProduct(false);
       }
     };
     
@@ -64,7 +81,7 @@ const ProductDetailsPage = () => {
   //   return () => clearTimeout(timeout);
   // }, []);
 
-  if (loading) return (<Loader message={"Loading."}/>);
+  if (loadingProduct) return (<Loader message={"Loading."}/>);
 
 
   const discounted = product?.percent_discount > 0;
@@ -76,24 +93,37 @@ const ProductDetailsPage = () => {
     <Fragment>
       <Suspense name='Product details suspense'>
         <motion.div
-          className="max-w-6xl px-6 py-24 mx-auto bg-gray-50 dark:bg-gray-900"
+          className="max-w-6xl px-6 py-16 mx-auto bg-white dark:bg-gray-900"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
         >
-          <div className="grid grid-cols-1 gap-8 p-6 bg-white shadow-xl md:grid-cols-2 dark:bg-gray-800 md:p-10 rounded-2xl">
-            <div className="aspect-[4/3] w-full bg-gray-100 dark:bg-gray-700 rounded-2xl shadow-md overflow-hidden">
-              <div
-                className="w-full h-full transition-all duration-300 ease-in-out transform bg-center bg-cover hover:scale-105"
-                style={{
-                  backgroundImage: `url(${product?.imageUrls[0] || 'https://via.placeholder.com/500'})`,
-                }}
-                >
-                  <img src={product?.imageUrls[0] ?? product?.imageUrls[1]} alt={product?.name} />
-                  
-                  {/* Images section */}
-                  {/* {product?.imageUrls?.forEach(imageUrl => <img src={imageUrl} alt={product?.name}/>)} */}
-                </div>
+          <div className="grid grid-cols-1 gap-8 p-6 bg-white drop-shadow-xl md:grid-cols-2 dark:bg-gray-800 md:p-10 rounded-2xl">
+            <div 
+              className="aspect-[4/3] w-full rounded-2xl shadow-md overflow-hidden"
+              onClick={() => setShowModal(true)}
+            >
+              <div className="relative w-full aspect-[4/3] overflow-hidden rounded-2xl">
+                {product?.imageUrls?.length > 0 ? (
+                  <motion.img
+                    key={product.imageUrls[currentImageIndex]}
+                    src={product.imageUrls[currentImageIndex]}
+                    alt={product.name}
+                    className="object-cover w-full h-full rounded-2xl"
+                    initial={{ x: 100, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: -100, opacity: 0 }}
+                    transition={{ duration: 0.8, ease: 'easeInOut' }}
+                  />
+                ) : (
+                  <img
+                    src="https://via.placeholder.com/500"
+                    alt="Placeholder"
+                    className="object-cover w-full h-full rounded-2xl"
+                  />
+                )}
+              </div>
+
             </div>
 
             <div className="h-full p-2 rounded-2xl">
@@ -160,11 +190,11 @@ const ProductDetailsPage = () => {
 
                 {/* Delete product */}
                 <div>
-                  {userProfile && userProfile?.roles?.includes(ROLES.ADMIN) && (
+                  {user && user?.roles?.includes(ROLES.ADMIN) && (
                     <button
-                      disabled={deleting || loading}
+                      disabled={deleting || loadingProduct}
                       onClick={handleDeleteProduct}
-                      className={`${ deleting || loading ? 'bg-red-300 hover:bg-red-400' : 'bg-red-500 hover:bg-red-600' } px-6 py-3 text-sm font-medium text-white transition-all duration-300 rounded-full shadow`}
+                      className={`${ deleting || loadingProduct ? 'bg-red-300 hover:bg-red-400' : 'bg-red-500 hover:bg-red-600' } px-6 py-3 text-sm font-medium text-white transition-all duration-300 rounded-full shadow`}
                     >
                       Delete
                     </button>
@@ -180,6 +210,51 @@ const ProductDetailsPage = () => {
           <ProductDetails product={product} />
           <ProductReviews />
           <RelatedProducts />
+
+          {/* MODAL */}
+          {showModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+              <button
+                className="absolute top-6 right-8 text-white text-3xl font-bold"
+                onClick={() => setShowModal(false)}
+              >
+                &times;
+              </button>
+
+              <button
+                onClick={() =>
+                  setCurrentImageIndex(prev =>
+                    prev === 0 ? product.imageUrls.length - 1 : prev - 1
+                  )
+                }
+                className="absolute left-6 text-white text-4xl"
+              >
+                &#10094;
+              </button>
+
+              <motion.img
+                key={product.imageUrls[currentImageIndex]}
+                src={product.imageUrls[currentImageIndex]}
+                alt={product.name}
+                className="max-w-4xl max-h-[80vh] object-contain rounded-3xl"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+              />
+
+              <button
+                onClick={() =>
+                  setCurrentImageIndex(prev =>
+                    prev === product.imageUrls.length - 1 ? 0 : prev + 1
+                  )
+                }
+                className="absolute right-6 text-white text-4xl"
+              >
+                &#10095;
+              </button>
+            </div>
+          )}
+
         </motion.div>
       </Suspense>
     </Fragment>

@@ -1,11 +1,11 @@
-import { apiKeycloakAxiosClient, apiGatewayClient } from '../services/apiClient'
+import { apiGatewayClient } from '../services/apiClient'
 
 
 // Axios instance for auth-related requests
-const authAxiosInstance = apiKeycloakAxiosClient;
+const authAxiosInstance = apiGatewayClient;
 
 // Axios instance for account-related requests
-const accountAxiosInstance = apiGatewayClient;
+const usersAxiosInstance = apiGatewayClient;
 
 // Axios instance for role-related requests
 const roleAxiosInstance = apiGatewayClient;
@@ -28,7 +28,7 @@ const branchesAxiosInstance = apiGatewayClient;
 
 const AxiosConfig = {
     authAxiosInstance,
-    accountAxiosInstance,
+    usersAxiosInstance,
     roleAxiosInstance,
     adminAxiosInstance,
     cartAxiosInstance,

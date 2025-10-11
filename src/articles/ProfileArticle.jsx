@@ -1,12 +1,14 @@
-import { useKeycloak } from '@react-keycloak/web'
 import { ChevronRight } from 'lucide-react';
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
 import { Loader } from '../components/Loader';
+import { useAuth } from '../contexts/AuthContext';
 
 export const ProfileArticle = () => {
-  const { keycloak, initialized } = useKeycloak();
+  const { user, loading, logout } = useAuth();
 
-  const handleLogout = async () => keycloak.authenticated && initialized ? keycloak.logout() : keycloak.login();
+  const handleLogout = async () => {
+    if (user && !loading) logout();
+  }
 
   return (
     <Suspense fallback={<Loader/>}>
