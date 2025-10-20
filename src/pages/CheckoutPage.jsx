@@ -1,46 +1,65 @@
 import { useNavigate } from 'react-router-dom';
-import { currencyFormater } from '../helpers/formater';
+import { currencyFormater, percentageFormater } from '../helpers/formater';
 import { useCart } from '../hooks/useCart';
 import { clearCart, removeItem } from '../slices/cartSlice';
 import { useEffect, useState } from 'react';
-import { Trash2, ArrowLeft, Smartphone, CreditCard } from 'lucide-react';
+import { Trash2, ArrowLeft, Smartphone, CreditCard, } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { MAIN_LINKS_FRONTEND } from '../links';
 import { useDispatch, useSelector } from 'react-redux';
 import { createNewOrder } from '../services/order.service';
+import { MpesaModal } from '../components/modals/MpesaModal';
+import { PaymentConfirmationModal } from '../components/modals/PaymentConfirmationModal';
+import toast from 'react-hot-toast';
+import { getCurrentUsersPhoneNumber } from '../services/user.service';
 
 export const CheckoutPage = () => {
-  const [subTotal, setSubTotal] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState('');
+  const [subTotal, setSubTotal] = useState(0.00);
+  const [paymentMethod, setPaymentMethod] = useState('mobile');
   const [mobileNumber, setMobileNumber] = useState('');
   const [useRegisteredNumber, setUseRegisteredNumber] = useState(true);
-  const [showModal, setShowModal] = useState(false);  
-  const [shippingCost] = useState(250); // flat shipping fee
+  const [registeredNumber, setRegisteredNumber] = useState("");
+  const [showPaymentConfirmationModal, setShowPaymentConfirmationModal] = useState(false);
+  const [showPhoneInput, setShowPhoneInput] = useState(false);  
   const [placingOrder, setPlacingOrder] = useState(false);
   const [showMpesaModal, setShowMpesaModal] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  
-  const cartItems = useSelector(state => state.cart?.items || []);
-  const subtotal = cartItems.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);
-  const total = subtotal + shippingCost;
-
+  const [vat, setVat] = useState(0);
+  const [shippingFee, setShippingFee] = useState(0.00);
+  const [grandTotal, setGrandTotal] = useState(0.00);
+  const [vatRate, setVatRate] = useState(0.16);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { cart } = useCart();
   const { user, loading } = useAuth();
+  const { cart } = useCart();
+  const cartItems = useSelector(state => state?.cart?.items || []);
 
   useEffect(() => {
-    const cartItems = cart?.items || [];
-    const amount = cartItems.reduce(
-      (sum, item) => sum + item.unitPrice * item.qty,
-      0
-    );
-    setSubTotal(amount.toFixed(2));
-  }, [cart?.items]);
+    const cartTotals = cartItems.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);
+
+    // Shipping fee, 5% of amount cart totals
+    const accumulatedShippingFee = 0.05 * cartTotals;
+    setShippingFee(accumulatedShippingFee.toFixed(2));
+    setSubTotal(cartTotals.toFixed(2));
+    
+    // VAT, variabe rate; default: 16% of cart totals
+    const vat = cartTotals * vatRate;
+    setVat(vat.toFixed(2));
+
+    // Grand total or payable amount, cartTotals + vat + shippingFee
+    setGrandTotal(cartTotals + vat + accumulatedShippingFee);
+    if (cartItems.length <= 0) navigate('/', { replace: true });
+  }, [cartItems, navigate]);
+  
 
   useEffect(() => {
     if (!user && !loading) navigate('/', { replace: true });
-    if (user?.phone) setMobileNumber(user.phone);
+    const loadUserData = async () => {
+      const { data } = await getCurrentUsersPhoneNumber();
+      if (data) setRegisteredNumber(data?.trim()?.replace("+254 ", '0'));
+    }
+
+    loadUserData();
   }, [user, loading, navigate]);
 
   const handlePlaceOrder = async () => {
@@ -59,54 +78,69 @@ export const CheckoutPage = () => {
 
   const finalizeOrder = async () => {
     setShowMpesaModal(false);
-    setPlacingOrder(true);
-
     const orderRequestItems = cartItems.map(item => ({
       id: item.id,
       skuCode: item.skuCode,
       quantity: item.qty,
     }));
+    
+    if (!user) return toast.error("Unable to build customer data");
+    
+    const paymentInfo = {
+      method: paymentMethod,
+      mobileNumber: mobileNumber,
+    }
 
     const data = {
-      username: user?.email || user?.username,
       items: orderRequestItems,
+      paymentInfo: paymentInfo,
       shippingAddress: {
         id: '1234567890',
         city: 'Eldoret',
         zip: '3160',
         country: 'Kenya',
       },
-      paymentMethod,
-      mobileNumber,
     };
 
+    if (!placingOrder) setPlacingOrder(true);
     await createNewOrder(data).then(res => {
       if (res?.data) dispatch(clearCart());
-    }).finally(() => {
-      setPlacingOrder(false);
-      navigate(MAIN_LINKS_FRONTEND.HOME, { replace: true });
-    });
+      console.log(res);
+      navigate('/account');
+    }).finally(() => setPlacingOrder(false));
   };
 
   const handleRemoveCartItem = (id) => dispatch(removeItem(id));
-  const handleClearCart = () => dispatch(clearCart());
-  const handlePaymentSelection = (method) => setPaymentMethod(method);
+  const handleClearCart = () => {
+    dispatch(clearCart());
+    navigate('/');
+  }
+  const handlePaymentSelection = method => setPaymentMethod(method);
+
+  const handleUseRegisteredNumber = () => {
+    setShowPhoneInput(false);
+    setUseRegisteredNumber(true);
+  }
+
+  const handleShowPhoneInput = () => {
+    setUseRegisteredNumber(false);
+    setShowPhoneInput(true);
+  }
 
   const handleProceedToPay = () => {
-    if (!paymentMethod) return alert('Select a payment method first.');
-    setShowModal(true);
+    if (!user?.username) return toast.error('Please login to continue.');
+    setShowPaymentConfirmationModal(true);
   };
 
   const confirmPayment = () => {
-    setShowModal(false);
+    setShowPaymentConfirmationModal(false);
     // TODO: integrate with order API
     console.log('Proceeding to payment with:', {
       method: paymentMethod,
-      phone: useRegisteredNumber ? user?.phone : mobileNumber,
-      total: subTotal,
+      phone: useRegisteredNumber ? registeredNumber : mobileNumber,
+      total: grandTotal,
     });
-    dispatch(clearCart());
-    navigate('/orders/success');
+    handlePlaceOrder();    
   };
 
   return (
@@ -158,67 +192,106 @@ export const CheckoutPage = () => {
               </table>
             </div>
 
-            {/* Subtotal */}
-            <div className="flex justify-between text-lg font-semibold text-gray-800 dark:text-white mb-6">
-              <span>Subtotal</span>
-              <span className="text-orange-600 dark:text-orange-400">
-                {currencyFormater.format(subTotal)}
-              </span>
+            {/* Totals */}
+            <div className="dark:border-gray-700 mt-6 pt-4 space-y-2 text-gray-700 dark:text-gray-200">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span>{currencyFormater.format(subTotal)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>VAT {percentageFormater.format(vatRate.toFixed(2))}</span>
+                <span>{currencyFormater.format(vat)}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span>Shipping fee</span>
+                <span>{currencyFormater.format(shippingFee)}</span>
+              </div>
+              <div className="flex justify-between font-semibold text-lg border-t border-gray-300 dark:border-gray-600 pt-2">
+                <span>Payable Amount</span>
+                <span className="text-orange-600 dark:text-orange-400">
+                  {currencyFormater.format(grandTotal)}
+                </span>
+              </div>
             </div>
 
             {/* Payment Section */}
-            <div className="mb-6">
+            <div className="p-6">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">
                 Choose Payment Method
               </h3>
 
-              <div className="flex flex-col gap-3">
-                <label className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="mobile"
-                    checked={paymentMethod === 'mobile'}
-                    onChange={() => handlePaymentSelection('mobile')}
-                  />
-                  <Smartphone size={18} /> Pay with Mobile
-                </label>
-                <label className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="card"
-                    checked={paymentMethod === 'card'}
-                    onChange={() => handlePaymentSelection('card')}
-                  />
-                  <CreditCard size={18} /> Pay with Card
-                </label>
+              <div className='flex items-center px-4 py-2 justify-between'>
+                <div className="flex flex-col rounded-xl gap-3 px-4 py-2">
+                  <label className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                    <input
+                      type="radio"
+                      name="payment"
+                      value="mobile"
+                      checked={paymentMethod === 'mobile'}
+                      onChange={(e) => handlePaymentSelection(e.target.value)}
+                    />
+                    <Smartphone size={18} /> Pay with Mobile
+                  </label>
+                  <label className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                    <input
+                      type="radio"
+                      name="payment"
+                      value="card"
+                      checked={paymentMethod === 'card'}
+                      onChange={(e) => handlePaymentSelection(e.target.value)}
+                    />
+                    <CreditCard size={18} /> Pay with Card
+                  </label>
+                </div>
+
+                {paymentMethod === 'mobile' && (
+                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+
+                    {/* Choose payment number */}
+                    {registeredNumber && (
+                      <label className="flex items-center gap-3 text-gray-700 dark:text-gray-200 mb-2">
+                        <input
+                          type="checkbox"
+                          checked={useRegisteredNumber}
+                          onChange={handleUseRegisteredNumber}
+                        />
+                        Use registered number? {useRegisteredNumber && (registeredNumber)}
+                      </label>
+                    )}
+
+                    {!showPhoneInput && (
+                      <label className="flex items-center gap-3 text-gray-700 dark:text-gray-200 mb-2">
+                        <input
+                          type="checkbox"
+                          checked={showPhoneInput}
+                          onChange={handleShowPhoneInput}
+                        />
+                        Enter mobile number
+                      </label>
+                    )}
+
+                    {!useRegisteredNumber && showPhoneInput && (
+                      <div className='flex items-center gap-3 -z-50'>
+                        <input
+                          type="tel"
+                          placeholder={"Enter safaricom mobile number"}
+                          value={mobileNumber}
+                          onChange={(e) => setMobileNumber(e.target.value)}
+                          className="w-full px-4 py-2 mt-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                        />
+
+                        <button 
+                        className='flex relative items-center float-right'>
+                          Done
+                        </button>
+                      </div>
+                    )}
+
+                  </div>
+                )}
               </div>
 
-              {paymentMethod === 'mobile' && (
-                <div className="mt-4 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                  <label className="flex items-center gap-3 text-gray-700 dark:text-gray-200 mb-2">
-                    <input
-                      type="checkbox"
-                      checked={useRegisteredNumber}
-                      onChange={() =>
-                        setUseRegisteredNumber(!useRegisteredNumber)
-                      }
-                    />
-                    Use registered number ({user?.phone || 'N/A'})
-                  </label>
-
-                  {!useRegisteredNumber && (
-                    <input
-                      type="text"
-                      placeholder="Enter another mobile number"
-                      value={mobileNumber}
-                      onChange={(e) => setMobileNumber(e.target.value)}
-                      className="w-full px-4 py-2 mt-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                    />
-                  )}
-                </div>
-              )}
             </div>
 
             {/* Action Buttons */}
@@ -254,68 +327,15 @@ export const CheckoutPage = () => {
         )}
 
         {/* Payment Confirmation Modal */}
-        {showModal && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg w-[90%] max-w-md">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
-                Confirm Payment
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
-                You are about to pay{' '}
-                <span className="text-orange-500 font-bold">
-                  {currencyFormater.format(subTotal)}
-                </span>{' '}
-                via{' '}
-                <span className="font-semibold capitalize">
-                  {paymentMethod}
-                </span>
-                .
-              </p>
-
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmPayment}
-                  className="px-4 py-2 rounded-full bg-orange-500 hover:bg-orange-600 text-white"
-                >
-                  Confirm
-                </button>
-              </div>
-            </div>
-          </div>
+        {showPaymentConfirmationModal && (
+          <PaymentConfirmationModal subTotal={grandTotal} setShowModal={setShowPaymentConfirmationModal} confirmPayment={confirmPayment} paymentMethod={paymentMethod}/>
         )}
       </div>
 
       {/* MPESA Modal */}
       {showMpesaModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60">
-          <div className="p-8 bg-white rounded-xl shadow-lg dark:bg-gray-800">
-            {!paymentSuccess ? (
-              <>
-                <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-3">
-                  Processing MPESA Payment
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  An STK Push has been sent to <strong>{mobileNumber}</strong>.
-                </p>
-                <div className="w-10 h-10 mx-auto border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-              </>
-            ) : (
-              <>
-                <h3 className="text-xl font-semibold text-green-600 dark:text-green-400 mb-3">
-                  Payment Successful
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Your order is being processed. Redirecting...
-                </p>
-              </>
-            )}
-          </div>
+        <div>
+          <MpesaModal paymentSuccess={paymentSuccess}/>
         </div>
       )}
     </div>

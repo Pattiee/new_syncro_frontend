@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 
-export const Loader = ({ message = "Loading..." }) => {
+export const CustomLoader1 = ({ message = "Loading..." }) => {
   
   
   return (

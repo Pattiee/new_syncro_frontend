@@ -15,10 +15,11 @@ export const createNewOrder = async (data) => {
 
 
 export const getOrders = async ({ orderId }) => {
-    const params = {};
-    if (orderId) params.oid = orderId;
+    const getOrderParams = {};
+    if (orderId) getOrderParams.oid = orderId;
+    console.log("ORDER ID", getOrderParams?.oid)
 
-    return await AxiosConfig.ordersAxiosInstance.get(`${ORDER_SERVICE_BASE_URL}/me`, null, { params });
+    return await AxiosConfig.ordersAxiosInstance.get(`${ORDER_SERVICE_BASE_URL}/me`, { params: getOrderParams });
 }
 
 

@@ -1,15 +1,20 @@
 import AxiosConfig from "../config/axiosConfig";
 
-const ROLE_SERVICE_BASE_URL = process.env.REACT_APP_ROLE_URL;
+const ROLE_SERVICE_BASE_URL = process.env.REACT_APP_ROLE_API_BASE_URL;
 
 
-export const getAllRoles = async ({ roleId }) => {
-    try {
-        const params = {};
-        if (roleId) params.id = roleId;
-        return await AxiosConfig.roleAxiosInstance.get(ROLE_SERVICE_BASE_URL, params);
-    } catch (error) {
-        console.error(error);
-        return;
-    }
+export const getRoles = async ({ roleId }) => {
+    const params = {};
+    if (roleId) params.id = roleId;
+    return await AxiosConfig.roleAxiosInstance.get(ROLE_SERVICE_BASE_URL, { params: params });
+}
+
+export const updateAccountRoles = async ({ accountId, roleId }) => {
+    if (!accountId || !roleId) return; 
+    const body = {
+        aid: accountId,
+        rid: roleId,
+    };
+
+    return await AxiosConfig.authAxiosInstance.patch(`${ROLE_SERVICE_BASE_URL}/update-account-roles`, body);
 }

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { currencyFormater } from '../helpers/formater';
+import { currencyFormater, percentageFormater } from '../helpers/formater';
 import { useCart } from '../hooks/useCart';
 import { CartItem } from '../components/cards/CartItem';
 import { useDispatch } from 'react-redux';
@@ -8,28 +8,31 @@ import { useEffect, useState } from 'react';
 import { ShoppingCart, Trash2, ArrowLeft, CreditCard } from 'lucide-react';
 
 const CartSummary = () => {
+  const [vat, setVat] = useState(0);
   const [subTotal, setSubTotal] = useState(0);
+  const [cartTotals, setCartTotals] = useState(0);
+  const [vatRate, setVatRate] = useState(0.16);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { cart } = useCart();
 
   useEffect(() => {
     const cartItems = cart?.items || [];
-    const amount = cartItems.reduce(
-      (sum, item) => sum + item.unitPrice * item.qty,
-      0
-    );
-    setSubTotal(amount.toFixed(2));
-    if (cartItems.length <= 0) navigate('/', { replace: true });
-  }, [cart?.items, navigate]);
+    const amount = cartItems.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);
+    setCartTotals(amount.toFixed(2));
+    
+    const vat = amount.toFixed(2) * vatRate;
+    setVat(vat.toFixed(2));
+    
+    setSubTotal(amount + vat);
+    if (cartItems.length < 1) navigate('/', { replace: true });
+  }, [cart?.items, navigate, vatRate]);
 
   const handleClearCart = () => dispatch(clearCart());
   const handleRemoveCartItem = (id) => dispatch(removeItem(id));
   const handleNavigateHome = () => navigate('/');
   const handleCheckout = () => navigate('/checkout');
 
-  const vat = subTotal * 0.16;
-  const total = subTotal + vat;
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-gray-50 dark:bg-gray-900 px-4">
@@ -62,28 +65,29 @@ const CartSummary = () => {
 
             <div className="border-t border-gray-300 dark:border-gray-700 mt-6 pt-4 space-y-2 text-gray-700 dark:text-gray-200">
               <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span>{currencyFormater.format(subTotal)}</span>
+                <span>Cart totals</span>
+                <span>{currencyFormater.format(cartTotals)}</span>
               </div>
               <div className="flex justify-between">
-                <span>VAT (16%)</span>
+                <span>VAT {percentageFormater.format(vatRate.toFixed(2))}</span>
                 <span>{currencyFormater.format(vat)}</span>
               </div>
-              <div className="flex justify-between font-semibold text-lg border-t border-gray-300 dark:border-gray-600 pt-2">
-                <span>Total</span>
-                <span className="text-orange-600 dark:text-orange-400">
-                  {currencyFormater.format(total)}
-                </span>
-              </div>
-            </div>
 
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8 border-t pt-6">
-              <div className="flex items-center text-lg font-semibold text-gray-700 dark:text-gray-200">
-                Subtotal:&nbsp;
+              <div className="flex justify-between font-semibold text-lg border-t border-gray-300 dark:border-gray-600 pt-2">
+                <span>SubTotal</span>
                 <span className="text-orange-600 dark:text-orange-400">
                   {currencyFormater.format(subTotal)}
                 </span>
               </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-end items-center gap-4 mt-8 border-t pt-6">
+              {/* <div className="flex items-center text-lg font-semibold text-gray-700 dark:text-gray-200">
+                Subtotal:&nbsp;
+                <span className="text-orange-600 dark:text-orange-400">
+                  {currencyFormater.format(subTotal)}
+                </span>
+              </div> */}
 
               <div className="flex gap-3">
                 <button

@@ -3,10 +3,11 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Mail, Phone, Pen, CheckCircle, XCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader } from "../../../components/Loader";
+import { createUserProfile } from "../../../services/user.service";
+import { CustomLoader2 } from "../../../components/loaders/CustomLoader2";
 
 export const Profile = () => {
-  const { user, loading } = useAuth();
+  const { user, setUser, loading } = useAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -14,6 +15,7 @@ export const Profile = () => {
     familyName: "",
     phone: "",
     bio: "",
+    usernameVerified: user?.roles[0] !== null ?? false,
   });
 
   useEffect(() => {
@@ -28,15 +30,20 @@ export const Profile = () => {
     }
   }, [loading, navigate, user]);
 
-  if (loading) return <Loader />;
+  if (loading) return <CustomLoader2 message="Loading profile" />;
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSave = async () => {
-    // TODO: PATCH/PUT to backend
-    setIsEditing(false);
+    console.log(formData);
+    await createUserProfile(formData).then(res => {
+      setUser(res.data);
+    }).catch(err => console.error(err))
+    .finally(() => {
+      setIsEditing(false);
+    });
   };
 
   const handleCancel = () => {
@@ -46,6 +53,7 @@ export const Profile = () => {
       familyName: user?.familyName || "",
       phone: user?.phone || "",
       bio: user?.bio || "",
+      usernameVerified: false,
     });
   };
 
@@ -69,19 +77,24 @@ export const Profile = () => {
       {/* Info */}
       <div className="flex-1 space-y-4 text-gray-800 dark:text-gray-100 w-full">
         <h2 className="text-2xl font-semibold">
-          {user?.givenName || "Given name"} {user?.familyName || "Family name"}
+          {user && (
+            <div className="flex gap-3">
+              {user?.givenName ? <span>{user?.givenName}</span> : <span className="text-orange-100">Given name</span>}
+              {user?.familyName ? <span>{user?.familyName}</span> : <span className="text-orange-100">Family name</span>}
+            </div>
+          )}
         </h2>
 
         {/* Email */}
         <div className="flex items-center gap-2 text-sm">
           <Mail size={18} />
           <span>{user?.username}</span>
-          {user?.emailVerified ? (
+          {user?.usernameVerified ? (
             <span className="flex items-center text-green-500 text-sm gap-1">
               <CheckCircle size={16} /> Verified
             </span>
           ) : (
-            <span className="flex items-center text-red-500 text-sm gap-1">
+            <span className="flex items-center text-orange-300 text-sm gap-1">
               <XCircle size={16} /> Unverified
             </span>
           )}

@@ -10,17 +10,19 @@ import toast from 'react-hot-toast';
 import { ROLES } from '../roles';
 import AddToCartBtn from '../components/AddToCartBtn';
 import { currencyFormater } from '../helpers/formater'
-import { Loader } from '../components/Loader';
 import { useAuth } from '../hooks/useAuth';
+import { CustomLoader2 } from '../components/loaders/CustomLoader2';
+import { PhoneCall } from 'lucide-react';
 
 const ProductDetailsPage = () => {
   const [product, setProduct] = useState(null);
   const [loadingProduct, setLoadingProduct] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [ canDelete, setCanDelete ] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [ searchParams ] = useSearchParams();
   const productId = searchParams.get('id');
-  const { user, loading } = useAuth();
+  const { user, loading } = useAuth(); 
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -39,33 +41,40 @@ const ProductDetailsPage = () => {
     return () => clearInterval(interval);
   }, [product]);
 
-
-  const handleDeleteProduct = async () => {
-    if (!product || !user.roles?.includes(ROLES.ADMIN)) return;
-    const { id } = product;
-
-    setDeleting(true);
-    await deleteProductById(id.trim()).then(res => {
-      toast.success(res?.data);
-      navigate("/");
-    }).catch(err => {
-      toast.error(err?.response?.data?.error);
-    }).finally(() => {
-      setDeleting(false);
-    });
-  } 
+  // TODO: Evaluate so that the moderator can delete a products if it breaks community laws and rules.
 
   useEffect(() => {
-    
-  }, [productId, navigate]);
+    if (product !== null && user !== null) {
+      const hasRequiredRole = user?.roles.includes(ROLES.VENDOR) || user?.roles.includes(ROLES.MODERATOR);
+      const hasAuthorityToDelete = hasRequiredRole && user.id === product.vid;
+      setCanDelete(hasAuthorityToDelete);
+    }
+  }, [user, product, productId, loading, loadingProduct])
+
+
+  const handleDeleteProduct = async () => {
+    if (product && (user?.roles.includes(ROLES.VENDOR) || user?.roles.includes(ROLES.MODERATOR))) {
+      const { id } = product;
+  
+      if (!deleting) setDeleting(true);
+      await deleteProductById(id.trim()).then(res => {
+        toast.success(res?.data);
+        navigate("/");
+      }).catch(err => {
+        console.error(err)
+        // toast.error(err?.response?.data?.error);
+      }).finally(() => setDeleting(false));
+    }
+  } 
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         const res = await getProducts({ id: productId });
-        if (res) setProduct(res.data?.body);
+        console.log(res);
+        if (res) setProduct(res?.data?.body);
       } catch (error) {
-        navigate("/", {replace: true, })
+        navigate("/", {replace: true, });
       } finally {
         setLoadingProduct(false);
       }
@@ -74,14 +83,16 @@ const ProductDetailsPage = () => {
     if (productId) fetchProduct();
   }, [navigate, productId]);
 
-  // useEffect(() => {
-  //   const timeout = setTimeout(() => {
-      
-  //   }, 5000);
-  //   return () => clearTimeout(timeout);
-  // }, []);
+  const handleContactSeller = async () => {
+    if (product !== null && user !== null) {
+      console.log("Contacting seller/vendor via ", product.vid);
+      toast.success("Comming soon...")
+    } else {
+      if (user === null) return navigate("/login");
+    }
+  }
 
-  if (loadingProduct) return (<Loader message={"Loading."}/>);
+  if (loadingProduct || !product) return <CustomLoader2 message={"Loading product details."}/>;
 
 
   const discounted = product?.percent_discount > 0;
@@ -98,9 +109,9 @@ const ProductDetailsPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
         >
-          <div className="grid grid-cols-1 gap-8 p-6 bg-white drop-shadow-xl md:grid-cols-2 dark:bg-gray-800 md:p-10 rounded-2xl">
+          <div className="grid grid-cols-1 gap-8 p-6 bg-white drop-shadow-2xl md:grid-cols-2 dark:bg-gray-800 md:p-10 rounded-2xl">
             <div 
-              className="aspect-[4/3] w-full rounded-2xl shadow-md overflow-hidden"
+              className="aspect-[4/3] w-full rounded-2xl bg-transparent overflow-hidden"
               onClick={() => setShowModal(true)}
             >
               <div className="relative w-full aspect-[4/3] overflow-hidden rounded-2xl">
@@ -109,7 +120,7 @@ const ProductDetailsPage = () => {
                     key={product.imageUrls[currentImageIndex]}
                     src={product.imageUrls[currentImageIndex]}
                     alt={product.name}
-                    className="object-cover w-full h-full rounded-2xl"
+                    className="w-full h-full object-contain rounded-2xl"
                     initial={{ x: 100, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     exit={{ x: -100, opacity: 0 }}
@@ -181,35 +192,38 @@ const ProductDetailsPage = () => {
                 </p>
               </div>
 
-              <div className="flex px-4 py-2 rounded-lg justify-between">
-                
+              <div className="flex px-4 py-2 rounded-lg items-center justify-between">
+
                 {/* Add to cart */}
                 <div>
                   { product && <AddToCartBtn product={product}/>}             
                 </div>
 
-                {/* Delete product */}
-                <div>
-                  {user && user?.roles?.includes(ROLES.ADMIN) && (
-                    <button
-                      disabled={deleting || loadingProduct}
-                      onClick={handleDeleteProduct}
-                      className={`${ deleting || loadingProduct ? 'bg-red-300 hover:bg-red-400' : 'bg-red-500 hover:bg-red-600' } px-6 py-3 text-sm font-medium text-white transition-all duration-300 rounded-full shadow`}
-                    >
-                      Delete
-                    </button>
-                  )}
-                  </div>
-                </div>
-
-
-
+                {/* Delete product or Contact seller */}
+                {canDelete ? (
+                  <button
+                    disabled={deleting || user?.id === product.vid || loadingProduct}
+                    onClick={handleDeleteProduct}
+                    className={`${ deleting || loadingProduct ? 'bg-red-300 hover:bg-red-400' : 'bg-red-500 hover:bg-red-600' } px-6 py-3 text-sm font-medium text-white transition-all duration-300 rounded-full shadow`}
+                  >
+                    Delete
+                  </button>
+                ) : (
+                  <button 
+                    onClick={handleContactSeller}
+                    className='flex bg-green-500 hover:bg-green-700 px-4 py-2 rounded-full text-white text-sm justify-between items-center gap-3 transition-all'
+                  >
+                    <PhoneCall/>
+                    <span>Contact Seller</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
           <ProductDetails product={product} />
           <ProductReviews />
-          <RelatedProducts />
+          <RelatedProducts productCategory={product?.category} productId={productId}/>
 
           {/* MODAL */}
           {showModal && (
@@ -245,7 +259,7 @@ const ProductDetailsPage = () => {
               <button
                 onClick={() =>
                   setCurrentImageIndex(prev =>
-                    prev === product.imageUrls.length - 1 ? 0 : prev + 1
+                    prev === product?.imageUrls?.length - 1 ? 0 : prev + 1
                   )
                 }
                 className="absolute right-6 text-white text-4xl"

@@ -65,7 +65,7 @@ export const Register = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4 bg-transparent">
+    <div className="flex items-center justify-center min-h-screen px-4 bg-gray-100">
       <div className='w-full max-w-md p-8 bg-white shadow-xl dark:bg-gray-800 rounded-2xl'>
 
         <div className='mb-4 rounded-full'>

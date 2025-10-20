@@ -15,11 +15,11 @@ export const AddBranch = () => {
     });
 
     const onSubmit = async (data) => {
-        setSubmitting(true);
+        if (!submitting) setSubmitting(true);
         try {
             console.log(data);
         //   const res = await createLocation(data);
-            toast.success('✅ Location added successfully!');
+            toast.success('Location added successfully!');
             reset();
         //   navigate('/');
         } catch (err) {

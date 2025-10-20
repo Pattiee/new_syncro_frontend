@@ -35,16 +35,16 @@ const AdminLayout = () => {
   const closeMenu = () => setMenuOpen(false);
 
   const adminLinks = [
-    { label: 'Dashboard', to: '/admin', roles: [ROLES.ADMIN, ROLES.FOUNDER] },
-    { label: 'Add Products', to: ADMIN_LINKS_FRONTEND.ADD_PRODUCTS, roles: [ROLES.ADMIN] },
-    { label: 'Categories', to: ADMIN_LINKS_FRONTEND.CATEGORIES, roles: [ROLES.ADMIN] },
-    { label: 'Branches', to: ADMIN_LINKS_FRONTEND.BRANCHES, roles: [ROLES.ADMIN] },
-    { label: 'Users', to: ADMIN_LINKS_FRONTEND.USERS, roles: [ROLES.ADMIN, ROLES.FOUNDER] },
+    { label: 'Dashboard', to: '/admin', roles: [ROLES.MANAGER, ROLES.MODERATOR] },
+    { label: 'Add Products', to: ADMIN_LINKS_FRONTEND.ADD_PRODUCTS, roles: [ROLES.MANAGER] },
+    { label: 'Categories', to: ADMIN_LINKS_FRONTEND.CATEGORIES, roles: [ROLES.MANAGER] },
+    { label: 'Branches', to: ADMIN_LINKS_FRONTEND.BRANCHES, roles: [ROLES.MANAGER] },
+    { label: 'Users', to: ADMIN_LINKS_FRONTEND.USERS, roles: [ROLES.MANAGER, ROLES.SUPER_MANAGER] },
   ];
 
   return (
     <Fragment>
-      <main className="pt-20 p-6">
+      <main className="">
         <Outlet />
       </main>
     </Fragment>

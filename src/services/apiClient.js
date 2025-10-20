@@ -6,6 +6,7 @@ axios.defaults.withCredentials = true;
 
 export const apiGatewayClient = axios.create({
   baseURL: GATEWAY_BASE_URL,
+  withCredentials: true,
 });
 
 // attach token from Redux store before each request

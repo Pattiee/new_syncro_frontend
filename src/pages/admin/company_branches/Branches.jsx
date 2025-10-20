@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { getBranches } from '../../../services/branch.service';
-import { Loader } from '../../../components/Loader';
+import { CustomLoader2 } from '../../../components/loaders/CustomLoader2';
 import { BranchCard } from '../../admin/company_branches/BranchCard';
 import { Link } from 'react-router-dom';
 import { ADMIN_LINKS_FRONTEND } from '../../../links';
@@ -13,19 +13,15 @@ export const Branches = () => {
         const loadData = async () => {
             if (!loadingBranches) setLoadingBranches(true);
             const requests = [
-                await getBranches({}),
+                // await getBranches({}),
             ];
 
             await Promise.allSettled(requests).then(response => {
-                const [resBranches] = response.map(res => res.status === "fulfilled" ? res.value : []);
-
-                // setBranches(resBranches);
-                console.log("RES BRANCHES AGAIN: ", resBranches);
+                // const [resBranches] = response.map(res => res.status === "fulfilled" ? res.value : []);
+                // console.log("RES BRANCHES AGAIN: ", resBranches);
             }).catch(err => {
                 console.error("ERROR BRANCHES AGAIN: ", err);
-            }).finally(() => {
-                setLoadingBranches(false);
-            });
+            }).finally(() => setLoadingBranches(false));
         };
         
         loadData();
@@ -52,7 +48,7 @@ export const Branches = () => {
             
                   {/* Body */}
                 {loadingBranches
-                    ? <Loader/>
+                    ? <CustomLoader2/>
                     : branches.length > 0
                         ? (
                             <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">

@@ -8,33 +8,32 @@ export const useProducts = () => {
     const [filter, setFilter] = useState('');
     const [featured, setFeatured] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [errMessage, setErrMessage] = useState('');
     const { debouncedValue } = useDebounce({ value: searchQuery });
 
     useEffect(() => {
         const loadProducts = async () => {
-          const requestList = [
-            await getProducts({ category: filter ? filter : null, isFeatured: featured, search: debouncedValue ? debouncedValue : null }),
-          ];
-    
           try {
-            const [productResponse, ] = await Promise.allSettled(requestList);
-      
-            if (productResponse.status === "fulfilled") {
-              const responseData = productResponse?.value?.data;
-      
-              const categoriesData = responseData?.categories ?? [];
-              const productsData = responseData?.products ?? [];
-      
-              setCategories(categoriesData);
-              setProducts(productsData);
-            } else {
-              // setErrMessage(productResponse.reason);
+            if (!loading){
+              setLoading(true);
+              const requestList = [
+                await getProducts({ category: filter ? filter : null, isFeatured: featured, search: debouncedValue ? debouncedValue : null }),
+              ];
+        
+              const [productResponse, ] = await Promise.allSettled(requestList);
+        
+              if (productResponse.status === "fulfilled") {
+                const responseData = productResponse?.value?.data;
+  
+                setProducts(responseData);
+              } else {
+                // setErrMessage(productResponse.reason);
+              }
             }
           } catch (error) {
-            console.error(error);
-          } finally {
+            
+          } finally{
             setLoading(false);
           }
         }

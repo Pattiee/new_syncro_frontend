@@ -3,7 +3,6 @@ import { User, TruckIcon, MapPinIcon, Settings, LogOut } from 'lucide-react';
 import { TabButton } from '../../components/TabButton';
 import { getOrders } from '../../services/order.service';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader } from '../../components/Loader';
 import { useAuth } from '../../hooks/useAuth';
 import { Profile } from './tabs/Profile';
 import { Orders } from './tabs/Orders';
@@ -60,7 +59,7 @@ const Account = () => {
             {/* Right: Logout */}
             {user && !loading && (
               <div className='flex gap-3 items-center'>
-                <span className='font-medium'>{user?.username}</span>
+                <span className='font-medium text-gray-800 dark:text-white'>{user?.username}</span>
 
                 <button
                   onClick={handleLogout}

@@ -1,5 +1,10 @@
 export const ROLES = {
-    FOUNDER: process.env.REACT_APP_ROLE_FOUNDER,
+    CEO: process.env.REACT_APP_ROLE_CEO,
     ADMIN: process.env.REACT_APP_ROLE_ADMIN,
-    USER: process.env.REACT_APP_ROLE_USER,
+    CUSTOMER: process.env.REACT_APP_ROLE_CUSTOMER,
+    SUPER_MANAGER: process.env.REACT_APP_ROLE_SUPER_MANAGER,
+    MODERATOR: process.env.REACT_APP_ROLE_MODERATOR,
+    GUEST: process.env.REACT_APP_ROLE_GUEST,
+    VENDOR: process.env.REACT_APP_ROLE_VENDOR,
+    MANAGER: process.env.REACT_APP_ROLE_MANAGER,
 }

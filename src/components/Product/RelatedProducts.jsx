@@ -1,20 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { useProducts } from '../../hooks/useProducts';
 
-const RelatedProducts = ({ products }) => {
-  const displayProducts = products || [...Array(8)].map((_, i) => ({
-    id: i,
-    name: `Product ${i + 1}`,
-    category: 'Category',
-    price: 39.99,
-    image: null,
-  }));
-
+const RelatedProducts = ({ productCategory = '', productId = '' }) => {
+  const { products, loading } = useProducts();
   const containerRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const itemWidth = 200; // min-w-[180px] + margin adjustment
   const intervalRef = useRef(null);
+
+
+   // Get products for this category only
+  const categoryProducts = products?.[productCategory] || [];
+
+  // Exclude the current product
+  const related = categoryProducts.filter(p => p.id !== productId);
+
+  if (!related.length) return <p>No related products.</p>;
 
   const scrollToIndex = (index) => {
     if (containerRef.current) {
@@ -27,19 +30,19 @@ const RelatedProducts = ({ products }) => {
   };
 
   const nextSlide = () => {
-    const nextIndex = currentIndex + 1 >= displayProducts.length ? 0 : currentIndex + 1;
+    const nextIndex = currentIndex + 1 >=related.length ? 0 : currentIndex + 1;
     scrollToIndex(nextIndex);
   };
 
   const prevSlide = () => {
-    const prevIndex = currentIndex - 1 < 0 ? displayProducts.length - 1 : currentIndex - 1;
+    const prevIndex = currentIndex - 1 < 0 ? related.length - 1 : currentIndex - 1;
     scrollToIndex(prevIndex);
   };
 
-  useEffect(() => {
-    intervalRef.current = setInterval(nextSlide, 3000);
-    return () => clearInterval(intervalRef.current);
-  }, [currentIndex]);
+  // useEffect(() => {
+  //   intervalRef.current = setInterval(nextSlide, 3000);
+  //   return () => clearInterval(intervalRef.current);
+  // }, [currentIndex]);
 
   return (
     <div className="mt-16 max-w-6xl mx-auto px-4 relative">
@@ -65,16 +68,16 @@ const RelatedProducts = ({ products }) => {
           dragConstraints={{ left: 0, right: 0 }}
           whileTap={{ cursor: 'grabbing' }}
         >
-          {displayProducts.map((product, index) => (
+          {!loading && related.map((product, index) => (
             <motion.div
               key={product.id}
               whileHover={{ scale: 1.05 }}
               className="min-w-[180px] flex-shrink-0 bg-white dark:bg-gray-800 shadow rounded-lg p-4 hover:shadow-lg transition transform"
             >
               <div className="w-full h-40 bg-gray-200 dark:bg-gray-700 mb-4 rounded-lg overflow-hidden flex items-center justify-center">
-                {product.image ? (
+                {(product?.imageUrl || product?.imageUrls[0]) ? (
                   <img
-                    src={product.image}
+                    src={product?.imageUrl || product?.imageUrls?.[0] || 'https://via.placeholder.com/300x400'}
                     alt={product.name}
                     className="w-full h-full object-cover rounded-lg"
                   />
@@ -101,7 +104,7 @@ const RelatedProducts = ({ products }) => {
 
       {/* Dots */}
       <div className="flex justify-center mt-4 space-x-2">
-        {displayProducts.map((_, index) => (
+        {!loading && related.map((_, index) => (
           <button
             key={index}
             className={`w-3 h-3 rounded-full transition ${

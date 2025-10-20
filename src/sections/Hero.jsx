@@ -22,7 +22,7 @@ const Hero = () => {
         <h1 className="mb-2 font-serif text-3xl text-orange-500 font-bold sm:text-4xl">
           Welcome to {SHOP_NAME}
         </h1>
-        <p className="mb-4 text-base font-light sm:text-lg">{TAG_LINE}</p>
+        <p className="mb-4 text-base text-gray-500 dark:text-white font-light sm:text-lg">{TAG_LINE}</p>
         <a
           href="/shop"
           className="px-5 py-2 font-semibold text-orange-600 bg-gray-100 rounded-full shadow hover:bg-gray-200 transition"

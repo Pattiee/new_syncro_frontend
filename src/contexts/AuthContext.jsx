@@ -5,10 +5,12 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { clearCart } from "../slices/cartSlice";
 import { useDispatch } from "react-redux";
 import toast from "react-hot-toast";
+import { ROLES } from "../roles";
 
 const AuthContext = createContext({
   user: null,
-  loading: true,
+  setUser: null,
+  loading: false,
   setAuthenticated: () => {},
   logout: () => {}
 });
@@ -18,27 +20,28 @@ export const AuthProvider = ({ children }) => {
   const dispatch = useDispatch();
   const { pathname } = useLocation();
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
     const loadCurrentUser = async () => {
-      setLoading(true);
       try {
-        const fullProfileNeeded = pathname.includes("/account") && user?.emailVerified;
+        if (!loading) setLoading(true);
+        const fullProfileNeeded = pathname.includes("/account") && user?.roles?.length > 0;
 
         if (fullProfileNeeded) {
           const { data } = await getUserProfile();
           if (data) {
             setUser(data);
             setAuthenticated(true);
+            console.log(data);
           }
         } else {
           await loadBasicProfile();
         }
       } catch (error) {
-        console.error("Failed to load user:", error);
+        console.error(error)
       } finally {
         setLoading(false);
       }
@@ -47,12 +50,9 @@ export const AuthProvider = ({ children }) => {
     loadCurrentUser();
   }, [authenticated, pathname]);
 
-  useEffect(() => {
-    if (!user && !loading) navigate("/", { replace: true });
-  }, []);
-
   const loadBasicProfile = async () => {
     const res = await getCurrentAccount();
+    console.log(res?.data);
     if (res?.data) {
       setUser(res.data);
       setAuthenticated(true);
@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, setAuthenticated, logout }}>
+    <AuthContext.Provider value={{ user, setUser, loading, setAuthenticated, logout }}>
       {children}
     </AuthContext.Provider>
   );

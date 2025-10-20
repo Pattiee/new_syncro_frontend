@@ -51,23 +51,7 @@ export const logoutBackendApi = async () => {
     return await AxiosConfig.authAxiosInstance.post(`${AUTH_SERVICE_BASE_URL}/logout`);
 }
 
-export const patchUserRoles = async ({ userId, roleId }) => {
-    try {
-        if (!userId || !roleId) return; 
-        const params = {};
-        const body = {};
-    
-        params.id = userId;
-        body.id = roleId;
-    
-        return await AxiosConfig.authAxiosInstance.patch(AUTH_SERVICE_BASE_URL, body, { params });
-    } catch (error) {
-        console.error(error);
-        return;
-    }
-}
-
-// Get userProfile
+// Get CurrentAccount
 export const getCurrentAccount = async () => {
     return await AxiosConfig.authAxiosInstance.get(`${AUTH_SERVICE_BASE_URL}/me`);
 }

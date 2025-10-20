@@ -1,8 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader } from '../components/Loader';
+import { CustomLoader2 } from '../components/loaders/CustomLoader2';
 import { SearchBar } from '../components/SearchBar';
-import ProductCard from '../components/Product/ProductCard';
+import BadProductCard from '../components/Product/BadProductCard';
 import { useProducts } from '../hooks/useProducts';
+import { ProductCard } from '../components/Product/ProductCard';
+import ProductsPerCategory from './ProductsPerCategory';
 
 export const Products = () => {
   const {
@@ -17,22 +19,22 @@ export const Products = () => {
     setSearchQuery
   } = useProducts();
 
-  const handleUpdateFilter = (category) => {
-    const current = (filter ?? '').trim().toLowerCase();
-    const selected = category?.name?.trim().toLowerCase();
-    setFilter(current === selected ? '' : category?.name);
-  };
+  // const handleUpdateFilter = (category) => {
+  //   const current = (filter ?? '').trim().toLowerCase();
+  //   const selected = category?.name?.trim().toLowerCase();
+  //   setFilter(current === selected ? '' : category?.name);
+  // };
 
   const handleIsFeatured = () => setFeatured(!featured);
   const handleSearch = (query = '') => setSearchQuery(query.trim().toLowerCase());
 
-  if (loading) return <Loader />;
+  if (loading) return <CustomLoader2 />;
 
-  const filteredProducts = products.filter(product => {
-    if (featured && !product.featured) return false;
-    if (filter && product.category.toLowerCase() !== filter.toLowerCase()) return false;
-    return true;
-  });
+  // const filteredProducts = products.filter(product => {
+  //   if (featured && !product.featured) return false;
+  //   if (filter && product.category.toLowerCase() !== filter.toLowerCase()) return false;
+  //   return true;
+  // });
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -69,7 +71,7 @@ export const Products = () => {
               return (
                 <motion.button
                   key={category.id}
-                  onClick={() => handleUpdateFilter(category)}
+                  // onClick={() => handleUpdateFilter(category)}
                   whileTap={{ scale: 0.95 }}
                   animate={{ scale: isSelected ? 1.05 : 1 }}
                   transition={{ type: 'spring', stiffness: 300 }}
@@ -90,13 +92,15 @@ export const Products = () => {
         </div>
       )}
 
+      {products && Object.entries(products).map(([category, items], idx) => (<ProductsPerCategory key={idx} productCategory={category} products={items}/>))}
+
       {/* Filtered Products with animated transitions */}
-      {filteredProducts.length > 0 ? (
+      {/* {filteredProducts.length > 0 ? (
         <div>
           {filter && (
             <h2 className="mb-4 text-2xl font-semibold text-orange-600 dark:text-orange-400">{filter}</h2>
           )}
-          <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+          <div className="grid gap-4 grid-cols-1 px-28 sm:px-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
             <AnimatePresence>
               {filteredProducts.map((product, index) => (
                 <motion.div
@@ -122,7 +126,7 @@ export const Products = () => {
             </span>
           )}
         </div>
-      )}
+      )} */}
     </div>
   );
 };

@@ -1,16 +1,16 @@
 import React from 'react'
 
 export const OrderItem = ({ item }) => {
-    const { id, name, price, quantity } = item;
+    const { id, name, quantity, unitPrice, subTotal } = item;
     return (
         <>
-            <div>
+            <div className='flex bg-orange-100'>
                 <span>
                     { name }
                 </span>
                 
                 <span>
-                    { price }
+                    { unitPrice }
                 </span>
                 
                 <span>{ quantity }</span>

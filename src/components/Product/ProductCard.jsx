@@ -1,9 +1,10 @@
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { useProducts } from '../../hooks/useProducts';
 import { useNavigate } from 'react-router-dom';
-import { FiStar } from 'react-icons/fi';
-import { currencyFormater } from '../../helpers/formater';
 
-const ProductCard = ({ product, index }) => {
+export const ProductCard = ({ product }) => {
   const navigate = useNavigate();
   const discountedPrice =
     product?.percent_discount > 0
@@ -12,65 +13,36 @@ const ProductCard = ({ product, index }) => {
 
   const handleCardClick = () => navigate(`/product?id=${product?.id ?? ''}`);
 
+
   return (
-    <motion.div
-      className="relative flex flex-col justify-between shadow-md rounded-xl cursor-pointer bg-white dark:bg-gray-800 hover:shadow-lg overflow-hidden"
-      style={{ aspectRatio: '3/4' }}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, duration: 0.4 }}
-      whileHover={{ scale: 1.03 }}
-    >
-      {/* Featured Star */}
-      {product.featured && (
-        <FiStar
-          size={20}
-          color="orange"
-          className="absolute top-2 left-2 z-10"
-          title="Featured"
-        />
-      )}
+    <div>
+        <motion.div
+            key={product.id}
+              whileHover={{ scale: 1.01 }}
+              className="min-w-[180px] flex-shrink-0 bg-white dark:bg-gray-800 shadow rounded-lg hover:shadow-lg transition transform"
+            >
+              <div
+                onClick={handleCardClick}
+                className="w-full h-40 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden flex items-center justify-center">
+                {product?.imageUrls ? (
+                  <img
+                    draggable={false}
+                    src={product?.imageUrls[0] || 'https://via.placeholder.com/300x400'}
+                    alt={product.name}
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                ) : (
+                  <span className="text-gray-400 dark:text-gray-500">No Image</span>
+                )}
+              </div>
 
-      {/* Discount Text */}
-      {product?.percent_discount > 0 && (
-        <span className="absolute top-2 right-2 text-orange-500 font-semibold text-sm z-10">
-          -{product.percent_discount}%
-        </span>
-      )}
+              <div className='flex flex-col p-4'>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{product.name}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{product.category}</p>
+                <p className="mt-2 font-bold text-orange-500 dark:text-orange-400">${discountedPrice}</p>
+              </div>
 
-      {/* Image */}
-      <div
-        onClick={handleCardClick}
-        className="w-full h-3/4 flex items-center justify-center overflow-hidden"
-      >
-        <img
-          src={product?.imageUrl || product?.imageUrls?.[0] || 'https://via.placeholder.com/300x400'}
-          alt={product?.name}
-          className="w-full h-full object-cover"
-        />
-      </div>
-
-      {/* Info */}
-      <div className="p-2 h-1/4 flex flex-col justify-between">
-        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
-          {product?.name}
-        </h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-          {product?.desc || 'No description'}
-        </p>
-        <div className="flex items-center justify-between mt-1">
-          <p className="text-orange-600 dark:text-orange-400 font-semibold text-sm">
-            {currencyFormater.format(discountedPrice)}
-          </p>
-          {product?.percent_discount > 0 && (
-            <p className="text-xs text-gray-400 line-through dark:text-gray-600">
-              {currencyFormater.format(product.price)}
-            </p>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
-export default ProductCard;
+        </motion.div>
+    </div>
+  )
+}

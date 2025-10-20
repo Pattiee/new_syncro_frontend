@@ -7,7 +7,7 @@ const UserCard = ({ user }) => {
   const navigate = useNavigate();
 
   const getInitials = () => {
-    return `${user?.firstName?.charAt(0) ?? ''}${user?.username?.charAt(0) ?? ''}`.toUpperCase();
+    return `${user?.givenName?.charAt(0) ?? ''}${user?.username?.charAt(0) ?? ''}`.toUpperCase();
   };
 
   const handleUserClick = () => {
@@ -21,9 +21,9 @@ const UserCard = ({ user }) => {
       className="cursor-pointer bg-white dark:bg-gray-800 shadow-lg rounded-full p-3 transition hover:scale-[1.01] hover:shadow-xl flex flex-col"
     >
       <div className="flex items-center gap-4">
-        {user?.imageUrl ? (
+        {user?.avatarUrl ? (
           <img
-            src={user?.imageUrl}
+            src={user?.avatarUrl}
             alt="profile"
             className="object-cover w-12 h-12 rounded-full"
           />
@@ -36,7 +36,7 @@ const UserCard = ({ user }) => {
           <div className='flex justify-between'>
             {/* Username */}
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {user.firstName} {user.lastName}
+              {user?.givenName} {user?.familyName}
             </h3>
 
             {/* Account status */}
@@ -44,7 +44,7 @@ const UserCard = ({ user }) => {
               ? 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100'
               : 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100'}`}
             >
-              {user?.enabled ? 'Active' : 'Inactive'}
+              {user?.usernameVerified ? 'Verified' : 'Not Verified'}
             </span>
           </div>
           <span className="text-sm text-gray-600 dark:text-gray-400">{user?.username}</span>
@@ -52,8 +52,8 @@ const UserCard = ({ user }) => {
       </div>
 
       <div className="text-sm text-gray-700 dark:text-gray-300">
-        <p>{user?.phoneNumber}</p>
-        <p>{user.region}</p>
+        <p>{user?.phone}</p>
+        <p>{user?.region}</p>
       </div>
     </motion.div>
   );

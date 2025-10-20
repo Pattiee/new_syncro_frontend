@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export const OrderCard = ({ order }) => {
-  const { id, code, status, timeStamp, totals } = order;
+  const { id, code, status, timeStamp } = order;
   const navigate = useNavigate();
 
   const handleShowOrderDetails = () => {
@@ -11,9 +11,13 @@ export const OrderCard = ({ order }) => {
   }
 
   return (
-    <motion.div onClick={handleShowOrderDetails} className="flex flex-col gap-2 p-4 bg-gray-100 rounded-lg shadow dark:bg-gray-800">
-      <div className="flex items-center justify-between">
-        <span className="font-semibold text-orange-600 dark:text-orange-400">Order code: {code}</span>
+    <motion.div 
+      onClick={handleShowOrderDetails} 
+      className="flex flex-col gap-2 p-4 my-2 bg-gray-100 rounded-lg shadow dark:bg-gray-700"
+    >
+      <div className="flex p-2 items-center justify-between">
+        <span className="font-semibold text-orange-600 dark:text-orange-400">Order: {code}</span>
+        <span className="font-medium">Date: {timeStamp}</span>
         <span
           className={`text-sm px-2 py-1 rounded-full ${
             status === 'Cancelled'
@@ -25,16 +29,6 @@ export const OrderCard = ({ order }) => {
           {status}
         </span>
       </div>
-
-      <div className="text-sm text-gray-700 dark:text-gray-300">
-        Order date: <span className="font-medium">{timeStamp}</span>
-      </div>
-
-      {totals != null && (
-        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-          Total: <span className="text-orange-500 dark:text-orange-300">KSh {totals}</span>
-        </div>
-      )}
     </motion.div>
   );
 };

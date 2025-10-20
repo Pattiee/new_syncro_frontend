@@ -31,6 +31,7 @@ import Account from './pages/account/Account';
 import { VerifyEmail } from './pages/auth/VerifyEmail';
 import { CreatePassword } from './pages/auth/CreatePassword';
 import { CheckoutPage } from './pages/CheckoutPage';
+import { routes } from './routes';
 
 
 const App = () => {
@@ -38,9 +39,9 @@ const App = () => {
   const { cart } = useCart();
 
   const hideFooterOn = ['/auth', '/login', '/verify', '/create-password', '/register', '/checkout'];
-  const hideCartOn = ['/auth', '/login', '/verify', '/create-password', '/account', '/admin', '/register', '/cart-summary', '/checkout', '/admin/*'];
-  const hideNavbarOn = ['/auth', '/staff', '/admin', '/verify', '/create-password', '/login', '/register', '/contact', '/account', '/cart-summary', '/checkout', '/admin/*'];
-  const showFloatingCheckoutButton = ['/checkout', '/verify', '/create-password', '/login', '/admin', '/account', '/register', '/', '/product'];
+  const hideCartOn = ['/auth', '/login', '/order', '/verify', '/create-password', '/account', '/manager', '/register', '/cart-summary', '/checkout'];
+  const hideNavbarOn = ['/auth', '/staff', '/manager', '/verify', '/create-password', '/login', '/register', '/contact', '/account', '/cart-summary', '/checkout'];
+  const hideFloatingCheckoutButton = ['/checkout', '/order', '/verify', '/create-password', '/login', '/manager', '/account', '/register', '/', '/product'];
   const hideContactsNavOn = ['/login', '/register'];
 
    // check if navbar should render
@@ -48,7 +49,7 @@ const App = () => {
   const isNavbarVisible = !hideNavbarOn.includes(pathname);
   const isContactNavVisible = !hideContactsNavOn.includes(pathname);
   const isFloatingCartVisible = !hideCartOn.includes(pathname) && cart?.items?.length > 0;
-  const isFloatingCheckoutBtnVisible = !showFloatingCheckoutButton.includes(pathname);
+  const isFloatingCheckoutBtnVisible = !hideFloatingCheckoutButton.includes(pathname);
 
   // contacts strip ~2rem (h-8), navbar ~4rem (h-16)
   const paddingTopClass = isNavbarVisible ? 'pt-24' : 'pt-0';
@@ -73,7 +74,7 @@ const App = () => {
 
       {/* Push content down so it’s not hidden behind header */}
       <div className={paddingTopClass}> 
-        <div className="mx-auto">
+        <div className="mx-auto min-h-screen">
           <Routes>
             <Route index element={<Home />} />
             <Route path="/register" element={<Register />} />
@@ -86,10 +87,24 @@ const App = () => {
             <Route path="/verify" element={<VerifyEmail />} />
             <Route path="/create-password" element={<CreatePassword />} />
 
-            <Route
+            {/* Protected Routes */}
+            {routes.map(({ path, roles, children, element }) => (
+              <Route
+                key={path}
+                path={path}
+                element={<ProtectedRoute roles={roles} layoutElement={element}/>}
+              >
+                {children?.map(({ path, element }) => (
+                  <Route key={path} path={path} element={element}/>
+                ))}
+              </Route>
+            ))}
+
+
+            {/* <Route
               path={ADMIN_LINKS_FRONTEND.INDEX}
               element={
-                <ProtectedRoute roles={[ROLES.ADMIN]}>
+                <ProtectedRoute roles={[ROLES.MANAGER]}>
                   <AdminLayout />
                 </ProtectedRoute>
               }
@@ -103,10 +118,10 @@ const App = () => {
               <Route path="add-branch" element={<AddBranch />} />
               <Route path="users" element={<UsersPage />} />
               <Route path="user" element={<UserDetailsPage />} />
-            </Route>
+            </Route> */}
 
             {/* Unknown routes */}
-            <Route path='*' element={<Home/>} />
+            {/* <Route path='*' element={<Home/>} /> */}
           </Routes>
         </div>
       </div>

@@ -85,13 +85,6 @@ export const getProductById = async (productId) => {
 // Delete product using path variable `id`
 export const deleteProductById = async (productId) => {
   if (productId) {
-    const params = {};
-    params.id = productId;
-    try {
-      return await AxiosConfig.productsAxiosInstance.delete(PRODUCTS_SERVICE_BASE_URL, { params });
-    } catch (error) {
-      toast.error(error.message);
-      return;
-    }
+    return await AxiosConfig.productsAxiosInstance.delete(`${PRODUCTS_SERVICE_BASE_URL}/${productId}`);
   };
 };
