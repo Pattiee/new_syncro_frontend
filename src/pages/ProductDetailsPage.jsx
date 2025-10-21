@@ -9,10 +9,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import { ROLES } from '../roles';
 import AddToCartBtn from '../components/AddToCartBtn';
-import { currencyFormater } from '../helpers/formater'
 import { useAuth } from '../hooks/useAuth';
 import { CustomLoader2 } from '../components/loaders/CustomLoader2';
 import { PhoneCall } from 'lucide-react';
+import { useFormater } from '../hooks/useFormater';
 
 const ProductDetailsPage = () => {
   const [product, setProduct] = useState(null);
@@ -23,6 +23,7 @@ const ProductDetailsPage = () => {
   const [ searchParams ] = useSearchParams();
   const productId = searchParams.get('id');
   const { user, loading } = useAuth(); 
+  const { currencyFormater, percentageFormater } = useFormater();
 
   const dispatch = useDispatch();
   const navigate = useNavigate();

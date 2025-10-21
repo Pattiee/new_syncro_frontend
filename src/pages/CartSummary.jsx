@@ -1,32 +1,28 @@
 import { useNavigate } from 'react-router-dom';
-import { currencyFormater, percentageFormater } from '../helpers/formater';
 import { useCart } from '../hooks/useCart';
 import { CartItem } from '../components/cards/CartItem';
 import { useDispatch } from 'react-redux';
 import { clearCart, removeItem } from '../slices/cartSlice';
 import { useEffect, useState } from 'react';
 import { ShoppingCart, Trash2, ArrowLeft, CreditCard } from 'lucide-react';
+import { useFormater } from '../hooks/useFormater';
 
 const CartSummary = () => {
   const [vat, setVat] = useState(0);
   const [subTotal, setSubTotal] = useState(0);
-  const [cartTotals, setCartTotals] = useState(0);
   const [vatRate, setVatRate] = useState(0.16);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { cart } = useCart();
+  const { cartItems, cartTotals} = useCart();
+  const { currencyFormater, percentageFormater } = useFormater();
 
-  useEffect(() => {
-    const cartItems = cart?.items || [];
-    const amount = cartItems.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);
-    setCartTotals(amount.toFixed(2));
-    
-    const vat = amount.toFixed(2) * vatRate;
+  useEffect(() => {    
+    const vat = cartTotals * vatRate;
     setVat(vat.toFixed(2));
     
-    setSubTotal(amount + vat);
+    setSubTotal(cartTotals + vat);
     if (cartItems.length < 1) navigate('/', { replace: true });
-  }, [cart?.items, navigate, vatRate]);
+  }, [cartItems, navigate, vatRate]);
 
   const handleClearCart = () => dispatch(clearCart());
   const handleRemoveCartItem = (id) => dispatch(removeItem(id));
@@ -43,17 +39,17 @@ const CartSummary = () => {
           </h2>
           <button
             onClick={handleClearCart}
-            disabled={!cart?.items?.length}
+            disabled={cartItems?.length < 1}
             className="flex items-center gap-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Trash2 size={18} /> Clear Cart
           </button>
         </div>
 
-        {cart?.items?.length > 0 ? (
+        {cartItems?.length > 0 ? (
           <>
             <ul className="divide-y divide-gray-200 dark:divide-gray-700 mb-6">
-              {cart.items.map((item) => (
+              {cartItems.map((item) => (
                 <li key={item.id} className="py-3">
                   <CartItem
                     item={item}

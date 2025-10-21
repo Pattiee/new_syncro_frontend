@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
 export const useFormater = () => {
-    const [lang, setLang] = useState('en-US');
+    const [lang, setLang] = useState('en-KE');
     const [currency, setCurrency] = useState('KES');
     
     const currencyFormater = new Intl.NumberFormat(lang, {

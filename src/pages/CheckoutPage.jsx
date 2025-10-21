@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { currencyFormater, percentageFormater } from '../helpers/formater';
 import { useCart } from '../hooks/useCart';
 import { clearCart, removeItem } from '../slices/cartSlice';
 import { useEffect, useState } from 'react';
@@ -9,17 +8,19 @@ import { MAIN_LINKS_FRONTEND } from '../links';
 import { useDispatch, useSelector } from 'react-redux';
 import { createNewOrder } from '../services/order.service';
 import { MpesaModal } from '../components/modals/MpesaModal';
-import { PaymentConfirmationModal } from '../components/modals/PaymentConfirmationModal';
+import { OrderConfirmationModal } from '../components/modals/OrderConfirmationModal';
 import toast from 'react-hot-toast';
 import { getCurrentUsersPhoneNumber } from '../services/user.service';
+import { useFormater } from '../hooks/useFormater';
 
 export const CheckoutPage = () => {
   const [subTotal, setSubTotal] = useState(0.00);
   const [paymentMethod, setPaymentMethod] = useState('mobile');
+  const [paymentInfo, setPaymentInfo] = useState(null);
   const [mobileNumber, setMobileNumber] = useState('');
   const [useRegisteredNumber, setUseRegisteredNumber] = useState(true);
-  const [registeredNumber, setRegisteredNumber] = useState("");
-  const [showPaymentConfirmationModal, setShowPaymentConfirmationModal] = useState(false);
+  const [registeredNumber, setRegisteredNumber] = useState("0716227064");
+  const [showOrderConfirmationModal, setShowOrderConfirmationModal] = useState(false);
   const [showPhoneInput, setShowPhoneInput] = useState(false);  
   const [placingOrder, setPlacingOrder] = useState(false);
   const [showMpesaModal, setShowMpesaModal] = useState(false);
@@ -31,11 +32,10 @@ export const CheckoutPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user, loading } = useAuth();
-  const { cart } = useCart();
-  const cartItems = useSelector(state => state?.cart?.items || []);
+  const { currencyFormater, percentageFormater } = useFormater();
+  const { cartItems, cartTotals } = useCart();
 
   useEffect(() => {
-    const cartTotals = cartItems.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);
 
     // Shipping fee, 5% of amount cart totals
     const accumulatedShippingFee = 0.05 * cartTotals;
@@ -55,41 +55,58 @@ export const CheckoutPage = () => {
   useEffect(() => {
     if (!user && !loading) navigate('/', { replace: true });
     const loadUserData = async () => {
-      const { data } = await getCurrentUsersPhoneNumber();
-      if (data) setRegisteredNumber(data?.trim()?.replace("+254 ", '0'));
+      try {
+        const requests = [
+          await getCurrentUsersPhoneNumber(),
+        ];
+
+        const result = await Promise.allSettled(requests);
+
+        const usersPhoneResult = result[0];
+
+        if (usersPhoneResult.status === 'fulfilled') {
+          const { data } = usersPhoneResult.value;
+          if (data) setRegisteredNumber(data?.trim()?.replace("+254 ", '0'));
+        }
+      } catch (error) {
+        
+      }
     }
 
     loadUserData();
   }, [user, loading, navigate]);
 
-  const handlePlaceOrder = async () => {
-    if (paymentMethod === 'mobile') {
-      setShowMpesaModal(true);
-      setTimeout(() => {
-        setPaymentSuccess(true);
-        setTimeout(async () => {
-          await finalizeOrder();
-        }, 2000);
-      }, 3000);
-    } else {
-      await finalizeOrder();
+  const handleValidatePaymentInfo = async () => {
+    if (!user) return toast.error("Unable to build customer data");
+    
+    const paymentInfoData = {
+      method: paymentMethod,
     }
-  };
+    
+    if (paymentMethod === 'mobile') {
+      // Mobile
+      const paymentMobileNumber = mobileNumber || registeredNumber;
+      if(!paymentMobileNumber) return toast.error("Invalid mobile payment details");
+      paymentInfoData.mobileNumber = paymentMobileNumber;
 
-  const finalizeOrder = async () => {
-    setShowMpesaModal(false);
+      setPaymentInfo(paymentInfoData);
+      setShowOrderConfirmationModal(true);
+    } else {
+      return toast.error("Sorry, banks payments coming soon...");
+      // TODO: Bank
+    }
+  }
+
+  const handlePlaceOrder = async () => {
+    if (!paymentInfo) return toast.error("Error building payment info");
+
+    // Close order confirmation modal
+    setShowOrderConfirmationModal(false);
     const orderRequestItems = cartItems.map(item => ({
       id: item.id,
       skuCode: item.skuCode,
       quantity: item.qty,
     }));
-    
-    if (!user) return toast.error("Unable to build customer data");
-    
-    const paymentInfo = {
-      method: paymentMethod,
-      mobileNumber: mobileNumber,
-    }
 
     const data = {
       items: orderRequestItems,
@@ -102,12 +119,35 @@ export const CheckoutPage = () => {
       },
     };
 
-    if (!placingOrder) setPlacingOrder(true);
-    await createNewOrder(data).then(res => {
-      if (res?.data) dispatch(clearCart());
-      console.log(res);
-      navigate('/account');
-    }).finally(() => setPlacingOrder(false));
+    try {
+      if (!placingOrder) setPlacingOrder(true);
+      setShowMpesaModal(true);
+
+      const requests = [
+        await createNewOrder(data),
+      ];
+
+      const result = await Promise.allSettled(requests);
+
+      const createOrderResult = result[0];
+
+      if (createOrderResult.status === 'fulfilled') {
+        const { data } = createOrderResult.value;
+        if (data) {
+          dispatch(clearCart());
+          setPaymentSuccess(true);
+          console.log(data);
+          navigate('/account');
+        }
+      } else {
+        console.log(createOrderResult.reason);
+      }
+    } catch (error) {
+      
+    } finally {
+      setShowMpesaModal(false);
+      setPlacingOrder(false);
+    }
   };
 
   const handleRemoveCartItem = (id) => dispatch(removeItem(id));
@@ -127,20 +167,9 @@ export const CheckoutPage = () => {
     setShowPhoneInput(true);
   }
 
-  const handleProceedToPay = () => {
-    if (!user?.username) return toast.error('Please login to continue.');
-    setShowPaymentConfirmationModal(true);
-  };
-
-  const confirmPayment = () => {
-    setShowPaymentConfirmationModal(false);
-    // TODO: integrate with order API
-    console.log('Proceeding to payment with:', {
-      method: paymentMethod,
-      phone: useRegisteredNumber ? registeredNumber : mobileNumber,
-      total: grandTotal,
-    });
-    handlePlaceOrder();    
+  const placeOrder = async () => {
+    if (!user && !loading) return toast.error('Please login to continue.');
+    await handleValidatePaymentInfo();
   };
 
   return (
@@ -150,7 +179,7 @@ export const CheckoutPage = () => {
           Order Summary
         </h2>
 
-        {cart?.items?.length > 0 ? (
+        {cartItems.length > 0 ? (
           <>
             {/* Product Table */}
             <div className="overflow-x-auto border-b border-gray-300 dark:border-gray-700 mb-6">
@@ -164,7 +193,7 @@ export const CheckoutPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {cart.items.map((item) => (
+                  {cartItems.map((item) => (
                     <tr
                       key={item.id}
                       className="border-b border-gray-100 dark:border-gray-700"
@@ -306,17 +335,17 @@ export const CheckoutPage = () => {
 
               <button
                 onClick={handleClearCart}
-                disabled={!cart?.items?.length}
+                disabled={cartItems?.length < 1}
                 className="flex items-center justify-center gap-2 w-full sm:w-auto py-2 px-4 bg-red-100 hover:bg-red-200 text-red-600 font-semibold rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Trash2 size={18} /> Clear Cart
               </button>
 
               <button
-                onClick={handleProceedToPay}
+                onClick={placeOrder}
                 className="w-full sm:w-auto py-2 px-6 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full transition"
               >
-                Proceed to Pay
+                Place Order
               </button>
             </div>
           </>
@@ -327,15 +356,13 @@ export const CheckoutPage = () => {
         )}
 
         {/* Payment Confirmation Modal */}
-        {showPaymentConfirmationModal && (
-          <PaymentConfirmationModal subTotal={grandTotal} setShowModal={setShowPaymentConfirmationModal} confirmPayment={confirmPayment} paymentMethod={paymentMethod}/>
-        )}
+        {showOrderConfirmationModal && <OrderConfirmationModal subTotal={grandTotal} setShowModal={setShowOrderConfirmationModal} confirmOrder={handlePlaceOrder} paymentMethod={paymentMethod} paymentNumber={mobileNumber || registeredNumber}/>}
       </div>
 
       {/* MPESA Modal */}
       {showMpesaModal && (
         <div>
-          <MpesaModal paymentSuccess={paymentSuccess}/>
+          <MpesaModal paymentSuccess={paymentSuccess} mobileNumber={mobileNumber || registeredNumber}/>
         </div>
       )}
     </div>

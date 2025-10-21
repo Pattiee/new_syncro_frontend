@@ -36,7 +36,7 @@ import { routes } from './routes';
 
 const App = () => {
   const { pathname } = useLocation();
-  const { cart } = useCart();
+  const { cartItems } = useCart();
 
   const hideFooterOn = ['/auth', '/login', '/verify', '/create-password', '/register', '/checkout'];
   const hideCartOn = ['/auth', '/login', '/order', '/verify', '/create-password', '/account', '/manager', '/register', '/cart-summary', '/checkout'];
@@ -48,7 +48,7 @@ const App = () => {
   const isFooterVisible = !hideFooterOn.includes(pathname);
   const isNavbarVisible = !hideNavbarOn.includes(pathname);
   const isContactNavVisible = !hideContactsNavOn.includes(pathname);
-  const isFloatingCartVisible = !hideCartOn.includes(pathname) && cart?.items?.length > 0;
+  const isFloatingCartVisible = !hideCartOn.includes(pathname) && cartItems?.length > 0;
   const isFloatingCheckoutBtnVisible = !hideFloatingCheckoutButton.includes(pathname);
 
   // contacts strip ~2rem (h-8), navbar ~4rem (h-16)
@@ -127,7 +127,7 @@ const App = () => {
       </div>
 
       {isFloatingCartVisible && (
-        <FloatingCart cart={cart} />
+        <FloatingCart />
       )}
       {isFloatingCheckoutBtnVisible && (
         <FloatingCheckoutButton />

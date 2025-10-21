@@ -1,7 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { CustomLoader2 } from '../components/loaders/CustomLoader2';
 import { SearchBar } from '../components/SearchBar';
-import BadProductCard from '../components/Product/BadProductCard';
 import { useProducts } from '../hooks/useProducts';
 import { ProductCard } from '../components/Product/ProductCard';
 import ProductsPerCategory from './ProductsPerCategory';

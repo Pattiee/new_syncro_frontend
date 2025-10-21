@@ -1,8 +1,10 @@
 import { ShoppingCart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useCart } from '../hooks/useCart';
 
-const FloatingCart = ({ cart }) => {
+const FloatingCart = () => {
     const navigate = useNavigate();
+    const { cartItems } = useCart();
 
     const handleNavigateToSummary = async () => navigate('/cart-summary');
 
@@ -13,9 +15,9 @@ const FloatingCart = ({ cart }) => {
         >
             <div className='flex flex-col justify-center items-center relative'>
                 <ShoppingCart size={24} />
-                {cart && (
+                {cartItems?.length > 0 && (
                     <span className='absolute -top-2 -right-2 bg-white text-orange-600 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center'>
-                        { cart?.items.length ?? 0 }
+                        { cartItems.length ?? 0 }
                     </span>
                 )}
             </div>

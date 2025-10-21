@@ -1,8 +1,10 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom';
+import { useFormater } from '../../hooks/useFormater'
 
 export const CartItem = ({ item, removeItem }) => {
     const { id, name, unitPrice, qty } = item;
+    const { currencyFormater } = useFormater();
     const navigate = useNavigate();
 
     const handleNavigateToProduct = id => navigate(`/product?id=${id}`);
