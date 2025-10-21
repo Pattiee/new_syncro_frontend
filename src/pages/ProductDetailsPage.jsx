@@ -84,6 +84,10 @@ const ProductDetailsPage = () => {
     if (productId) fetchProduct();
   }, [navigate, productId]);
 
+  if (!product && !loadingProduct) {
+    navigate("/", { replace: true });
+  }
+
   const handleContactSeller = async () => {
     if (product !== null && user !== null) {
       console.log("Contacting seller/vendor via ", product.vid);
@@ -93,7 +97,7 @@ const ProductDetailsPage = () => {
     }
   }
 
-  if (loadingProduct || !product) return <CustomLoader2 message={"Loading product details."}/>;
+  if (loadingProduct) return <CustomLoader2 message={"Loading product details."}/>;
 
 
   const discounted = product?.percent_discount > 0;
