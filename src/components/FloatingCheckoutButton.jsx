@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { currencyFormater } from '../helpers/formater';
 import toast from 'react-hot-toast';
+import { useFormater } from '../hooks/useFormater';
 
 const FloatingCheckoutButton = () => {
   const navigate = useNavigate();
+  const { currencyFormater } = useFormater();
   const cartItems = useSelector(state => state?.cart?.items);
 
   // Local state to handle live updates (e.g., storage events)

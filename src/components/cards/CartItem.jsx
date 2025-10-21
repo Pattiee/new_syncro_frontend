@@ -1,6 +1,5 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom';
-import { currencyFormater } from '../../helpers/formater';
 
 export const CartItem = ({ item, removeItem }) => {
     const { id, name, unitPrice, qty } = item;
