@@ -1,6 +1,6 @@
 import React from 'react'
 
-export const Settings = () => {
+const SettingsTab = () => {
     
     return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8">
@@ -14,3 +14,5 @@ export const Settings = () => {
     </div>
     );
 }
+
+export default SettingsTab;

@@ -10,7 +10,7 @@ import { CustomLoader2 } from '../../components/loaders/CustomLoader2';
 const UserDetailsPage = () => {
   const query = useQuery();
   const id = query.get('id');
-  const { user, loading } = useAuth();
+  const {  } = useAuth();
   const navigate = useNavigate();
   const [loadingData, setLoadingData] = useState(true);
   const [updateRoleHidden, setUpdateRoleHidden] = useState(true);
@@ -19,9 +19,7 @@ const UserDetailsPage = () => {
   const [roles, setRoles] = useState([]);
   const [selectedRoleId, setSelectedRoleId] = useState('');
 
-  const roleOptions = roles.map(({ id, name }) => (
-    <option disabled={userRoles.includes(name)} key={id} value={id}>{name}</option>
-  ));
+  const roleOptions = roles.map(({ id, name }) => <option disabled={userRoles.includes(name)} key={id} value={id}>{name}</option>);
 
   useEffect(() => {
     const loadData = async () => {
@@ -41,22 +39,25 @@ const UserDetailsPage = () => {
         ];
   
         const result = await Promise.allSettled(requests);
+
+        console.log(result);
   
         const rolesResponse = result[0];
         const accountsResponse = result[1];
   
         if (rolesResponse.status === 'fulfilled') {
-          setRoles(rolesResponse.value.data);
+          const { data } = rolesResponse.value;
+          setRoles(data?.content);
         } else {
           console.log(rolesResponse.reason);
         }
   
         if (accountsResponse.status === 'fulfilled') {
-          const accountResValue = accountsResponse.value;
-          setAccount(accountResValue.data);
+          const { data } = accountsResponse.value;
+          setAccount(data);
           
           const accountRoles = [];
-          accountResValue.data?.roles.map(r => accountRoles.push(r.authority));
+          data?.authorities.map(a => accountRoles.push(a));
           
           setUserRoles(accountRoles);
         } else {
@@ -84,15 +85,13 @@ const UserDetailsPage = () => {
   }
 
   const handleAcknowledgeAction = async () => {
-    if (!selectedRoleId) return;
+    if (!selectedRoleId) return toast.error("Please select a role if needed")
     await updateAccountRoles({ accountId: account.id, roleId: selectedRoleId }).then(res => {
       setAccount(res?.data);
-      console.log("RESPONSE: " + res?.data);
+      console.log("RESPONSE: " + res);
     }).catch(err => {
       console.error("ERROR: " + err)
-    }).finally(() => {
-      setUpdateRoleHidden(true);
-    });
+    }).finally(() => setUpdateRoleHidden(true));
   }
 
   if (loadingData) return <CustomLoader2/>
@@ -104,7 +103,7 @@ const UserDetailsPage = () => {
           User Details
         </h2>
 
-        {userRoles && (
+        {userRoles.length > 0 && (
           <div className="mt-1">
             {userRoles?.map((role, idx) => (
               <span key={idx} className="inline-block mx-2 rounded-full bg-orange-100 text-orange-800 dark:bg-orange-700 dark:text-orange-100 px-2 py-0.5 text-xs">
@@ -123,7 +122,7 @@ const UserDetailsPage = () => {
           <div>
             <strong>Status:</strong>{' '}
             <span className={`font-medium ${
-              account?.enabled ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+              account?.usernameVerified ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
             }`}>
               {account?.usernameVerified ? 'Verified' : 'Not Verified'}
             </span>

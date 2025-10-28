@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createUserProfile } from "../../../services/user.service";
 import { CustomLoader2 } from "../../../components/loaders/CustomLoader2";
 
-export const Profile = () => {
+const Profile = () => {
   const { user, setUser, loading } = useAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
@@ -58,7 +58,7 @@ export const Profile = () => {
   };
 
   return (
-    <div className="relative w-full max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-10 flex flex-col md:flex-row items-center gap-8">
+    <div className="relative w-full max-w-4xl mx-auto rounded-2xl shadow-lg p-6 md:p-10 flex flex-col md:flex-row items-center gap-8">
       {/* Avatar */}
       <div className="flex-shrink-0">
         {user?.avatarUrl ? (
@@ -200,3 +200,5 @@ export const Profile = () => {
     </div>
   );
 };
+
+export default Profile;

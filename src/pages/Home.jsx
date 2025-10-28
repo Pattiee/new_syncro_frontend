@@ -6,7 +6,7 @@ import { Products } from '../sections/Products';
 const Home = () => {
 
   return (
-    <div className="min-h-screen text-gray-800 bg-white dark:bg-gray-900 dark:text-gray-100">
+    <div className="min-h-screen text-gray-800 bg-transparent dark:text-gray-100">
             {/* Hero Section */}
       <section>
         <Hero/>

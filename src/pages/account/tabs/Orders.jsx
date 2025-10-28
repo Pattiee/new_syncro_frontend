@@ -5,7 +5,7 @@ import { getOrders } from '../../../services/order.service';
 import { OrderCard } from '../../../components/orders/OrderCard';
 import { CustomLoader2 } from '../../../components/loaders/CustomLoader2';
 
-export const Orders = () => {
+const Orders = () => {
     const [fetching, setFetching] = useState(false);
     const [orders, setOrders] = useState([]);
     const { user, loading } = useAuth();
@@ -45,3 +45,5 @@ export const Orders = () => {
     </div>
     );
 }
+
+export default Orders;

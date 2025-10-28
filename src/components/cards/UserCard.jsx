@@ -12,7 +12,7 @@ const UserCard = ({ user }) => {
 
   const handleUserClick = () => {
     const userId = user?.id || '';
-    if (userId) navigate(`${ADMIN_LINKS_FRONTEND.USER}?id=${userId}`);
+    if (userId) navigate(`/ceo/user?id=${userId}`);
   };
 
   return (

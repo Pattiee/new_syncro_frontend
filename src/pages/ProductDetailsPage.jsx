@@ -5,7 +5,7 @@ import ProductReviews from '../components/Product/ProductReviews';
 import RelatedProducts from '../components/Product/RelatedProducts';
 import ProductDetails from '../components/Product/ProductDetails'
 import { deleteProductById, getProducts } from '../services/products.service';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import toast from 'react-hot-toast';
 import { ROLES } from '../roles';
 import AddToCartBtn from '../components/AddToCartBtn';
@@ -13,17 +13,19 @@ import { useAuth } from '../hooks/useAuth';
 import { CustomLoader2 } from '../components/loaders/CustomLoader2';
 import { PhoneCall } from 'lucide-react';
 import { useFormater } from '../hooks/useFormater';
+import { Trash2Icon } from 'lucide-react';
+import { RecentlyViewed } from '../sections/RecentlyViewed';
 
 const ProductDetailsPage = () => {
   const [product, setProduct] = useState(null);
-  const [loadingProduct, setLoadingProduct] = useState(false);
+  const [loadingProduct, setLoadingProduct] = useState(true);
   const [deleting, setDeleting] = useState(false);
-  const [ canDelete, setCanDelete ] = useState(false);
+  const [ isOwner, setIsOwner ] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [ searchParams ] = useSearchParams();
   const productId = searchParams.get('id');
   const { user, loading } = useAuth(); 
-  const { currencyFormater, percentageFormater } = useFormater();
+  const { currencyFormater } = useFormater();
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -47,8 +49,8 @@ const ProductDetailsPage = () => {
   useEffect(() => {
     if (product !== null && user !== null) {
       const hasRequiredRole = user?.roles.includes(ROLES.VENDOR) || user?.roles.includes(ROLES.MODERATOR);
-      const hasAuthorityToDelete = hasRequiredRole && user.id === product.vid;
-      setCanDelete(hasAuthorityToDelete);
+      const currentIsUserVendor = hasRequiredRole && (user?.id === product?.vid || false);
+      setIsOwner(currentIsUserVendor);
     }
   }, [user, product, productId, loading, loadingProduct])
 
@@ -70,10 +72,23 @@ const ProductDetailsPage = () => {
 
   useEffect(() => {
     const fetchProduct = async () => {
+      if (!loadingProduct) setLoadingProduct(true);
       try {
-        const res = await getProducts({ id: productId });
-        console.log(res);
-        if (res) setProduct(res?.data?.body);
+        const requests = [
+          await getProducts({ id: productId }),
+        ];
+
+        const result = await Promise.allSettled(requests);
+
+        const productData = result[0];
+
+        if (productData.status === 'fulfilled') {
+          const { data } = productData.value;
+          if (data) setProduct(data?.body);
+        } else {
+          setProduct(null);
+          navigate("/", { replace: true });
+        }
       } catch (error) {
         navigate("/", {replace: true, });
       } finally {
@@ -84,9 +99,7 @@ const ProductDetailsPage = () => {
     if (productId) fetchProduct();
   }, [navigate, productId]);
 
-  if (!product && !loadingProduct) {
-    navigate("/", { replace: true });
-  }
+  if (!product && !loadingProduct) return navigate("/", { replace: true });
 
   const handleContactSeller = async () => {
     if (product !== null && user !== null) {
@@ -109,12 +122,14 @@ const ProductDetailsPage = () => {
     <Fragment>
       <Suspense name='Product details suspense'>
         <motion.div
-          className="max-w-6xl px-6 py-16 mx-auto bg-white dark:bg-gray-900"
+          className="max-w-6xl px-6 py-16 mx-auto bg-transparent"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
         >
-          <div className="grid grid-cols-1 gap-8 p-6 bg-white drop-shadow-2xl md:grid-cols-2 dark:bg-gray-800 md:p-10 rounded-2xl">
+
+          {/* Product Card */}
+          <div className="grid grid-cols-1 gap-8 p-6 bg-white drop-shadow-2xl md:grid-cols-2 dark:bg-gray-900 md:p-10 rounded-2xl">
             <div 
               className="aspect-[4/3] w-full rounded-2xl bg-transparent overflow-hidden"
               onClick={() => setShowModal(true)}
@@ -183,8 +198,8 @@ const ProductDetailsPage = () => {
                     }`}
                   >
                     {product.stock <= 5
-                      ? `Hurry! Only ${product.stock} left in stock.`
-                      : `${product.stock} units remaining`}
+                      ? `Hurry! Only ${product?.stock} left in stock.`
+                      : `${product?.stock} units remaining`}
                   </p>
                 )}
 
@@ -201,17 +216,17 @@ const ProductDetailsPage = () => {
 
                 {/* Add to cart */}
                 <div>
-                  { product && <AddToCartBtn product={product}/>}             
+                  { product && !isOwner && <AddToCartBtn product={product}/>}             
                 </div>
 
                 {/* Delete product or Contact seller */}
-                {canDelete ? (
+                {isOwner ? (
                   <button
-                    disabled={deleting || user?.id === product.vid || loadingProduct}
+                    disabled={deleting || !isOwner || loadingProduct}
                     onClick={handleDeleteProduct}
-                    className={`${ deleting || loadingProduct ? 'bg-red-300 hover:bg-red-400' : 'bg-red-500 hover:bg-red-600' } px-6 py-3 text-sm font-medium text-white transition-all duration-300 rounded-full shadow`}
+                    className={`${ deleting || loadingProduct ? 'text-red-300 hover:text-red-400' : 'text-red-400 dark:text-red-400' } flex items-center px-4 py-2 gap-1 bg-transparent hover:text-red-500 dark:hover:text-red-300 transition disabled:opacity-40 disabled:cursor-not-allowed`}
                   >
-                    Delete
+                    <Trash2Icon size={24} className='flex items-center'/> Delete
                   </button>
                 ) : (
                   <button 
@@ -229,6 +244,8 @@ const ProductDetailsPage = () => {
           <ProductDetails product={product} />
           <ProductReviews />
           <RelatedProducts productCategory={product?.category} productId={productId}/>
+          <RecentlyViewed/>
+
 
           {/* MODAL */}
           {showModal && (

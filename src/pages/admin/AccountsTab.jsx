@@ -40,7 +40,7 @@ export const AccountsTab = () => {
               ? <p className="text-center text-gray-600 dark:text-gray-300">No users found.</p>
               : (
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {users && users.filter(u => u.username !== user?.username).map((usr, idx) => usr?.id && <UserCard key={usr.id} user={usr}/>)}
+                  {users && users.filter(u => u?.id !== user?.id).map((usr, idx) => usr?.id && <UserCard key={usr.id} user={usr}/>)}
                 </div>
               )}
             </div>

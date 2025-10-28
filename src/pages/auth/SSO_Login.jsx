@@ -28,7 +28,7 @@ export const SSO_Login = () => {
             <div className="flex justify-center items-center text-xs text-gray-500 dark:text-gray-400">
               <span>Don't have an account?</span>
               <button 
-                onClick={() => navigate("/register")}
+                onClick={() => navigate("/auth/register")}
                 className="font-medium px-1 text-orange-600 hover:underline dark:text-orange-400">
                 <span>Register</span>
               </button>

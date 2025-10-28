@@ -9,7 +9,7 @@ export const AuthStatus = () => {
 
     if (loading) return <span className='text-gray-500'>Loading...</span>;
 
-    const handleLogin = () => navigate('/login');
+    const handleLogin = () => navigate('/auth/login');
     const handleNavigateProfile = () => navigate('/account');
         
     return (

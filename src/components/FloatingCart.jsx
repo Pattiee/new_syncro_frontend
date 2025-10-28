@@ -6,7 +6,7 @@ const FloatingCart = () => {
     const navigate = useNavigate();
     const { cartItems } = useCart();
 
-    const handleNavigateToSummary = async () => navigate('/cart-summary');
+    const handleNavigateToSummary = async () => navigate('/cart');
 
     return (
         <button

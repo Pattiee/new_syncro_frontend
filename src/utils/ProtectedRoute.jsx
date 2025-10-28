@@ -1,21 +1,34 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { CustomLoader2 } from "../components/loaders/CustomLoader2";
 
-export default function ProtectedRoute({ layoutElement, roles = [] }) {
-    const navigate = useNavigate();
-    const { user, loading } = useAuth();
+/**
+ * @param {JSX.Element} layoutElement - Layout to render if authorized
+ * @param {string[]} roles - Allowed user roles (optional)
+ * @param {React.ReactNode} children - Nested routes
+ */
+export default function ProtectedRoute({ layoutElement, roles = [], children }) {
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
 
-    
-    useEffect(() => {
-        if (!user && !loading) navigate("/", { replace: true });
-    }, [user, loading, navigate]);
-    
-    if (loading) return <CustomLoader2/>;
-    
-    const hasRequiredRole = roles.length > 0 && roles.some(requiredRole => user?.roles?.map(uRole => uRole?.authority === requiredRole));
+  // Redirect to login when unauthenticated
+  useEffect(() => {
+    if (!loading && !user) navigate("/auth/login", { replace: true });
+  }, [user, loading, navigate]);
 
-    return hasRequiredRole ? layoutElement : <Navigate to={"/"} replace />
+  // Still checking session → show loader
+  if (loading) return <CustomLoader2 />;
+
+  // No roles required → anyone logged in passes
+  if (roles.length === 0) return layoutElement || children;
+
+  // Role-based validation
+  const hasRequiredRole = roles.some(role => user?.roles?.includes(role));
+
+  // Authorized
+  if (hasRequiredRole) return layoutElement || children;
+
+  // Unauthorized → redirect home
+  return <Navigate to="/" replace />;
 }

@@ -34,7 +34,7 @@ export const Login = () => {
         setStep(2)
       } else {
         setEmail("")
-        navigate("/register", { replace: true });
+        navigate("/auth/register", { replace: true });
       };
     }).catch(err => {
       if(err?.code === "ERR_NETWORK"){
@@ -42,6 +42,7 @@ export const Login = () => {
         return;
       } else {
         console.error(err);
+        // toast.error(err)
       }
     }).finally(() => {
       // setEmail("");

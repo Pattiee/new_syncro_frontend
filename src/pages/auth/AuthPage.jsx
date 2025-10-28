@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import Email from '../../components/auth/Email';
 import { OneCharacterInput } from '../../components/auth/OneCharacterInput';
 import { ChevronRight } from 'lucide-react';
+import { usePasswordValidator } from '../../hooks/usePasswordValidator';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,7 +19,7 @@ const AuthPage = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
-
+  const { hasNumber, hasUppercase, hasSpecialChar } = usePasswordValidator({ passwd: password });
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -60,11 +61,6 @@ const AuthPage = () => {
     }
     
   };
-
-
-  const hasNumber = /\d/.test(password);
-  const hasUppercase = /[A-Z]/.test(password);
-  const hasSpecialChar = /[^A-Za-z0-9]/.test(password);
 
   const validationInfo = (
     <div className="flex flex-col mt-2 text-sm">

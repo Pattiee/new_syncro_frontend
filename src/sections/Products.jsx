@@ -1,9 +1,7 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { CustomLoader2 } from '../components/loaders/CustomLoader2';
-import { SearchBar } from '../components/SearchBar';
-import { useProducts } from '../hooks/useProducts';
-import { ProductCard } from '../components/Product/ProductCard';
-import ProductsPerCategory from './ProductsPerCategory';
+import { motion, AnimatePresence } from "framer-motion";
+import { CustomLoader2 } from "../components/loaders/CustomLoader2";
+import { useProducts } from "../hooks/useProducts";
+import ProductsPerCategory from "./ProductsPerCategory";
 
 export const Products = () => {
   const {
@@ -15,74 +13,73 @@ export const Products = () => {
     setFilter,
     featured,
     setFeatured,
-    setSearchQuery
   } = useProducts();
-
-  // const handleUpdateFilter = (category) => {
-  //   const current = (filter ?? '').trim().toLowerCase();
-  //   const selected = category?.name?.trim().toLowerCase();
-  //   setFilter(current === selected ? '' : category?.name);
-  // };
-
-  const handleIsFeatured = () => setFeatured(!featured);
-  const handleSearch = (query = '') => setSearchQuery(query.trim().toLowerCase());
 
   if (loading) return <CustomLoader2 />;
 
-  // const filteredProducts = products.filter(product => {
-  //   if (featured && !product.featured) return false;
-  //   if (filter && product.category.toLowerCase() !== filter.toLowerCase()) return false;
-  //   return true;
-  // });
+  const handleToggleFeatured = () => setFeatured(!featured);
+
+  const handleFilterCategory = (category) => {
+    setFilter((prev) =>
+      prev?.toLowerCase() === category.name.toLowerCase() ? "" : category.name
+    );
+  };
+
+  const getProductCount = (categoryName) =>
+    products.filter(
+      (p) => p.category.toLowerCase() === categoryName.toLowerCase()
+    ).length;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      {/* Search */}
-      <SearchBar onSearch={handleSearch} />
-
-      {/* Categories / Featured */}
+      {/* Category & Featured Buttons */}
       {categories.length > 0 && (
-        <div className="mb-8">
+        <div className="mb-10">
           <h2 className="mb-4 text-2xl font-semibold text-orange-600 dark:text-orange-400">
             Browse by Category
           </h2>
           <div className="flex flex-wrap gap-3">
             {/* Featured Button */}
             <motion.button
-              onClick={handleIsFeatured}
+              onClick={handleToggleFeatured}
               whileTap={{ scale: 0.95 }}
               animate={{ scale: featured ? 1.05 : 1 }}
-              transition={{ type: 'spring', stiffness: 300 }}
-              className={`flex px-6 py-3 rounded-full font-medium transition-colors hover:bg-orange-200 dark:hover:bg-orange-700 cursor-pointer ${
-                featured
-                  ? 'bg-orange-500 text-white dark:bg-orange-400 dark:text-black'
-                  : 'bg-orange-100 text-orange-700 dark:bg-gray-700 dark:text-orange-300'
-              }`}
+              transition={{ type: "spring", stiffness: 300 }}
+              className={`px-6 py-3 rounded-full font-medium transition-colors cursor-pointer
+                ${
+                  featured
+                    ? "bg-orange-500 text-white dark:bg-orange-400 dark:text-black"
+                    : "bg-orange-100 text-orange-700 dark:bg-gray-700 dark:text-orange-300 hover:bg-orange-200 dark:hover:bg-orange-700"
+                }`}
             >
               Featured
             </motion.button>
 
-            {/* Categories */}
-            {categories.map(category => {
-              const isSelected = filter.toLowerCase() === category.name.toLowerCase();
-              const productCount = products.filter(p => p.category.toLowerCase() === category.name.toLowerCase()).length;
+            {/* Dynamic Categories */}
+            {categories.map((category) => {
+              const isSelected =
+                filter.toLowerCase() === category.name.toLowerCase();
+              const count = getProductCount(category.name);
 
               return (
                 <motion.button
                   key={category.id}
-                  // onClick={() => handleUpdateFilter(category)}
+                  onClick={() => handleFilterCategory(category)}
                   whileTap={{ scale: 0.95 }}
                   animate={{ scale: isSelected ? 1.05 : 1 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
-                  className={`flex px-6 py-3 rounded-full font-medium transition-colors hover:bg-orange-200 dark:hover:bg-orange-700 cursor-pointer ${
-                    isSelected
-                      ? 'bg-orange-500 text-white dark:bg-orange-400 dark:text-black'
-                      : 'bg-orange-100 text-orange-700 dark:bg-gray-700 dark:text-orange-300'
-                  }`}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-colors cursor-pointer
+                    ${
+                      isSelected
+                        ? "bg-orange-500 text-white dark:bg-orange-400 dark:text-black"
+                        : "bg-orange-100 text-orange-700 dark:bg-gray-700 dark:text-orange-300 hover:bg-orange-200 dark:hover:bg-orange-700"
+                    }`}
                 >
                   {category.name}
-                  {isSelected && productCount > 0 && (
-                    <span className="ml-2 px-2 bg-white dark:bg-gray-900 rounded-full text-xs">{productCount}</span>
+                  {count > 0 && (
+                    <span className="px-2 bg-white dark:bg-gray-900 rounded-full text-xs font-semibold">
+                      {count}
+                    </span>
                   )}
                 </motion.button>
               );
@@ -91,30 +88,15 @@ export const Products = () => {
         </div>
       )}
 
-      {products && Object.entries(products).map(([category, items], idx) => (<ProductsPerCategory key={idx} productCategory={category} products={items}/>))}
-
-      {/* Filtered Products with animated transitions */}
-      {/* {filteredProducts.length > 0 ? (
-        <div>
-          {filter && (
-            <h2 className="mb-4 text-2xl font-semibold text-orange-600 dark:text-orange-400">{filter}</h2>
-          )}
-          <div className="grid gap-4 grid-cols-1 px-28 sm:px-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-            <AnimatePresence>
-              {filteredProducts.map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ delay: index * 0.03, duration: 0.4 }}
-                >
-                  <ProductCard product={product} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        </div>
+      {/* Product Display by Category */}
+      {products && Object.entries(products).length > 0 ? (
+        Object.entries(products).map(([category, items], idx) => (
+          <ProductsPerCategory
+            key={idx}
+            productCategory={category}
+            products={items}
+          />
+        ))
       ) : (
         <div className="text-center mt-16">
           {errMessage ? (
@@ -125,7 +107,7 @@ export const Products = () => {
             </span>
           )}
         </div>
-      )} */}
+      )}
     </div>
   );
 };

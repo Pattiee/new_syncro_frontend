@@ -173,8 +173,8 @@ export const CheckoutPage = () => {
   };
 
   return (
-    <div className="flex justify-center items-start min-h-screen py-8 bg-gray-50 dark:bg-gray-900">
-      <div className="w-full max-w-4xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 sm:p-10 relative">
+    <div className="flex justify-center items-start min-h-screen py-8 bg-transparent">
+      <div className="w-full max-w-4xl bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 sm:p-10 relative">
         <h2 className="text-2xl font-bold text-center text-orange-600 dark:text-orange-400 mb-6">
           Order Summary
         </h2>

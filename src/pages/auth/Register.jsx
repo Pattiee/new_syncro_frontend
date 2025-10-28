@@ -21,7 +21,7 @@ export const Register = () => {
     if (!loading) setLoading(true);
 
     await register({ username }).then(res => {
-      navigate("/verify", { replace: true });
+      navigate("/auth/verify-email", { replace: true });
     }).catch(err => {
       toast.error(err?.response?.data || err?.message || 'Unknown error occured')
     }).finally(() => setLoading(false));
@@ -94,7 +94,7 @@ export const Register = () => {
           <span className='mt-4 text-sm text-center text-gray-700 dark:text-gray-300'>
             { "Already have an account?"}
             <button
-              onClick={() => navigate("/login")}
+              onClick={() => navigate("/auth/login")}
               className='font-medium text-orange-500 dark:text-orange-400 hover:underline disabled:bg-orange-300'
             >
               Login

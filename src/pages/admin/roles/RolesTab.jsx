@@ -12,8 +12,8 @@ export const RolesTab = () => {
     const loadRoles = async () => {
       if (!loadingRoles) setLoadingRoles(true);
       await getRoles({}).then(res => {
-        setRoles(res?.data);
-        console.log(res?.data);
+        setRoles(res?.data?.content);
+        console.log(res?.data?.content);
       }).catch(err => {
         console.error(err);
       }).finally(() => setLoadingRoles(false));

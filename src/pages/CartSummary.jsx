@@ -6,6 +6,7 @@ import { clearCart, removeItem } from '../slices/cartSlice';
 import { useEffect, useState } from 'react';
 import { ShoppingCart, Trash2, ArrowLeft, CreditCard } from 'lucide-react';
 import { useFormater } from '../hooks/useFormater';
+import { useAuth } from '../hooks/useAuth';
 
 const CartSummary = () => {
   const [vat, setVat] = useState(0);
@@ -13,6 +14,7 @@ const CartSummary = () => {
   const [vatRate, setVatRate] = useState(0.16);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { user, loading } = useAuth();
   const { cartItems, cartTotals} = useCart();
   const { currencyFormater, percentageFormater } = useFormater();
 
@@ -29,6 +31,7 @@ const CartSummary = () => {
   const handleNavigateHome = () => navigate('/');
   const handleCheckout = () => navigate('/checkout');
 
+  if (!user && !loading) navigate("/", {replace: true});
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-gray-50 dark:bg-gray-900 px-4">

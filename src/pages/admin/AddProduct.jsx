@@ -27,44 +27,40 @@ const AddProduct = () => {
       }
     };
     loadCategories();
-  }, []);
+  }, [navigate]);
 
   const onSubmit = async (data) => {
     const formData = new FormData();
     formData.append(
-      'product',
-      new Blob(
-        [
-          JSON.stringify({
-            name: data.name,
-            category: data.category,
-            percent_discount: data.percent_discount,
-            price: data.price,
-            condition: data.condition,
-            desc: data.desc,
-            featured: data.featured,
-            stock: data.stock,
-          }),
-        ],
-        { type: 'application/json' }
-      )
+      "product",
+      new Blob([JSON.stringify({
+        name: data.name,
+        category: data.category,
+        percent_discount: data.percent_discount,
+        price: data.price,
+        condition: data.condition,
+        desc: data.desc,
+        featured: data.featured,
+        stock: data.stock,
+      })], { type: "application/json" })
     );
 
-    data.images?.forEach((file) => formData.append('images', file));
+    data.images?.forEach(file => formData.append("images", file));
 
-    setSubmitting(true);
     try {
+      setSubmitting(true);
       const res = await addProduct(formData);
-      toast.success('Product added successfully!');
+      toast.success("Product added successfully!");
       methods.reset();
-      navigate('/');
+      navigate("/vendor/dashboard");
     } catch (err) {
       console.error(err);
-      toast.error('Failed to add product.');
+      toast.error("Failed to add product.");
     } finally {
       setSubmitting(false);
     }
   };
+
 
   return (
     <div className="max-w-4xl p-6 mx-auto bg-white rounded-lg shadow-xl dark:bg-gray-900 sm:p-8 md:p-10 lg:p-12">
