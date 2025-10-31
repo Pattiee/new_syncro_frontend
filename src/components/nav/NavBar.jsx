@@ -84,7 +84,7 @@ const Navbar = () => {
                 : "bg-gray-800 text-white"
             }`}
           >
-            {menu.links.map((link) => (
+            {menu.links.map(link => (
               <Link
                 key={link.to}
                 to={link.to}
@@ -132,15 +132,15 @@ const Navbar = () => {
               </Link>
             )}
 
-            {publicLinks.map((link) => (
+            {publicLinks.map(link => (
               <Link key={link.to} to={link.to} className="hover:underline">
                 {link.label}
               </Link>
             ))}
 
             {roleMenus
-              .filter((menu) => menu.links.length > 0)
-              .map((menu) => renderDropdown(menu))}
+              .filter(menu => menu.links.length > 0)
+              .map(menu => renderDropdown(menu))}
           </div>
 
           {/* Right Section */}
@@ -180,8 +180,7 @@ const Navbar = () => {
                 </Link>
               ))}
 
-              {roleMenus.map(
-                (menu) =>
+              {roleMenus.map(menu =>
                   menu.links.length > 0 && (
                     <div key={menu.id} className="mt-4">
                       <p className="font-semibold mb-2">{menu.label}</p>

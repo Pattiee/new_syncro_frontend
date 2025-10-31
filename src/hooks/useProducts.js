@@ -1,45 +1,99 @@
-import { useEffect, useState } from 'react'
-import { getProducts } from '../services/products.service';
-import { useDebounce } from './useDebounce';
+import { useEffect, useState, useCallback } from "react";
+import { getProducts } from "../services/products.service";
+import { useDebounce } from "./useDebounce";
 
 export const useProducts = () => {
-    const [products, setProducts] = useState([]);
-    const [categories, setCategories] = useState([]);
-    const [filter, setFilter] = useState('');
-    const [featured, setFeatured] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [errMessage, setErrMessage] = useState('');
-    const { debouncedValue } = useDebounce({ value: searchQuery });
+  const [products, setProducts] = useState({}); // { [categoryName]: PaginatedResponse }
+  const [categories, setCategories] = useState([]);
+  const [filter, setFilter] = useState("");
+  const [featured, setFeatured] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errMessage, setErrMessage] = useState("");
+  const { debouncedValue } = useDebounce({ value: searchQuery });
 
-    useEffect(() => {
-        const loadProducts = async () => {
-          try {
-            if (!loading){
-              setLoading(true);
-              const requestList = [
-                await getProducts({ category: filter ? filter : null, isFeatured: featured, search: debouncedValue ? debouncedValue : null }),
-              ];
+  const loadProducts = useCallback(
+    async (page = 0, size = 10, categoryOverride = null, append = false) => {
+      try {
+        if (!append) setLoading(true);
+        const params = {};
         
-              const [productResponse, ] = await Promise.allSettled(requestList);
-        
-              if (productResponse.status === "fulfilled") {
-                const responseData = productResponse?.value?.data;
-  
-                setProducts(responseData);
+        params.page = page;
+        params.size = size;
+        if (categoryOverride) params.category = categoryOverride ?? (filter.toLowerCase() || null);
+        if (featured) params.featured = featured;
+        if (debouncedValue) params.search = debouncedValue.toLowerCase();
+    
+        const response = await getProducts(params);
+
+        const { data } = response;
+
+        console.log(data);
+
+        // Example response shape:
+        // { "Electronics": { content: [...], page: 0, totalPages: 2 }, "Computing": {...} }
+        if (data && typeof data === "object") {
+          setProducts((prev) => {
+            const updated = { ...prev };
+
+            for (const [category, newPage] of Object.entries(data)) {
+              if (append && prev[category]?.content) {
+                const merged = [
+                  ...prev[category].content,
+                  ...newPage.content.filter(
+                    (p) =>
+                      !prev[category].content.some((old) => old.id === p.id)
+                  ),
+                ];
+                updated[category] = { ...newPage, content: merged };
               } else {
-                // setErrMessage(productResponse.reason);
+                updated[category] = newPage;
               }
             }
-          } catch (error) {
-            
-          } finally{
-            setLoading(false);
-          }
-        }
-    
-        loadProducts();
-      }, [featured, filter, debouncedValue]);
 
-    return { products, categories, loading, errMessage, filter, setFilter, featured, setFeatured, setSearchQuery }
-}
+            return updated;
+          });
+
+          const categoryNames = Object.keys(data);
+          setCategories(categoryNames.map((name, i) => ({ id: i, name })));
+        } else {
+          setProducts({});
+          setCategories([]);
+        }
+        setErrMessage("");
+      } catch (error) {
+        console.error("Error loading products:", error);
+        setErrMessage("Failed to load products.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [filter, featured, debouncedValue]
+  );
+
+  // initial + reactive fetch
+  useEffect(() => {
+    loadProducts(0, 10);
+  }, [filter, featured, debouncedValue, loadProducts]);
+
+  // used by ProductsPerCategory for pagination
+  const fetchCategoryPage = useCallback(
+    async (categoryName, nextPage, append = false) => {
+      await loadProducts(nextPage, 10, categoryName, append);
+    },
+    [loadProducts]
+  );
+
+  return {
+    products,
+    categories,
+    loading,
+    errMessage,
+    filter,
+    setFilter,
+    featured,
+    setFeatured,
+    setSearchQuery,
+    fetchCategoryPage,
+  };
+};

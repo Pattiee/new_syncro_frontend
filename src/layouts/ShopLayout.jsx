@@ -4,7 +4,7 @@ import { Outlet } from 'react-router-dom';
 export const ShopLayout = () => {
   return (
       <Fragment>
-        <main className="">
+        <main>
           <Outlet />
         </main>
       </Fragment>

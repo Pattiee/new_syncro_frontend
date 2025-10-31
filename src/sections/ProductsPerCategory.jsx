@@ -4,43 +4,59 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useProducts } from "../hooks/useProducts";
 import { ProductCard } from "../components/Product/ProductCard";
 
-const ProductsPerCategory = ({ productCategory = "", products = [] }) => {
-  const { loading } = useProducts();
+const ProductsPerCategory = ({ productCategory = "", data }) => {
+  const { loading, fetchCategoryPage } = useProducts();
   const containerRef = useRef(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentPage, setCurrentPage] = useState(data?.page || 0);
   const [hovering, setHovering] = useState(false);
-  const itemWidth = 220; // more realistic width accounting for margins
   const intervalRef = useRef(null);
+  const itemWidth = 220; // includes spacing
 
-  const scrollToIndex = (index) => {
+  const handleFetchPage = page => {
+    setCurrentPage(page);
     if (containerRef.current) {
       containerRef.current.scrollTo({
-        left: index * itemWidth,
+        left: page * itemWidth,
         behavior: "smooth",
       });
-      setCurrentIndex(index);
     }
   };
 
   const nextSlide = () => {
-    if (products.length === 0) return;
-    const nextIndex = (currentIndex + 1) % products.length;
-    scrollToIndex(nextIndex);
+    if (!data?.content?.length) return;
+    const nextIndex = (currentPage + 1) % data.content.length;
+    handleFetchPage(nextIndex);
   };
 
   const prevSlide = () => {
-    if (products.length === 0) return;
-    const prevIndex =
-      currentIndex - 1 < 0 ? products.length - 1 : currentIndex - 1;
-    scrollToIndex(prevIndex);
+    if (!data?.content?.length) return;
+    const prevIndex = currentPage - 1 < 0 ? data?.content.length - 1 : currentPage - 1;
+    handleFetchPage(prevIndex);
+  };
+
+  // Detect near-end scroll to auto-load next page
+  const handleScroll = async () => {
+    if (!containerRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = containerRef.current;
+
+    const nearEnd = scrollWidth - scrollLeft - clientWidth < 200;
+
+    if (nearEnd && data.page < data.totalPages - 1 && !loading && data.content.length > 0) {
+      await fetchCategoryPage(productCategory, data.page + 1, true);
+    }
   };
 
   useEffect(() => {
-    if (!hovering) {
+    const container = containerRef.current;
+    if (!hovering && data?.content?.length > 1) {
       intervalRef.current = setInterval(nextSlide, 4000);
     }
-    return () => clearInterval(intervalRef.current);
-  }, [currentIndex, hovering]);
+    container?.addEventListener("scroll", handleScroll);
+    return () => {
+      clearInterval(intervalRef.current);
+      container?.removeEventListener("scroll", handleScroll);
+    };
+  }, [currentPage, hovering, data, loading]);
 
   return (
     <section
@@ -56,7 +72,7 @@ const ProductsPerCategory = ({ productCategory = "", products = [] }) => {
       {/* Carousel */}
       <div className="relative">
         {/* Left Arrow */}
-        {products.length > 3 && (
+        {data?.content?.length > 3 && (
           <button
             onClick={prevSlide}
             className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 p-2 rounded-full shadow hover:bg-gray-100 dark:hover:bg-gray-700 transition"
@@ -74,13 +90,13 @@ const ProductsPerCategory = ({ productCategory = "", products = [] }) => {
           whileTap={{ cursor: "grabbing" }}
         >
           {!loading &&
-            products.map((product, idx) => (
+            data?.content?.map((product, idx) => (
               <ProductCard key={product?.id || idx} product={product} />
             ))}
         </motion.div>
 
         {/* Right Arrow */}
-        {products.length > 3 && (
+        {data?.content?.length > 3 && (
           <button
             onClick={nextSlide}
             className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 p-2 rounded-full shadow hover:bg-gray-100 dark:hover:bg-gray-700 transition"
@@ -91,17 +107,17 @@ const ProductsPerCategory = ({ productCategory = "", products = [] }) => {
       </div>
 
       {/* Pagination Dots */}
-      {products.length > 1 && (
+      {data?.totalPages > 1 && (
         <div className="flex justify-center mt-4 space-x-2">
-          {products.map((_, index) => (
+          {Array.from({ length: data.totalPages }).map((_, index) => (
             <button
               key={index}
               className={`w-3 h-3 rounded-full transition-colors ${
-                index === currentIndex
+                index === currentPage
                   ? "bg-orange-500 dark:bg-orange-400"
                   : "bg-gray-300 dark:bg-gray-600"
               }`}
-              onClick={() => scrollToIndex(index)}
+              onClick={() => handleFetchPage(index)}
             />
           ))}
         </div>

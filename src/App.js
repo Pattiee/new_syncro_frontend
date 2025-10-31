@@ -10,6 +10,7 @@ import { ContactsNavbar } from "./components/nav/ContactsNavbar";
 import FloatingCart from "./components/FloatingCart";
 import FloatingCheckoutButton from "./components/FloatingCheckoutButton";
 import Footer from "./sections/Footer";
+import Home from "./pages/Home";
 
 const App = () => {
   const { pathname } = useLocation();
@@ -46,7 +47,7 @@ const App = () => {
               path={path}
               element={ roles?.length > 0 ? ( <ProtectedRoute roles={roles}>{element}</ProtectedRoute>) : ( element )}
             >
-              {children?.map(({ index, path, element }) =>
+              {children.map(({ index, path, element }) =>
                 index ? (
                   <Route key={`${path}`} index element={element} />
                 ) : (
@@ -55,6 +56,8 @@ const App = () => {
               )}
             </Route>
           ))}
+
+          <Route path={"/"} index element={<Home/>}/>
         </Routes>
       </main>
 

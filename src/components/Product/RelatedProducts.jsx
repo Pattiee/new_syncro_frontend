@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useProducts } from '../../hooks/useProducts';
+import { ProductCard } from './ProductCard';
 
 const RelatedProducts = ({ productCategory = '', productId = '' }) => {
   const { products, loading } = useProducts();
@@ -68,29 +69,7 @@ const RelatedProducts = ({ productCategory = '', productId = '' }) => {
           dragConstraints={{ left: 0, right: 0 }}
           whileTap={{ cursor: 'grabbing' }}
         >
-          {!loading && related.map((product, index) => (
-            <motion.div
-              key={product.id}
-              whileHover={{ scale: 1.05 }}
-              className="min-w-[180px] flex-shrink-0 bg-white dark:bg-gray-800 shadow rounded-lg p-4 hover:shadow-lg transition transform"
-            >
-              <div className="w-full h-40 bg-gray-200 dark:bg-gray-700 mb-4 rounded-lg overflow-hidden flex items-center justify-center">
-                {(product?.imageUrl || product?.imageUrls[0]) ? (
-                  <img
-                    src={product?.imageUrl || product?.imageUrls?.[0] || 'https://via.placeholder.com/300x400'}
-                    alt={product.name}
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                ) : (
-                  <span className="text-gray-400 dark:text-gray-500">No Image</span>
-                )}
-              </div>
-
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{product.name}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{product.category}</p>
-              <p className="mt-2 font-bold text-orange-500 dark:text-orange-400">${product.price.toFixed(2)}</p>
-            </motion.div>
-          ))}
+          {!loading && related.map((product, index) => <ProductCard key={index} product={product}/>)}
         </motion.div>
 
         {/* Right Arrow */}

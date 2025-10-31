@@ -1,20 +1,23 @@
+import { useProducts } from '../hooks/useProducts';
 import Footer from '../sections/Footer';
 import Hero from '../sections/Hero'
 import { Products } from '../sections/Products';
 
+const heroSection = <Hero/>
+const productsElement = <Products/>;
 
-const Home = () => {
+
+const Home = ({ heroSectElem = heroSection, prodsElem = productsElement, }) => {
+  const { products } = useProducts();
 
   return (
     <div className="min-h-screen text-gray-800 bg-transparent dark:text-gray-100">
             {/* Hero Section */}
-      <section>
-        <Hero/>
-      </section>
-      
-      <section className="px-6 py-12">
+      <section>{heroSectElem}</section>
+       
+      <section className="px-6">
         {/* Products */}
-        <Products/>
+        {prodsElem}
       </section>
     </div>
   );

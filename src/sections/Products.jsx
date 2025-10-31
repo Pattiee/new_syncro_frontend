@@ -19,16 +19,11 @@ export const Products = () => {
 
   const handleToggleFeatured = () => setFeatured(!featured);
 
-  const handleFilterCategory = (category) => {
-    setFilter((prev) =>
-      prev?.toLowerCase() === category.name.toLowerCase() ? "" : category.name
-    );
+  const handleFilterCategory = category => {
+    setFilter(prev => prev?.toLowerCase() === category?.name.toLowerCase() ? "" : category?.name);
   };
 
-  const getProductCount = (categoryName) =>
-    products.filter(
-      (p) => p.category.toLowerCase() === categoryName.toLowerCase()
-    ).length;
+  // const getProductCount = categoryName => products?.filter(p => p?.category.toLowerCase() === categoryName?.toLowerCase()).length;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -56,10 +51,9 @@ export const Products = () => {
             </motion.button>
 
             {/* Dynamic Categories */}
-            {categories.map((category) => {
-              const isSelected =
-                filter.toLowerCase() === category.name.toLowerCase();
-              const count = getProductCount(category.name);
+            {categories.map(category => {
+              const isSelected = filter.toLowerCase() === category?.name.toLowerCase();
+              const count = 0
 
               return (
                 <motion.button
@@ -90,11 +84,11 @@ export const Products = () => {
 
       {/* Product Display by Category */}
       {products && Object.entries(products).length > 0 ? (
-        Object.entries(products).map(([category, items], idx) => (
+        Object.entries(products).map(([category, data], idx) => (
           <ProductsPerCategory
             key={idx}
             productCategory={category}
-            products={items}
+            data={data}
           />
         ))
       ) : (

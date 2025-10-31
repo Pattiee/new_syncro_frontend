@@ -19,16 +19,10 @@ export const addCategory = async (categoryData) => {
 }
 
 // Get all products and/or with optional filters
-export const getProducts = async ({ id, category = "", isFeatured, search = "" }) => {
-    const params = {};
-    
-    if (id) params.id = id;
-    if (category) params.category = category.toLowerCase();
-    if (isFeatured === true) params.featured = isFeatured;
-    if (search) params.search = search.toLowerCase();
+export const getProducts = async (queryParams = {}) => {
 
     try {
-      return await AxiosConfig.productsAxiosInstance.get(PRODUCTS_SERVICE_BASE_URL, { params });
+      return await AxiosConfig.productsAxiosInstance.get(PRODUCTS_SERVICE_BASE_URL, { params: queryParams });
     } catch (error) {
       toast.error(error.message);
       return;

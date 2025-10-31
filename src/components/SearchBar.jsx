@@ -5,7 +5,7 @@ import { useDebounce } from '../hooks/useDebounce';
 export const SearchBar = ({ onSearch }) => {
   const [query, setQuery] = useState('');
 
-  const handleSearch = (e) => {
+  const handleSearch = e => {
     const value = e.target.value;
     setQuery(value);
     onSearch(value);

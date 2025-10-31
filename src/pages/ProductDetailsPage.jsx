@@ -113,6 +113,8 @@ const ProductDetailsPage = () => {
   if (loadingProduct) return <CustomLoader2 message={"Loading product details."}/>;
 
 
+  const handleCloseModal = e => setShowModal(false);
+
   const discounted = product?.percent_discount > 0;
   const discountPrice = discounted
     ? (product?.price - product?.price * (product?.percent_discount / 100)).toFixed(2)
@@ -135,7 +137,7 @@ const ProductDetailsPage = () => {
               onClick={() => setShowModal(true)}
             >
               <div className="relative w-full aspect-[4/3] overflow-hidden rounded-2xl">
-                {product?.imageUrls?.length > 0 ? (
+                {product?.imageUrls?.length > 0 && !showModal ? (
                   <motion.img
                     key={product.imageUrls[currentImageIndex]}
                     src={product.imageUrls[currentImageIndex]}
@@ -148,7 +150,7 @@ const ProductDetailsPage = () => {
                   />
                 ) : (
                   <img
-                    src="https://via.placeholder.com/500"
+                    src={"https://via.placeholder.com/500"}
                     alt="Placeholder"
                     className="object-cover w-full h-full rounded-2xl"
                   />
@@ -252,17 +254,13 @@ const ProductDetailsPage = () => {
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
               <button
                 className="absolute top-6 right-8 text-white text-3xl font-bold"
-                onClick={() => setShowModal(false)}
+                onClick={handleCloseModal}
               >
                 &times;
               </button>
 
               <button
-                onClick={() =>
-                  setCurrentImageIndex(prev =>
-                    prev === 0 ? product.imageUrls.length - 1 : prev - 1
-                  )
-                }
+                onClick={() => setCurrentImageIndex(prev => prev === 0 ? product.imageUrls.length - 1 : prev - 1)}
                 className="absolute left-6 text-white text-4xl"
               >
                 &#10094;
@@ -279,11 +277,7 @@ const ProductDetailsPage = () => {
               />
 
               <button
-                onClick={() =>
-                  setCurrentImageIndex(prev =>
-                    prev === product?.imageUrls?.length - 1 ? 0 : prev + 1
-                  )
-                }
+                onClick={() => setCurrentImageIndex(prev => prev === product?.imageUrls?.length - 1 ? 0 : prev + 1)}
                 className="absolute right-6 text-white text-4xl"
               >
                 &#10095;
