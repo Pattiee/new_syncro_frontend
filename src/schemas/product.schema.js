@@ -17,7 +17,7 @@ export const productSchema = z.object({
   percent_discount: z.coerce.number().min(0, 'Discount cannot be negative').max(maxPercentageDiscount, 'Discount cannot exceed 50%.'),
   price: z.coerce.number().gt(0, 'Price must be greater than 0.'),
   condition: z.enum(['New', 'Refurbished']),
-  desc: z.string().max(50, 'Description cannot exceed 50 characters.').optional(),
+  specs: z.string().max(50, 'Product specifications cannot exceed 300 characters.').optional(),
   featured: z.boolean().default(false),
   stock: z.coerce.number().int().gt(0, 'Stock can not be less than 1.'),
   images: z

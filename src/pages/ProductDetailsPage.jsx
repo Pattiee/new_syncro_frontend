@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from 'framer-motion';
 import ProductReviews from '../components/Product/ProductReviews';
 import RelatedProducts from '../components/Product/RelatedProducts';
-import ProductDetails from '../components/Product/ProductDetails'
+import ProductDetails from '../components/Product/ProductDetails';
+import { ProductImageCarousel } from '../components/carousels/ProductImageCarousel';
 import { deleteProductById, getProducts } from '../services/products.service';
 import { useDispatch } from 'react-redux';
 import toast from 'react-hot-toast';
@@ -15,34 +16,24 @@ import { PhoneCall } from 'lucide-react';
 import { useFormater } from '../hooks/useFormater';
 import { Trash2Icon } from 'lucide-react';
 import { RecentlyViewed } from '../sections/RecentlyViewed';
+import { useProducts } from '../hooks/useProducts';
+import { ProductImagesModal } from '../components/modals/ProductImagesModal';
 
 const ProductDetailsPage = () => {
   const [product, setProduct] = useState(null);
   const [loadingProduct, setLoadingProduct] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [ isOwner, setIsOwner ] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [ productCategory, setProductCategory ] = useState('');
   const [ searchParams ] = useSearchParams();
   const productId = searchParams.get('id');
   const { user, loading } = useAuth(); 
   const { currencyFormater } = useFormater();
+  const { products } = useProducts();
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  useEffect(() => {
-    if (!product?.imageUrls?.length) return;
-
-    const interval = setInterval(() => {
-      setCurrentImageIndex(prev =>
-        prev === product.imageUrls.length - 1 ? 0 : prev + 1
-      );
-    }, 3000); // 3 seconds
-
-    return () => clearInterval(interval);
-  }, [product]);
 
   // TODO: Evaluate so that the moderator can delete a products if it breaks community laws and rules.
 
@@ -84,7 +75,12 @@ const ProductDetailsPage = () => {
 
         if (productData.status === 'fulfilled') {
           const { data } = productData.value;
-          if (data) setProduct(data?.body);
+          if (data) {
+            const pData = data?.body;
+            const pCategory = pData?.category || '';
+            setProduct(pData);
+            setProductCategory(pCategory)
+          }
         } else {
           setProduct(null);
           navigate("/", { replace: true });
@@ -113,7 +109,8 @@ const ProductDetailsPage = () => {
   if (loadingProduct) return <CustomLoader2 message={"Loading product details."}/>;
 
 
-  const handleCloseModal = e => setShowModal(false);
+  const handleCloseModal = e => setIsModalOpen(false);
+  const handleShowModal = e => setIsModalOpen(true);
 
   const discounted = product?.percent_discount > 0;
   const discountPrice = discounted
@@ -132,32 +129,14 @@ const ProductDetailsPage = () => {
 
           {/* Product Card */}
           <div className="grid grid-cols-1 gap-8 p-6 bg-white drop-shadow-2xl md:grid-cols-2 dark:bg-gray-900 md:p-10 rounded-2xl">
-            <div 
-              className="aspect-[4/3] w-full rounded-2xl bg-transparent overflow-hidden"
-              onClick={() => setShowModal(true)}
-            >
-              <div className="relative w-full aspect-[4/3] overflow-hidden rounded-2xl">
-                {product?.imageUrls?.length > 0 && !showModal ? (
-                  <motion.img
-                    key={product.imageUrls[currentImageIndex]}
-                    src={product.imageUrls[currentImageIndex]}
-                    alt={product.name}
-                    className="w-full h-full object-contain rounded-2xl"
-                    initial={{ x: 100, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -100, opacity: 0 }}
-                    transition={{ duration: 0.8, ease: 'easeInOut' }}
-                  />
-                ) : (
-                  <img
-                    src={"https://via.placeholder.com/500"}
-                    alt="Placeholder"
-                    className="object-cover w-full h-full rounded-2xl"
-                  />
-                )}
-              </div>
-
-            </div>
+            {!isModalOpen && (
+              <ProductImageCarousel
+                images={product?.imageUrls || []}
+                name={product?.name}
+                showModal={isModalOpen}
+                onShowModal={handleShowModal}
+              />
+            )}
 
             <div className="h-full p-2 rounded-2xl">
               <div className='p-2 rounded-lg justify-between'>
@@ -210,7 +189,7 @@ const ProductDetailsPage = () => {
                 </p>
 
                 <p className="mb-6 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
-                  {product?.desc}
+                  {product?.specs}
                 </p>
               </div>
 
@@ -243,46 +222,25 @@ const ProductDetailsPage = () => {
             </div>
           </div>
 
-          <ProductDetails product={product} />
-          <ProductReviews />
-          <RelatedProducts productCategory={product?.category} productId={productId}/>
-          <RecentlyViewed/>
+          { product !== null && !loadingProduct && (
+            <div>
+              <ProductDetails product={product} />
+              <ProductReviews />
+
+              {products[productCategory]?.content.length > 1 && <RelatedProducts productCategory={productCategory} productId={productId}/>}
+              <RecentlyViewed/>
+            </div>
+          )}
 
 
           {/* MODAL */}
-          {showModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-              <button
-                className="absolute top-6 right-8 text-white text-3xl font-bold"
-                onClick={handleCloseModal}
-              >
-                &times;
-              </button>
-
-              <button
-                onClick={() => setCurrentImageIndex(prev => prev === 0 ? product.imageUrls.length - 1 : prev - 1)}
-                className="absolute left-6 text-white text-4xl"
-              >
-                &#10094;
-              </button>
-
-              <motion.img
-                key={product.imageUrls[currentImageIndex]}
-                src={product.imageUrls[currentImageIndex]}
-                alt={product.name}
-                className="max-w-4xl max-h-[80vh] object-contain rounded-3xl"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-              />
-
-              <button
-                onClick={() => setCurrentImageIndex(prev => prev === product?.imageUrls?.length - 1 ? 0 : prev + 1)}
-                className="absolute right-6 text-white text-4xl"
-              >
-                &#10095;
-              </button>
-            </div>
+          {isModalOpen && !loadingProduct && (
+            <ProductImagesModal 
+              key={product?.id} 
+              product={product} 
+              modalOpen={isModalOpen}
+              closeModal={handleCloseModal}
+            />
           )}
 
         </motion.div>

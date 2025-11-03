@@ -9,7 +9,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { ceoLinks, managerLinks, vendorLinks } from "../../links";
 
-const SHOP_NAME = process.env.REACT_APP_SHOP_NAME || "MyShop";
+const SHOP_NAME = process.env.REACT_APP_SHOP_NAME || "";
 
 const Navbar = () => {
   const { user, loading } = useAuth();
@@ -84,7 +84,7 @@ const Navbar = () => {
                 : "bg-gray-800 text-white"
             }`}
           >
-            {menu.links.map(link => (
+            {menu?.links?.map(link => (
               <Link
                 key={link.to}
                 to={link.to}
@@ -103,15 +103,11 @@ const Navbar = () => {
   return (
     <Fragment>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 font-serif bg-white text-gray-900 shadow-sm dark:bg-gray-950 dark:text-white dark:shadow ${
           showNavbar
             ? "opacity-100 translate-y-0"
             : "opacity-0 -translate-y-full"
-        } ${
-          theme === "light"
-            ? "bg-white text-gray-900 shadow-sm"
-            : "bg-gray-900 text-white shadow"
-        } font-serif`}
+        }`}
       >
         <ContactsNavbar />
 
@@ -132,7 +128,7 @@ const Navbar = () => {
               </Link>
             )}
 
-            {publicLinks.map(link => (
+            {publicLinks?.map(link => (
               <Link key={link.to} to={link.to} className="hover:underline">
                 {link.label}
               </Link>
@@ -169,7 +165,7 @@ const Navbar = () => {
                   : "bg-gray-800 text-white"
               } font-serif p-6 space-y-4 shadow-lg`}
             >
-              {publicLinks.map((link) => (
+              {publicLinks && publicLinks.map(link => (
                 <Link
                   key={link.to}
                   to={link.to}
@@ -180,7 +176,7 @@ const Navbar = () => {
                 </Link>
               ))}
 
-              {roleMenus.map(menu =>
+              {roleMenus && roleMenus.map(menu =>
                   menu.links.length > 0 && (
                     <div key={menu.id} className="mt-4">
                       <p className="font-semibold mb-2">{menu.label}</p>

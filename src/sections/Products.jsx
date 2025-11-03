@@ -10,7 +10,7 @@ export const Products = () => {
     loading,
     errMessage,
     filter,
-    setFilter,
+    setCategoryFilter,
     featured,
     setFeatured,
   } = useProducts();
@@ -19,8 +19,8 @@ export const Products = () => {
 
   const handleToggleFeatured = () => setFeatured(!featured);
 
-  const handleFilterCategory = category => {
-    setFilter(prev => prev?.toLowerCase() === category?.name.toLowerCase() ? "" : category?.name);
+  const handleFilterByCategory = categoryName => {
+    setCategoryFilter(prev => prev?.toLowerCase() === categoryName?.toLowerCase() ? "" : categoryName);
   };
 
   // const getProductCount = categoryName => products?.filter(p => p?.category.toLowerCase() === categoryName?.toLowerCase()).length;
@@ -58,13 +58,12 @@ export const Products = () => {
               return (
                 <motion.button
                   key={category.id}
-                  onClick={() => handleFilterCategory(category)}
+                  onClick={() => handleFilterByCategory(category.name)}
                   whileTap={{ scale: 0.95 }}
                   animate={{ scale: isSelected ? 1.05 : 1 }}
                   transition={{ type: "spring", stiffness: 300 }}
                   className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-colors cursor-pointer
-                    ${
-                      isSelected
+                    ${ isSelected
                         ? "bg-orange-500 text-white dark:bg-orange-400 dark:text-black"
                         : "bg-orange-100 text-orange-700 dark:bg-gray-700 dark:text-orange-300 hover:bg-orange-200 dark:hover:bg-orange-700"
                     }`}

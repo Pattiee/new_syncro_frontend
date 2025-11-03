@@ -20,7 +20,7 @@ const AddToCartBtn = ({ product }) => {
   const inCart = !!cartItem;
 
   const handleAddToCart = useCallback(() => {
-    if (!user && !loading) return navigate('/login');
+    if (!user && !loading) return navigate('/auth/login');
     if (maxReached || outOfStock) return toast.error('No more stock available');
 
     const discounted = product?.percent_discount > 0;
@@ -36,7 +36,7 @@ const AddToCartBtn = ({ product }) => {
     };
 
     dispatch(addItem(item));
-  }, [maxReached, outOfStock, product, dispatch]);
+  }, [maxReached, outOfStock, product, dispatch, loading]);
 
   const handleDecrementQuantity = e => {
     e.stopPropagation();

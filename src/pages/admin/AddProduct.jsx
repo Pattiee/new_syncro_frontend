@@ -39,7 +39,7 @@ const AddProduct = () => {
         percent_discount: data.percent_discount,
         price: data.price,
         condition: data.condition,
-        desc: data.desc,
+        specs: data.specs,
         featured: data.featured,
         stock: data.stock,
       })], { type: "application/json" })
@@ -153,15 +153,15 @@ const AddProduct = () => {
             </div>
           </div>
 
-          {/* Description */}
+          {/* Specifications */}
           <div>
             <textarea
-              placeholder="Product description"
-              {...methods.register('desc')}
+              placeholder="Product specifications"
+              {...methods.register('specs')}
               className="h-32 resize-none input-field"
             />
-            {methods.formState.errors.desc && (
-              <p className="text-red-500 text-sm mt-1">{methods.formState.errors.desc.message}</p>
+            {methods.formState.errors.specs && (
+              <p className="text-red-500 text-sm mt-1">{methods.formState.errors.specs.message}</p>
             )}
           </div>
 

@@ -6,19 +6,25 @@ import { ProductCard } from './ProductCard';
 
 const RelatedProducts = ({ productCategory = '', productId = '' }) => {
   const { products, loading } = useProducts();
+  const [page, setPage] = useState(0);
   const containerRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const itemWidth = 200; // min-w-[180px] + margin adjustment
   const intervalRef = useRef(null);
 
-
    // Get products for this category only
-  const categoryProducts = products?.[productCategory] || [];
+  const categoryProducts = Array.isArray(products[productCategory]?.content) ? products[productCategory]?.content : [];
+  const pg = products[productCategory]?.page;
+  const te = products[productCategory]?.totalElements;
+  const tp = products[productCategory]?.totalPages;
+  console.log("PG: ", pg);
+  console.log("TE: ", te);
+  console.log("TP: ", tp);
+
+  console.log(categoryProducts);
 
   // Exclude the current product
-  const related = categoryProducts.filter(p => p.id !== productId);
-
-  if (!related.length) return <p>No related products.</p>;
+  const related = categoryProducts?.filter(p => p.id !== productId) || [];
 
   const scrollToIndex = (index) => {
     if (containerRef.current) {
@@ -69,7 +75,7 @@ const RelatedProducts = ({ productCategory = '', productId = '' }) => {
           dragConstraints={{ left: 0, right: 0 }}
           whileTap={{ cursor: 'grabbing' }}
         >
-          {!loading && related.map((product, index) => <ProductCard key={index} product={product}/>)}
+          {!loading && related !== null && related.map((product, index) => <ProductCard key={index} product={product}/>)}
         </motion.div>
 
         {/* Right Arrow */}

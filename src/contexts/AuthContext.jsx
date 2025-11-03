@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
   const { pathname } = useLocation();
 
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // start true for initial fetch
+  const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
 
   // Fetch current user on mount or route change

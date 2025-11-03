@@ -19,10 +19,10 @@ const App = () => {
   // Paths controlling visibility
   const hidden = {
     footer: ["/auth", "/checkout"],
-    cart: ["/auth", "/checkout"],
+    cart: ["/auth", "/checkout", "/cart"],
     navbar: ["/auth", "/manager", "/ceo", "/account"],
     contactNav: ["/auth"],
-    checkoutButton: ["/checkout"],
+    checkoutButton: ["/checkout", "/product", "/cart"],
   };
 
   // Visibility flags

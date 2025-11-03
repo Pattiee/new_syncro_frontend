@@ -5,26 +5,25 @@ import { useDebounce } from "./useDebounce";
 export const useProducts = () => {
   const [products, setProducts] = useState({}); // { [categoryName]: PaginatedResponse }
   const [categories, setCategories] = useState([]);
-  const [filter, setFilter] = useState("");
+  const [category, setCategory] = useState("");
   const [featured, setFeatured] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [errMessage, setErrMessage] = useState("");
   const { debouncedValue } = useDebounce({ value: searchQuery });
 
-  const loadProducts = useCallback(
-    async (page = 0, size = 10, categoryOverride = null, append = false) => {
+  const loadProducts = useCallback(async (page = 0, size = 10, ctgFilter = "", append = false) => {
       try {
         if (!append) setLoading(true);
         const params = {};
         
         params.page = page;
         params.size = size;
-        if (categoryOverride) params.category = categoryOverride ?? (filter.toLowerCase() || null);
+        if (ctgFilter) params.category = ctgFilter.toLowerCase() || "";
         if (featured) params.featured = featured;
         if (debouncedValue) params.search = debouncedValue.toLowerCase();
     
-        const response = await getProducts(params);
+        const response = await getProducts({ queryParams: params });
 
         const { data } = response;
 
@@ -68,13 +67,13 @@ export const useProducts = () => {
         setLoading(false);
       }
     },
-    [filter, featured, debouncedValue]
+    [category, featured, debouncedValue]
   );
 
   // initial + reactive fetch
   useEffect(() => {
-    loadProducts(0, 10);
-  }, [filter, featured, debouncedValue, loadProducts]);
+    loadProducts(0, 10, category);
+  }, [category, featured, debouncedValue, loadProducts]);
 
   // used by ProductsPerCategory for pagination
   const fetchCategoryPage = useCallback(
@@ -89,8 +88,8 @@ export const useProducts = () => {
     categories,
     loading,
     errMessage,
-    filter,
-    setFilter,
+    filter: category,
+    setCategoryFilter: setCategory,
     featured,
     setFeatured,
     setSearchQuery,

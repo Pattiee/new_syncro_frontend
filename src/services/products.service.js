@@ -19,14 +19,13 @@ export const addCategory = async (categoryData) => {
 }
 
 // Get all products and/or with optional filters
-export const getProducts = async (queryParams = {}) => {
-
-    try {
-      return await AxiosConfig.productsAxiosInstance.get(PRODUCTS_SERVICE_BASE_URL, { params: queryParams });
-    } catch (error) {
-      toast.error(error.message);
-      return;
-    }
+export const getProducts = async ({ id, queryParams }) => {
+  const params = {};
+  if (id) {
+    params.id = id;
+    return await AxiosConfig.productsAxiosInstance.get(PRODUCTS_SERVICE_BASE_URL, { params: params });
+  }
+  return await AxiosConfig.productsAxiosInstance.get(PRODUCTS_SERVICE_BASE_URL, { params: queryParams });
 };
 
 // getCategories
