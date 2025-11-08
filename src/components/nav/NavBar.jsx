@@ -8,6 +8,7 @@ import { ContactsNavbar } from "./ContactsNavbar";
 import { useAuth } from "../../hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { ceoLinks, managerLinks, vendorLinks } from "../../links";
+import { CategoryNav } from "./CategoryNav";
 
 const SHOP_NAME = process.env.REACT_APP_SHOP_NAME || "";
 
@@ -84,7 +85,7 @@ const Navbar = () => {
                 : "bg-gray-800 text-white"
             }`}
           >
-            {menu?.links?.map(link => (
+            {menu?.links?.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
@@ -128,15 +129,15 @@ const Navbar = () => {
               </Link>
             )}
 
-            {publicLinks?.map(link => (
+            {publicLinks?.map((link) => (
               <Link key={link.to} to={link.to} className="hover:underline">
                 {link.label}
               </Link>
             ))}
 
             {roleMenus
-              .filter(menu => menu.links.length > 0)
-              .map(menu => renderDropdown(menu))}
+              .filter((menu) => menu.links.length > 0)
+              .map((menu) => renderDropdown(menu))}
           </div>
 
           {/* Right Section */}
@@ -165,34 +166,37 @@ const Navbar = () => {
                   : "bg-gray-800 text-white"
               } font-serif p-6 space-y-4 shadow-lg`}
             >
-              {publicLinks && publicLinks.map(link => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  onClick={closeMobileMenu}
-                  className="block"
-                >
-                  {link.label}
-                </Link>
-              ))}
+              {publicLinks &&
+                publicLinks.map((link) => (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    onClick={closeMobileMenu}
+                    className="block"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
 
-              {roleMenus && roleMenus.map(menu =>
-                  menu.links.length > 0 && (
-                    <div key={menu.id} className="mt-4">
-                      <p className="font-semibold mb-2">{menu.label}</p>
-                      {menu.links.map((link) => (
-                        <Link
-                          key={link.to}
-                          to={link.to}
-                          onClick={closeMobileMenu}
-                          className="block py-1"
-                        >
-                          {link.label}
-                        </Link>
-                      ))}
-                    </div>
-                  )
-              )}
+              {roleMenus &&
+                roleMenus.map(
+                  (menu) =>
+                    menu.links.length > 0 && (
+                      <div key={menu.id} className="mt-4">
+                        <p className="font-semibold mb-2">{menu.label}</p>
+                        {menu.links.map((link) => (
+                          <Link
+                            key={link.to}
+                            to={link.to}
+                            onClick={closeMobileMenu}
+                            className="block py-1"
+                          >
+                            {link.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )
+                )}
             </motion.div>
           )}
         </AnimatePresence>

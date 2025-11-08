@@ -32,6 +32,7 @@ import UsersPage from "./pages/admin/UsersPage";
 import UserDetailsPage from "./pages/admin/UserDetailsPage";
 
 import { ROLES } from "./roles";
+import { CategorizedProductsPage } from "./pages/CategorizedProductsPage";
 
 export const routes = [
   {
@@ -41,6 +42,7 @@ export const routes = [
       { index: true, element: <Home /> },
       { path: "products", element: <Products /> },
       { path: "product", element: <ProductDetailsPage /> },
+      { path: "category/:slug", element: <CategorizedProductsPage />},
       { path: "cart", element: <CartSummary /> },
       { path: "checkout", element: <CheckoutPage /> },
       { path: "account", element: <Account /> },
@@ -50,10 +52,10 @@ export const routes = [
   {
     path: "/auth/",
     children: [
-      { path: "login", element: <Login /> },
-      { path: "register", element: <Register /> },
-      { path: "verify-email", element: <VerifyEmail /> },
-      { path: "create-password", element: <CreatePassword /> },
+      { path: "login", element: <Login key={document.title} title={"Login - Syncro"}/> },
+      { path: "register", element: <Register key={document.title} title={"Register - Syncro"} /> },
+      { path: "verify-email", element: <VerifyEmail title={"Verify Email  - Syncro"} /> },
+      { path: "create-password", element: <CreatePassword title={"Complete Registration - Syncro"} /> },
     ],
   },
   {

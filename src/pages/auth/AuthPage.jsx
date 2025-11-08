@@ -9,7 +9,7 @@ import { OneCharacterInput } from '../../components/auth/OneCharacterInput';
 import { ChevronRight } from 'lucide-react';
 import { usePasswordValidator } from '../../hooks/usePasswordValidator';
 
-const AuthPage = () => {
+const AuthPage = ({ title }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otp, setOtp] = useState(Array(6).fill(''));

@@ -4,8 +4,9 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { SSO_Login } from "./SSO_Login";
+import { useLocation } from "react-router-dom";
 
-export const Login = () => {
+export const Login = ({ title }) => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
@@ -13,11 +14,19 @@ export const Login = () => {
   const [errMessage, setErrMessage] = useState("");
   const navigate = useNavigate();
   const { user, loading, setAuthenticated } = useAuth();
+  const location = useLocation();
+
+
 
 
   useEffect(() => {
-    if (user && !loading) navigate('/', { replace: true });
-  }, [loading, navigate, user]);
+    if (user && !loading) {
+      navigate('/', { replace: true });
+    } else {
+      if (title) document.title = title;
+    }
+
+  }, [loading, navigate, user, location, title]);
 
   const handleValidateEmail = async (e) => {
     e.preventDefault();
@@ -84,28 +93,40 @@ export const Login = () => {
 
         {/* Step 1: Email */}
         {step === 1 && (
-          <form onSubmit={handleValidateEmail} className="space-y-6">
+          <form 
+            onSubmit={handleValidateEmail} 
+            method="post"
+            className="space-y-6"
+          >
             <div className="flex flex-col">
               <label 
                 htmlFor="email" 
-                className="block mb-2 px-4 text-sm tracking-wide 
-                text-gray-600 dark:text-gray-100"
+                className="block mb-2 px-4 text-sm tracking-wide text-gray-600 dark:text-gray-100"
               >
-                Email address
+                Email:
+                <input
+                  id="email"
+                  name="email"
+                  autoComplete="email"
+                  aria-describedby="email"
+                  type="email"
+                  placeholder="e.g, janedoe@example.com"
+                  disabled={sending}
+                  className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 
+                        bg-transparent border-b border-gray-300 
+                        focus:border-orange-600 focus:outline-none focus:ring-0
+                        dark:text-white"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </label>
-              <input
-                id="email"
-                type="email"
-                placeholder="e.g, janedoe@example.com"
-                className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 
-                      bg-transparent border-b border-gray-300 
-                      focus:border-orange-600 focus:outline-none focus:ring-0
-                      dark:text-white"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
 
+              <p
+                id="email"
+              >
+                {/* Errors in validation here */}
+              </p>
             </div>
             <button
               type="submit"
@@ -121,18 +142,30 @@ export const Login = () => {
         {step === 2 && (
           <form onSubmit={handleLogin} className="space-y-6 animate-slideIn">
             <div className="flex flex-col">
-              <input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 
-                      border-b-2 border-orange-500 
-                      focus:border-orange-600 focus:outline-none focus:ring-0
-                      dark:text-white"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <label htmlFor="password">
+                Password:
+                <input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  aria-describedby="password-hint"
+                  disabled={sending}
+                  className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 
+                        border-b-2 border-orange-500 
+                        focus:border-orange-600 focus:outline-none focus:ring-0
+                        dark:text-white"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </label>
+
+              <p
+                id="password-hint"
+              >
+                {/* Password validation error if any */}
+              </p>
 
               {/* Forgot password */}
               <div className="mt-2 text-sm text-right"    >

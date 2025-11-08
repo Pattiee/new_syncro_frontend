@@ -7,12 +7,15 @@ import { ProductCard } from "../components/Product/ProductCard";
 const ProductsPerCategory = ({ productCategory = "", data }) => {
   const { loading, fetchCategoryPage } = useProducts();
   const containerRef = useRef(null);
+
   const [currentPage, setCurrentPage] = useState(data?.page || 0);
   const [hovering, setHovering] = useState(false);
-  const intervalRef = useRef(null);
-  const itemWidth = 220; // includes spacing
+  const [hasOverflow, setHasOverflow] = useState(false);
 
-  const handleFetchPage = page => {
+  const intervalRef = useRef(null);
+  const itemWidth = 220;
+
+  const handleFetchPage = (page) => {
     setCurrentPage(page);
     if (containerRef.current) {
       containerRef.current.scrollTo({
@@ -30,27 +33,52 @@ const ProductsPerCategory = ({ productCategory = "", data }) => {
 
   const prevSlide = () => {
     if (!data?.content?.length) return;
-    const prevIndex = currentPage - 1 < 0 ? data?.content.length - 1 : currentPage - 1;
+    const prevIndex =
+      currentPage - 1 < 0 ? data?.content.length - 1 : currentPage - 1;
     handleFetchPage(prevIndex);
   };
 
-  // Detect near-end scroll to auto-load next page
+  // Auto-load next backend page near end of scroll
   const handleScroll = async () => {
     if (!containerRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = containerRef.current;
 
+    const { scrollLeft, scrollWidth, clientWidth } = containerRef.current;
     const nearEnd = scrollWidth - scrollLeft - clientWidth < 200;
 
-    if (nearEnd && data.page < data.totalPages - 1 && !loading && data.content.length > 0) {
+    if (
+      nearEnd &&
+      data.page < data.totalPages - 1 &&
+      !loading &&
+      data.content.length > 0
+    ) {
       await fetchCategoryPage(productCategory, data.page + 1, true);
     }
   };
 
+  // Detect overflow (true horizontal scroll)
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const el = containerRef.current;
+
+    const updateOverflow = () => {
+      setHasOverflow(el.scrollWidth > el.clientWidth);
+    };
+
+    updateOverflow();
+    window.addEventListener("resize", updateOverflow);
+
+    return () => window.removeEventListener("resize", updateOverflow);
+  }, [data?.content]);
+
+  // Auto-slider
   useEffect(() => {
     const container = containerRef.current;
+
     if (!hovering && data?.content?.length > 1) {
       intervalRef.current = setInterval(nextSlide, 4000);
     }
+
     container?.addEventListener("scroll", handleScroll);
     return () => {
       clearInterval(intervalRef.current);
@@ -64,15 +92,13 @@ const ProductsPerCategory = ({ productCategory = "", data }) => {
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >
-      {/* Section Title */}
       <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 border-b border-gray-300 dark:border-gray-700 pb-2 capitalize">
         {productCategory}
       </h2>
 
-      {/* Carousel */}
       <div className="relative">
         {/* Left Arrow */}
-        {data?.content?.length > 3 && (
+        {hasOverflow && (
           <button
             onClick={prevSlide}
             className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 p-2 rounded-full shadow hover:bg-gray-100 dark:hover:bg-gray-700 transition"
@@ -81,7 +107,7 @@ const ProductsPerCategory = ({ productCategory = "", data }) => {
           </button>
         )}
 
-        {/* Scrollable Container */}
+        {/* Scrollable container */}
         <motion.div
           ref={containerRef}
           className="flex space-x-4 overflow-x-auto py-2 cursor-grab scrollbar-hide"
@@ -96,7 +122,7 @@ const ProductsPerCategory = ({ productCategory = "", data }) => {
         </motion.div>
 
         {/* Right Arrow */}
-        {data?.content?.length > 3 && (
+        {hasOverflow && (
           <button
             onClick={nextSlide}
             className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 p-2 rounded-full shadow hover:bg-gray-100 dark:hover:bg-gray-700 transition"
@@ -107,19 +133,22 @@ const ProductsPerCategory = ({ productCategory = "", data }) => {
       </div>
 
       {/* Pagination Dots */}
-      {data?.totalPages > 1 && (
+      {hasOverflow && data?.totalPages > 1 && (
         <div className="flex justify-center mt-4 space-x-2">
-          {Array.from({ length: data.totalPages }).map((_, index) => (
-            <button
-              key={index}
-              className={`w-3 h-3 rounded-full transition-colors ${
-                index === currentPage
-                  ? "bg-orange-500 dark:bg-orange-400"
-                  : "bg-gray-300 dark:bg-gray-600"
-              }`}
-              onClick={() => handleFetchPage(index)}
-            />
-          ))}
+          {Array.from({ length: data.totalPages }).map((_, index) => {
+            const active = index === data.page;
+            return (
+              <button
+                key={index}
+                className={`w-3 h-3 rounded-full transition-colors ${
+                  active
+                    ? "bg-orange-500 dark:bg-orange-400"
+                    : "bg-gray-300 dark:bg-gray-600"
+                }`}
+                onClick={() => handleFetchPage(index)}
+              />
+            );
+          })}
         </div>
       )}
     </section>

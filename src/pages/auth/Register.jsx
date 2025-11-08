@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import Email from '../../components/auth/Email';
 import Password from '../../components/auth/Password';
 
-export const Register = () => {
+export const Register = ({ title }) => {
   const [otp, setOtp] = useState(Array(6).fill(''));
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -13,6 +13,8 @@ export const Register = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+
+  if (title) document.title = title;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

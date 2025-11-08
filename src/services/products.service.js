@@ -19,12 +19,7 @@ export const addCategory = async (categoryData) => {
 }
 
 // Get all products and/or with optional filters
-export const getProducts = async ({ id, queryParams }) => {
-  const params = {};
-  if (id) {
-    params.id = id;
-    return await AxiosConfig.productsAxiosInstance.get(PRODUCTS_SERVICE_BASE_URL, { params: params });
-  }
+export const getProducts = async (queryParams) => {
   return await AxiosConfig.productsAxiosInstance.get(PRODUCTS_SERVICE_BASE_URL, { params: queryParams });
 };
 
@@ -39,16 +34,6 @@ export const getCategories = async ({ id }) => {
     return;
   }
 }
-
-// Get featured products
-export const getFeaturedProducts = async () => {
-  try {
-    return await AxiosConfig.productsAxiosInstance.get(`${PRODUCTS_SERVICE_BASE_URL}/featured`);
-  } catch (error) {
-    toast.error(error.message);
-    return;
-  }
-};
 
 // Get featured products
 export const getFavoriteProducts = async (userId) => {

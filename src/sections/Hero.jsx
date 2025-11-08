@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { SearchBar } from "../components/SearchBar";
 import { useProducts } from "../hooks/useProducts";
+import { CategoryNav } from "../components/nav/CategoryNav";
 
 const SHOP_NAME = process.env.REACT_APP_SHOP_NAME || "Our Store";
 const TAG_LINE =
@@ -9,13 +10,15 @@ const TAG_LINE =
   "Your favorite products, just a click away.";
 
 const Hero = () => {
-  const { setSearchQuery } = useProducts();
+  const { categories, setSearchQuery } = useProducts();
 
-  const handleSearch = (query = "") => setSearchQuery(query.trim().toLowerCase());
+  const handleSearch = (query = "") =>
+    setSearchQuery(query.trim().toLowerCase());
 
   return (
-    <section className="relative flex flex-col justify-center items-center h-screen bg-gradient-to-br from-orange-200 via-orange-300 to-orange-400 dark:from-gray-800 dark:to-gray-700 text-gray-800 dark:text-gray-100 px-6 overflow-hidden transition-colors duration-500">
+    <section className="relative flex flex-col justify-around items-center h-screen bg-gradient-to-br from-orange-200 via-orange-300 to-orange-400 dark:from-gray-800 dark:to-gray-700 text-gray-800 dark:text-gray-100 px-6 overflow-hidden transition-colors duration-500">
       {/* Overlay */}
+      {categories?.length > 0 && <CategoryNav />}
       <div className="absolute inset-0 bg-white/20 dark:bg-black/30 backdrop-blur-sm pointer-events-none" />
 
       {/* Content */}

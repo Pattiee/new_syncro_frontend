@@ -4,13 +4,15 @@ import { createPassword } from '../../services/auth.service';
 import { useNavigate } from 'react-router-dom';
 import Validator from '../../helpers/Validator';
 
-export const CreatePassword = () => {
+export const CreatePassword = ({ title }) => {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [passwdValid, setPasswdValid] = useState(false);
   const navigate = useNavigate();
+
+  if (title) document.title = title;
 
   useEffect(() => {
     if (password && Validator.isPasswordValid(password)) {

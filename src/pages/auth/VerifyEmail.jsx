@@ -3,7 +3,7 @@ import { verifyRegistration } from '../../services/auth.service';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
-export const VerifyEmail = () => {
+export const VerifyEmail = ({ title }) => {
     const [otp, setOtp] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -13,8 +13,8 @@ export const VerifyEmail = () => {
     // const [otp, setOtp] = useState(Array(6).fill(''));
 
     useEffect(() => {
-        document.title = "Verify Email - Syncro";
-        setError('')
+        if (title) document.title = title || "Verify Email - Syncro";
+        setError('');
     }, [otp]);    
 
     const handleSubmit = async (e) => {

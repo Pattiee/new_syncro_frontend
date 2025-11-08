@@ -11,6 +11,7 @@ import FloatingCart from "./components/FloatingCart";
 import FloatingCheckoutButton from "./components/FloatingCheckoutButton";
 import Footer from "./sections/Footer";
 import Home from "./pages/Home";
+import { CategoryNav } from "./components/nav/CategoryNav";
 
 const App = () => {
   const { pathname } = useLocation();
@@ -22,15 +23,18 @@ const App = () => {
     cart: ["/auth", "/checkout", "/cart"],
     navbar: ["/auth", "/manager", "/ceo", "/account"],
     contactNav: ["/auth"],
-    checkoutButton: ["/checkout", "/product", "/cart"],
   };
+  
+  const visible = {
+    checkoutButton: ["/checkout", "/product", "/cart", "/"],
+  }
 
   // Visibility flags
   const isFooterVisible = !hidden.footer.some(r => pathname.startsWith(r));
   const isNavbarVisible = !hidden.navbar.some(r => pathname.startsWith(r));
   const isContactNavVisible = !hidden.contactNav.some(r => pathname.startsWith(r));
   const isFloatingCartVisible = !hidden.cart.some(r => pathname.startsWith(r)) && cartItems?.length > 0;
-  const isFloatingCheckoutBtnVisible = !hidden.checkoutButton.some(r => pathname.startsWith(r));
+  const isFloatingCheckoutBtnVisible = visible.checkoutButton.some(r => pathname.startsWith(r));
 
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-800">
@@ -62,7 +66,7 @@ const App = () => {
       </main>
 
       {isFloatingCartVisible && <FloatingCart />}
-      {isFloatingCheckoutBtnVisible && <FloatingCheckoutButton />}
+      {/* {isFloatingCheckoutBtnVisible && <FloatingCheckoutButton />} */}
       {isFooterVisible && <Footer />}
     </div>
   );

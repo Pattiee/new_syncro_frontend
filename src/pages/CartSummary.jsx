@@ -31,7 +31,7 @@ const CartSummary = () => {
   const handleNavigateHome = () => navigate('/');
   const handleCheckout = () => navigate('/checkout');
 
-  if (!user && !loading) navigate("/", {replace: true});
+  if (!user && !loading) navigate("/auth/login", {replace: true});
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-gray-50 dark:bg-gray-900 px-4">

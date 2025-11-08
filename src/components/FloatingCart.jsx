@@ -11,15 +11,15 @@ const FloatingCart = () => {
     return (
         <button
             onClick={handleNavigateToSummary}
-            className='fixed bottom-6 right-6 bg-orange-500 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:bg-orange-600 transition'
+            className='flex fixed bottom-6 right-6 bg-orange-500 text-white rounded-full w-14 h-14 items-center justify-center shadow-lg hover:bg-orange-600 transition'
         >
             <div className='flex flex-col justify-center items-center relative'>
-                <ShoppingCart size={24} />
                 {cartItems?.length > 0 && (
-                    <span className='absolute -top-2 -right-2 bg-white text-orange-600 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center'>
-                        { cartItems.length ?? 0 }
+                    <span className='absolute -top-1 text-sm bg-transparent text-white font-bold rounded-full w-5 h-5 flex items-center justify-center'>
+                        { cartItems.length || 0 }
                     </span>
                 )}
+                <ShoppingCart size={30} />
             </div>
         </button>
     )
