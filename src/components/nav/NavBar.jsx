@@ -9,11 +9,14 @@ import { useAuth } from "../../hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { ceoLinks, managerLinks, vendorLinks } from "../../links";
 import { CategoryNav } from "./CategoryNav";
+import NavbarCartIcon from "../cart/NavbarCartIcon";
+import { useCart } from "../../hooks/useCart";
 
 const SHOP_NAME = process.env.REACT_APP_SHOP_NAME || "";
 
 const Navbar = () => {
   const { user, loading } = useAuth();
+  const { isEmpty } = useCart();
   const { pathname } = useLocation();
   const theme = useSelector((state) => state?.theme || "light");
 
@@ -142,8 +145,11 @@ const Navbar = () => {
 
           {/* Right Section */}
           <div className="flex items-center gap-4">
-            <ThemeToggle theme={theme} />
-            <AuthStatus />
+            <div className="flex gap-4 items-center">
+              {!pathname.includes("/cart") && !isEmpty && <NavbarCartIcon />}
+              <ThemeToggle theme={theme} />
+              <AuthStatus />
+            </div>
 
             {/* Mobile Toggle */}
             <button className="md:hidden" onClick={toggleMobileMenu}>

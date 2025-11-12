@@ -7,5 +7,6 @@ export const useCart = () => {
     (sum, item) => sum + item?.unitPrice * item?.qty,
     0
   );
-  return { cartItems, cartTotals };
+  const isEmpty = cartItems.length < 1;
+  return { cartItems, cartTotals, isEmpty };
 };

@@ -61,13 +61,13 @@ export const Login = ({ title }) => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if(!sending) setSending(true);
+    setSending(true);
     const data = {}
     data.username = email;
     data.password = password;
 
     await login(data).then(res => {
-      toast.success(res?.data);
+      // toast.success(res?.data);
       setAuthenticated(true);
       navigate("/", { replace: true });
     }).catch(err => {

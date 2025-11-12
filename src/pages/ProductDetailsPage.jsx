@@ -199,22 +199,28 @@ const ProductDetailsPage = () => {
               </div>
 
               {/* Actions */}
-              <div className="flex px-4 py-2 rounded-lg items-center justify-between mt-auto">
-                {!isOwner && <AddToCartBtn product={product} />}
+              <div className="flex flex-wrap gap-2 px-4 py-2 rounded-lg items-center justify-start mt-auto">
+                {!isOwner && (
+                  <AddToCartBtn
+                    product={product}
+                    className="px-3 py-1.5 text-sm rounded-md shadow hover:shadow-md transition-colors"
+                  />
+                )}
+
                 {isOwner ? (
                   <button
                     disabled={deleting}
                     onClick={handleDeleteProduct}
-                    className={`flex items-center px-4 py-2 gap-1 bg-transparent text-red-400 dark:text-red-400 hover:text-red-500 dark:hover:text-red-300 transition disabled:opacity-40 disabled:cursor-not-allowed`}
+                    className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-md border border-red-400 text-red-400 hover:bg-red-50 dark:hover:bg-red-900 hover:text-red-500 transition disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
-                    <Trash2Icon size={24} /> Delete
+                    <Trash2Icon size={18} /> Delete
                   </button>
                 ) : (
                   <button
                     onClick={handleContactSeller}
-                    className="flex bg-green-500 hover:bg-green-700 px-4 py-2 rounded-full text-white text-sm items-center gap-2 transition-all"
+                    className="flex items-center gap-1 px-3 py-1.5 text-sm rounded-md bg-green-500 text-white hover:bg-green-600 dark:hover:bg-green-700 transition shadow-sm hover:shadow-md"
                   >
-                    <PhoneCall />
+                    <PhoneCall size={16} />
                     <span>Contact Seller</span>
                   </button>
                 )}

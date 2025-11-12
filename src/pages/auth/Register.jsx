@@ -78,7 +78,7 @@ export const Register = ({ title }) => {
 
     
         
-        <form className='space-y-4' onSubmit={(e) => handleSubmit(e)}>
+        <form className='space-y-4' onSubmit={handleSubmit}>
           {/* Username */}
           <Email onChange={handleUpdateUsername} value={username}/>
 

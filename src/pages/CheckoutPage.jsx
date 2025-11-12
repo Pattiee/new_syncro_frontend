@@ -94,8 +94,7 @@ export const CheckoutPage = () => {
   };
 
   const handlePlaceOrder = async () => {
-    if ((user && loading) || (!user && !loading))
-      return navigate("/auth/login");
+    if (!user && !loading) return navigate("/auth/login");
     if (!paymentInfo) return toast.error("Error building payment info");
 
     // Close order confirmation modal

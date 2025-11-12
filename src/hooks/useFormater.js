@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 export const useFormater = () => {
   const [lang, setLang] = useState("en-KE");
@@ -8,11 +8,14 @@ export const useFormater = () => {
     style: "currency",
     currency: currency,
     currencySign: "accounting",
-    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   });
 
   const percentageFormater = new Intl.NumberFormat(lang, {
     style: "percent",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   });
 
   return { currencyFormater, percentageFormater };

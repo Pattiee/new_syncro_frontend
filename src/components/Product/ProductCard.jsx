@@ -8,13 +8,10 @@ export const ProductCard = ({ product }) => {
   const navigate = useNavigate();
   const { currencyFormater, percentageFormater } = useFormater();
 
-  const discountedPrice =
-    product?.percent_discount > 0
-      ? (
-          product.price -
-          product.price * (product.percent_discount / 100)
-        ).toFixed(2)
-      : product?.price?.toFixed(2);
+  const discounted = product?.percent_discount > 0;
+  const discountPrice = discounted
+    ? product.price - (product.price * product.percent_discount) / 100
+    : product?.price;
 
   const handleCardClick = () => navigate(`/product?id=${product?.id ?? ""}`);
 
@@ -50,18 +47,18 @@ export const ProductCard = ({ product }) => {
       <div className="p-4 flex flex-col justify-between">
         {/* Name and price */}
         <div className="flex items-center justify-between">
-          <span className="text-base pr-2 tracking-tight text-gray-900 dark:text-gray-100 truncate">
+          <span className="text-base pr-1 tracking-tight text-gray-900 dark:text-gray-100 truncate">
             {product.name}
           </span>
           <span className="text-balance font-bold text-orange-600 dark:text-orange-400">
-            {currencyFormater.format(discountedPrice)}
+            {currencyFormater.format(discountPrice)}
           </span>
         </div>
 
         {/* Specs string */}
         <div className="flex justify-between">
           <span className="text-xs text-gray-400 dark:text-gray-500 truncate">
-            ${product?.specs}
+            {product?.specs || ""}
           </span>
           {/* {product?.percent_discount > 0 && (
             <span className="text-xs line-through text-gray-400 dark:text-gray-500">

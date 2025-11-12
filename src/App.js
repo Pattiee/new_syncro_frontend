@@ -24,17 +24,22 @@ const App = () => {
     navbar: ["/auth", "/manager", "/ceo", "/account"],
     contactNav: ["/auth"],
   };
-  
+
   const visible = {
     checkoutButton: ["/checkout", "/product", "/cart", "/"],
-  }
+  };
 
   // Visibility flags
-  const isFooterVisible = !hidden.footer.some(r => pathname.startsWith(r));
-  const isNavbarVisible = !hidden.navbar.some(r => pathname.startsWith(r));
-  const isContactNavVisible = !hidden.contactNav.some(r => pathname.startsWith(r));
-  const isFloatingCartVisible = !hidden.cart.some(r => pathname.startsWith(r)) && cartItems?.length > 0;
-  const isFloatingCheckoutBtnVisible = visible.checkoutButton.some(r => pathname.startsWith(r));
+  const isFooterVisible = !hidden.footer.some((r) => pathname.startsWith(r));
+  const isNavbarVisible = !hidden.navbar.some((r) => pathname.startsWith(r));
+  const isContactNavVisible = !hidden.contactNav.some((r) =>
+    pathname.startsWith(r)
+  );
+  const isFloatingCartVisible =
+    !hidden.cart.some((r) => pathname.startsWith(r)) && cartItems?.length > 0;
+  const isFloatingCheckoutBtnVisible = visible.checkoutButton.some((r) =>
+    pathname.startsWith(r)
+  );
 
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-800">
@@ -43,13 +48,19 @@ const App = () => {
       {isContactNavVisible && <ContactsNavbar />}
       {isNavbarVisible && <Navbar />}
 
-      <main className="flex-1">
+      <main className="">
         <Routes>
           {routes.map(({ path, roles, children, element }) => (
             <Route
               key={path}
               path={path}
-              element={ roles?.length > 0 ? ( <ProtectedRoute roles={roles}>{element}</ProtectedRoute>) : ( element )}
+              element={
+                roles?.length > 0 ? (
+                  <ProtectedRoute roles={roles}>{element}</ProtectedRoute>
+                ) : (
+                  element
+                )
+              }
             >
               {children.map(({ index, path, element }) =>
                 index ? (
@@ -61,11 +72,11 @@ const App = () => {
             </Route>
           ))}
 
-          <Route path={"/"} index element={<Home/>}/>
+          <Route path={"/"} index element={<Home />} />
         </Routes>
       </main>
 
-      {isFloatingCartVisible && <FloatingCart />}
+      {/* {isFloatingCartVisible && <FloatingCart />} */}
       {/* {isFloatingCheckoutBtnVisible && <FloatingCheckoutButton />} */}
       {isFooterVisible && <Footer />}
     </div>
