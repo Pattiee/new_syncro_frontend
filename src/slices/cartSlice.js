@@ -16,7 +16,7 @@ const cartSlice = createSlice({
       const item = action.payload;
       if (!item?.id) return toast.error("Invalid item");
 
-      const existingItem = state.items.find(i => i.id === item.id);
+      const existingItem = state.items.find((i) => i.id === item.id);
       const quantityToAdd = item.qty ?? 1;
 
       if (existingItem) {
@@ -28,17 +28,17 @@ const cartSlice = createSlice({
     },
     decrementCartItemQuantity: (state, action) => {
       const itemId = action.payload;
-      const existingItem = state.items.find(i => i.id === itemId);
+      const existingItem = state.items.find((i) => i.id === itemId);
       if (existingItem) {
         if (existingItem.qty <= 1) {
-          state.items = state.items.filter(item => item.id !== itemId);
+          state.items = state.items.filter((item) => item.id !== itemId);
         } else {
           existingItem.qty -= 1;
         }
       }
     },
     removeItem: (state, action) => {
-      state.items = state.items.filter(item => item.id !== action.payload);
+      state.items = state.items.filter((item) => item.id !== action.payload);
     },
     clearCart: (state) => {
       state.items = [];

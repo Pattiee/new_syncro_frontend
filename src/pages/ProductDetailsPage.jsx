@@ -5,7 +5,7 @@ import ProductReviews from "../components/Product/ProductReviews";
 import RelatedProducts from "../components/Product/RelatedProducts";
 import ProductDetails from "../components/Product/ProductDetails";
 import { ProductImageCarousel } from "../components/carousels/ProductImageCarousel";
-import { deleteProductById, getProducts } from "../services/products.service";
+import { deleteProductById, getProducts } from "../api/products.api";
 import { useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import { ROLES } from "../roles";
@@ -29,7 +29,7 @@ const ProductDetailsPage = () => {
   const [searchParams] = useSearchParams();
   const productId = searchParams.get("id");
   const { user, loading } = useAuth();
-  const { currencyFormater } = useFormater();
+  const { currencyFormater, percentageFormater } = useFormater();
   const { products } = useProducts();
 
   const dispatch = useDispatch();
@@ -107,10 +107,7 @@ const ProductDetailsPage = () => {
 
   const discounted = product?.percent_discount > 0;
   const discountPrice = discounted
-    ? (
-        product.price -
-        product.price * (product.percent_discount / 100)
-      ).toFixed(2)
+    ? (product.price - product.price * product.percent_discount).toFixed(2)
     : product.price;
 
   return (
@@ -168,7 +165,8 @@ const ProductDetailsPage = () => {
                     </p>
                     {discounted && (
                       <span className="px-2 py-1 text-xs font-medium text-green-600 bg-green-100 rounded-full dark:bg-green-200">
-                        -{product?.percent_discount}% OFF
+                        -{percentageFormater.format(product?.percent_discount)}
+                        OFF
                       </span>
                     )}
                   </div>
@@ -199,38 +197,40 @@ const ProductDetailsPage = () => {
               </div>
 
               {/* Actions */}
-              <div className="flex flex-wrap gap-2 px-4 py-2 rounded-lg items-center justify-start mt-auto">
-                {!isOwner && (
-                  <AddToCartBtn
-                    product={product}
-                    className="px-3 py-1.5 text-sm rounded-md shadow hover:shadow-md transition-colors"
-                  />
-                )}
+              {!isModalOpen && (
+                <div className="flex gap-2 px-4 py-2 rounded-lg items-center justify-start mt-auto">
+                  {!isOwner && (
+                    <AddToCartBtn
+                      product={product}
+                      className="px-4 py-2 text-sm rounded-md shadow hover:shadow-md transition-colors"
+                    />
+                  )}
 
-                {isOwner ? (
-                  <button
-                    disabled={deleting}
-                    onClick={handleDeleteProduct}
-                    className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-md border border-red-400 text-red-400 hover:bg-red-50 dark:hover:bg-red-900 hover:text-red-500 transition disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    <Trash2Icon size={18} /> Delete
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleContactSeller}
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm rounded-md bg-green-500 text-white hover:bg-green-600 dark:hover:bg-green-700 transition shadow-sm hover:shadow-md"
-                  >
-                    <PhoneCall size={16} />
-                    <span>Contact Seller</span>
-                  </button>
-                )}
-              </div>
+                  {isOwner ? (
+                    <button
+                      disabled={deleting}
+                      onClick={handleDeleteProduct}
+                      className={`flex items-center gap-1 px-4 py-2 text-sm rounded-md border border-red-400 text-red-400 hover:bg-red-50 dark:hover:bg-red-900 hover:text-red-500 transition disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      <Trash2Icon size={18} /> Delete
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleContactSeller}
+                      className="flex flex-nowrap items-center gap-1 px-4 py-2 text-sm rounded-md bg-green-500 text-white hover:bg-green-600 dark:hover:bg-green-700 transition shadow-sm hover:shadow-md"
+                    >
+                      <PhoneCall size={16} />
+                      <span>Contact Seller</span>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
           {/* Details, Reviews, Related Products */}
           <div className="mt-12">
-            <ProductDetails product={product} />
+            <ProductDetails product={product} discountedPrice={discountPrice} />
             <ProductReviews />
             {products[productCategory]?.content?.length > 1 && (
               <RelatedProducts

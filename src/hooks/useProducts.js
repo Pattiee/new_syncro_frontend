@@ -1,86 +1,72 @@
-import { useEffect, useState, useCallback } from "react";
-import {
-  getProducts,
-  getProductsByCategory,
-} from "../services/products.service";
+import { useState, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getProducts } from "../api/products.api";
 import { useDebounce } from "./useDebounce";
 
 export const useProducts = () => {
-  const [products, setProducts] = useState({});
-  const [categories, setCategories] = useState([]);
   const [featured, setFeatured] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [errMessage, setErrMessage] = useState("");
+  const [sortBy, setSortBy] = useState("relevance");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   const { debouncedValue } = useDebounce({ value: searchQuery });
+  const queryClient = useQueryClient();
 
-  // GLOBAL LOAD (for homepage etc)
-  const loadProducts = useCallback(async () => {
-    try {
-      setLoading(true);
-
-      const params = {};
-      if (featured) params.featured = true;
-      if (debouncedValue) params.search = debouncedValue.toLowerCase();
-
-      const response = await getProducts(params);
-      const { data } = response;
-
-      setProducts(data);
-
-      setCategories(
-        Object.keys(data).map((name, i) => ({
-          id: i,
-          name,
-          slug: name.toLowerCase().replace(/\s+/g, "-"),
-        }))
-      );
-
-      setErrMessage("");
-    } catch (e) {
-      console.error(e);
-      setErrMessage("Failed to load products.");
-    } finally {
-      setLoading(false);
-    }
+  // Build request params
+  const params = useMemo(() => {
+    const p = {};
+    if (featured) p.featured = true;
+    if (debouncedValue) p.search = debouncedValue.toLowerCase();
+    return p;
   }, [featured, debouncedValue]);
 
-  // CATEGORY LOAD (for pagination)
-  const fetchCategoryPage = useCallback(
-    async (categoryName, page) => {
-      try {
-        setLoading(true);
-
-        const params = { category: categoryName, page };
-        if (featured) params.featured = true;
-
-        const { data } = await getProducts(params);
-
-        setProducts((prev) => ({
-          ...prev,
-          [categoryName]: data,
-        }));
-      } catch (e) {
-        console.error(e);
-        setErrMessage("Failed to load category page.");
-      } finally {
-        setLoading(false);
-      }
+  // Fetch ALL products
+  const {
+    data: products = {},
+    isLoading: loading,
+    error,
+  } = useQuery({
+    queryKey: ["products", params],
+    queryFn: async () => {
+      const { data } = await getProducts(params);
+      return data;
     },
-    [featured]
-  );
+    staleTime: 5 * 60 * 1000,
+    keepPreviousData: true,
+  });
 
-  // Auto refresh global list when filters/search change
-  useEffect(() => {
-    loadProducts();
-  }, [loadProducts]);
+  // Build categories dynamically
+  const categories = useMemo(() => {
+    return Object.keys(products).map((name, i) => ({
+      id: i,
+      name,
+      slug: name.toLowerCase().replace(/\s+/g, "-"),
+    }));
+  }, [products]);
+
+  // Category pagination loader
+  const fetchCategoryPage = async (categoryName, page) => {
+    const categoryParams = {
+      category: categoryName,
+      page,
+    };
+
+    if (featured) categoryParams.featured = true;
+
+    const { data } = await getProducts(categoryParams);
+
+    // Push into cache for instant UI update
+    queryClient.setQueryData(["products", params], (prev) => ({
+      ...prev,
+      [categoryName]: data,
+    }));
+  };
 
   return {
     products,
     categories,
     loading,
-    errMessage,
+    errMessage: error ? "Failed to load products." : "",
     featured,
     setFeatured,
     setSearchQuery,

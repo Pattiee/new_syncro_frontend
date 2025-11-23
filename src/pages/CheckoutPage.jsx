@@ -12,6 +12,7 @@ import { OrderConfirmationModal } from "../components/modals/OrderConfirmationMo
 import toast from "react-hot-toast";
 import { getCurrentUsersPhoneNumber } from "../services/user.service";
 import { useFormater } from "../hooks/useFormater";
+import axios from "axios";
 
 export const CheckoutPage = () => {
   const [subTotal, setSubTotal] = useState(0.0);
@@ -71,6 +72,52 @@ export const CheckoutPage = () => {
     loadUserData();
   }, [user, loading, navigate, placingOrder]);
 
+  const downloadPdf = async () => {
+    try {
+      const response = await axios.get("http://localhost:8080/generate-pdf", {
+        responseType: "blob", // Receive as a binary blob
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "downloaded_document.pdf"); // Set desired filename
+      document.body.appendChild(link);
+      link.click();
+      link.remove(); // Clean up the temporary link
+      window.URL.revokeObjectURL(url); // Release the object URL
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+    }
+  };
+
+  // Open in new tab
+  const downloadPdfAndOpen = async () => {
+    try {
+      const response = await axios.get("http://localhost:8080/generate-pdf", {
+        responseType: "blob", // Receive as a binary blob
+      });
+
+      // Create a Blob from the response data
+      const pdfBlob = new Blob([response.data], { type: "application/pdf" });
+
+      // Generate a temporary URL for the blob
+      const url = window.URL.createObjectURL(pdfBlob);
+
+      // Open the URL in a new tab
+      // The browser will render the PDF inline in the new tab
+      window.open(url, "_blank");
+
+      // It's good practice to revoke the object URL after the new window is opened
+      // The browser window now manages the blob's lifecycle (or the user closes the tab)
+      // Revoking too soon might prevent the document from loading.
+      // You can defer the revocation slightly if needed, but it often works immediately.
+      // window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error fetching or opening PDF:", error);
+    }
+  };
+
   const handleValidatePaymentInfo = async () => {
     if (!user) return toast.error("Unable to build customer data");
 
@@ -117,7 +164,7 @@ export const CheckoutPage = () => {
     };
 
     try {
-      if (!placingOrder) setPlacingOrder(true);
+      setPlacingOrder(true);
       setShowMpesaModal(true);
 
       console.log("ORDER DATA: ", data);
@@ -130,6 +177,7 @@ export const CheckoutPage = () => {
 
       if (createOrderResult.status === "fulfilled") {
         const { data } = createOrderResult.value;
+        console.log("CREATE ORDER RESULT: ", data);
         if (data) {
           dispatch(clearCart());
           setPaymentSuccess(true);
@@ -137,7 +185,7 @@ export const CheckoutPage = () => {
           navigate("/account");
         }
       } else {
-        console.log(createOrderResult.reason);
+        console.log("CREATE ORDER ERROR: ", createOrderResult.reason);
       }
     } catch (error) {
     } finally {
@@ -164,7 +212,7 @@ export const CheckoutPage = () => {
   };
 
   const placeOrder = async () => {
-    if (!user && !loading) return toast.error("Please login to continue.");
+    if (!user && !loading) return navigate("/auth/login", { replace: true });
     await handleValidatePaymentInfo();
   };
 

@@ -3,9 +3,19 @@ import { createContext, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import toast from "react-hot-toast";
-import { getCurrentAccount, logoutBackendApi } from "../services/auth.service";
+import {
+  getCurrentAccount,
+  register,
+  login,
+  verifyEmail,
+  logoutBackendApi,
+  requestPasswordReset,
+  resetPasswordApi,
+  isEmailRegistered,
+} from "../services/auth.service";
 import { getUserProfile } from "../services/user.service";
 import { clearCart } from "../slices/cartSlice";
+import Validator from "../helpers/Validator";
 
 export const AuthContext = createContext(null);
 
@@ -18,12 +28,12 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
 
-  // Fetch current user on mount or route change
+  // Load user session on mount or route change
   useEffect(() => {
     const loadCurrentUser = async () => {
       try {
         setLoading(true);
-        const res = await getCurrentAccount(); // backend checks cookie session
+        const res = await getCurrentAccount();
         if (res?.data) {
           setUser(res.data);
           setAuthenticated(true);
@@ -32,12 +42,10 @@ export const AuthProvider = ({ children }) => {
           setAuthenticated(false);
         }
 
-        // Load full profile if necessary
         if (pathname.includes("/account") && res?.data) {
           const { data } = await getUserProfile();
-          if (data) setUser(prev => ({ ...prev, ...data }));
+          if (data) setUser((prev) => ({ ...prev, ...data }));
         }
-
       } catch (err) {
         console.error("Auth load error:", err);
       } finally {
@@ -48,26 +56,127 @@ export const AuthProvider = ({ children }) => {
     loadCurrentUser();
   }, [pathname]);
 
-  // Logout and cleanup
-  const logout = async () => {
-    setLoading(true);
+  // Check if email is registered
+  const checkEmailRegistration = async (email) => {
     try {
-      const { data, status, statusText } = await logoutBackendApi(); // backend clears cookie
-
-      if (statusText === "OK" || status.toString().startsWith("2")) {
-        toast.success("Logged out successfully");
-        dispatch(clearCart());
-        setUser(null);
-        setAuthenticated(false);
+      setLoading(true);
+      console.log("Email: ", email);
+      console.log(
+        "Is valid email: ",
+        email,
+        " ",
+        Validator.isEmailValid(email)
+      );
+      // if (!Validator.isEmailValid(email)) {
+      //   return toast.error("Invalid email");
+      // }
+      const { data, status, statusText } = await isEmailRegistered(email);
+      if (data === true) {
+        toast.error("Email already exists. Try logging in.");
+        return;
       } else {
-        throw new Error(data?.message || "Logout failed");
+        navigate("/auth/verify-email");
       }
     } catch (err) {
-      console.error(err);
+      toast.error(
+        err?.response?.data || err?.message || "Unknown error occurred"
+      );
     } finally {
-      navigate("/", { replace: true });
       setLoading(false);
     }
+  };
+
+  // Register
+  const registerUser = async (payload) => {
+    try {
+      setLoading(true);
+      const res = await register(payload);
+      toast.success("Registration successful. Verify your email to continue.");
+      navigate("/auth/verify-email", { replace: true });
+      return res;
+    } catch (err) {
+      toast.error(err?.response?.data || err?.message || "Registration failed");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Login
+  const loginUser = async (payload) => {
+    setLoading(true);
+    await login(payload)
+      .then((res) => {
+        // console.log(res);
+        if (res?.data) {
+          toast.success("Login successful");
+          setUser(res?.data);
+          setAuthenticated(true);
+          navigate("/", { replace: true });
+        }
+      })
+      .catch((err) => {
+        toast.error(
+          err?.response?.data || err?.message || "An error occured, try again."
+        );
+      })
+      .finally(() => setLoading(false));
+  };
+
+  // Verify email
+  const verifyEmailCode = async (payload) => {
+    try {
+      const res = await verifyEmail(payload);
+      toast.success("Email verified successfully!");
+      navigate("/auth/login", { replace: true });
+      return res;
+    } catch (err) {
+      toast.error(err?.response?.data || "Verification failed");
+      throw err;
+    }
+  };
+
+  // Forgot password
+  const requestPasswordResetHandler = async (email) => {
+    try {
+      const res = await requestPasswordReset(email);
+      toast.success("Password reset link sent to your email");
+      return res;
+    } catch (err) {
+      toast.error(err?.response?.data || "Reset request failed");
+      throw err;
+    }
+  };
+
+  // Reset password
+  const resetPasswordHandler = async (payload) => {
+    try {
+      const res = await resetPasswordApi(payload);
+      toast.success("Password successfully reset. You can log in now.");
+      navigate("/auth/login", { replace: true });
+    } catch (err) {
+      toast.error(err?.response?.data || "Password reset failed");
+      throw err;
+    }
+  };
+
+  // Logout
+  const logout = async () => {
+    setLoading(true);
+    await logoutBackendApi()
+      .then((res) => {
+        if (res?.status === 200 || res?.statusText?.toLowerCase() === "ok") {
+          toast.success(res.data);
+          dispatch(clearCart());
+          setUser(null);
+          setAuthenticated(false);
+          navigate("/", { replace: true });
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      })
+      .finally(() => setLoading(false));
   };
 
   return (
@@ -78,6 +187,12 @@ export const AuthProvider = ({ children }) => {
         loading,
         authenticated,
         setAuthenticated,
+        checkEmailRegistration,
+        registerUser,
+        loginUser,
+        verifyEmailCode,
+        requestPasswordReset: requestPasswordResetHandler,
+        resetPassword: resetPasswordHandler,
         logout,
       }}
     >

@@ -40,7 +40,7 @@ const Hero = () => {
         </p>
 
         {/* Search Bar */}
-        <div className="max-w-md mx-auto w-full">
+        <div className="lg:max-w-md mx-auto w-full">
           <SearchBar onSearch={handleSearch} />
         </div>
 

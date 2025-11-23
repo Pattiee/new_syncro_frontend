@@ -28,11 +28,12 @@ const AddToCartBtn = ({ product }) => {
 
     const discounted = product?.percent_discount > 0;
     const productPrice = discounted
-      ? product.price - (product.percent_discount / 100) * product.price
+      ? product.price - product.percent_discount * product.price
       : product.price;
 
     const item = {
       id: product.id,
+      skuCode: product.skuCode,
       name: product.name,
       unitPrice: productPrice,
       qty: 1,

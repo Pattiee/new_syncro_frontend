@@ -16,6 +16,7 @@ import { Login } from "./pages/auth/Login";
 import { Register } from "./pages/auth/Register";
 import { VerifyEmail } from "./pages/auth/VerifyEmail";
 import { CreatePassword } from "./pages/auth/CreatePassword";
+import { ResetPassword } from "./pages/auth/ResetPassword";
 
 import { ManagerDashboard } from "./pages/manager/ManagerDashboard";
 import { RoleManager } from "./pages/manager/roles/RoleManager";
@@ -33,6 +34,7 @@ import UserDetailsPage from "./pages/admin/UserDetailsPage";
 
 import { ROLES } from "./roles";
 import { CategorizedProductsPage } from "./pages/CategorizedProductsPage";
+import { CheckEmail } from "./pages/auth/CheckEmail";
 
 export const routes = [
   {
@@ -42,7 +44,7 @@ export const routes = [
       { index: true, element: <Home /> },
       { path: "products", element: <Products /> },
       { path: "product", element: <ProductDetailsPage /> },
-      { path: "category/:slug", element: <CategorizedProductsPage />},
+      { path: "category/:slug", element: <CategorizedProductsPage /> },
       { path: "cart", element: <CartSummary /> },
       { path: "checkout", element: <CheckoutPage /> },
       { path: "account", element: <Account /> },
@@ -52,10 +54,30 @@ export const routes = [
   {
     path: "/auth/",
     children: [
-      { path: "login", element: <Login key={document.title} title={"Login - Syncro"}/> },
-      { path: "register", element: <Register key={document.title} title={"Register - Syncro"} /> },
-      { path: "verify-email", element: <VerifyEmail title={"Verify Email  - Syncro"} /> },
-      { path: "create-password", element: <CreatePassword title={"Complete Registration - Syncro"} /> },
+      {
+        path: "login",
+        element: <Login key={document.title} title={"Login - Syncro"} />,
+      },
+      {
+        path: "register",
+        element: <Register key={document.title} title={"Register - Syncro"} />,
+      },
+      {
+        path: "verify-email",
+        element: <VerifyEmail title={"Verify Email  - Syncro"} />,
+      },
+      {
+        path: "check-email",
+        element: <CheckEmail title={"Check email  - Syncro"} />,
+      },
+      {
+        path: "create-passwd",
+        element: <CreatePassword title={"Create passwd - Syncro"} />,
+      },
+      {
+        path: "reset-passwd",
+        element: <ResetPassword title={"Create passwd - Syncro"} />,
+      },
     ],
   },
   {

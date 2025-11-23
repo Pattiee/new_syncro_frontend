@@ -1,191 +1,156 @@
-import { useEffect, useState } from "react";
-import { checkEmailExists, login, validatePassword } from "../../services/auth.service";
-import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema } from "../../schemas/auth.schema";
 import { useAuth } from "../../hooks/useAuth";
-import { SSO_Login } from "./SSO_Login";
-import { useLocation } from "react-router-dom";
+import toast from "react-hot-toast";
+import { LockIcon, EyeIcon, EyeOffIcon, MailIcon } from "lucide-react";
 
-export const Login = ({ title }) => {
-  const [step, setStep] = useState(1);
-  const [email, setEmail] = useState("");
-  const [sending, setSending] = useState(false);
-  const [password, setPassword] = useState("");
-  const [errMessage, setErrMessage] = useState("");
+export const Login = () => {
+  const [visible, setVisible] = useState(false);
   const navigate = useNavigate();
-  const { user, loading, setAuthenticated } = useAuth();
-  const location = useLocation();
+  const { loading = false, loginUser } = useAuth();
 
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
 
-
-
-  useEffect(() => {
-    if (user && !loading) {
-      navigate('/', { replace: true });
-    } else {
-      if (title) document.title = title;
-    }
-
-  }, [loading, navigate, user, location, title]);
-
-  const handleValidateEmail = async (e) => {
-    e.preventDefault();
-    if(!sending) setSending(true);
-    const data = {}
-    if (email) {
-      data.username = email;
-    } else {
-      return toast.error("Email or username cannot be empty");
-    }
-    
-    await checkEmailExists(data).then(res => {
-      if (res.data === true){
-        setStep(2)
-      } else {
-        setEmail("")
-        navigate("/auth/register", { replace: true });
-      };
-    }).catch(err => {
-      if(err?.code === "ERR_NETWORK"){
-        toast.error(err?.message || "Unknown error occured");
-        return;
-      } else {
-        console.error(err);
-        // toast.error(err)
-      }
-    }).finally(() => {
-      // setEmail("");
-      setSending(false)
-    });
-  };
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setSending(true);
-    const data = {}
-    data.username = email;
-    data.password = password;
-
-    await login(data).then(res => {
-      // toast.success(res?.data);
-      setAuthenticated(true);
-      navigate("/", { replace: true });
-    }).catch(err => {
-      console.error(err);
-    }).finally(() => setSending(false));
-  };
+  const handleLogin = async (data) => await loginUser(data);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 font-inter">
-      <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl dark:bg-gray-800">
-        
-        {/* Page Title */}
-          <legend className="mb-6 text-3xl font-semibold text-center text-gray-900 dark:text-white tracking-tight">Login</legend>
+    <div className="flex flex-col justify-center items-center min-h-screen px-6 bg-gray-50 dark:bg-gray-900">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 shadow-lg rounded-2xl p-8">
+        <h1 className="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-white">
+          Sign In
+        </h1>
 
-        <p className="mb-8 text-sm text-center text-gray-500 dark:text-gray-400">
-          {/* {step === 1 ? "Enter your email to continue" : "Enter your password to sign in"} */}
-        </p>
-        {errMessage && (
-          <p className="mb-4 text-sm text-center text-red-600">
-            {errMessage}
-          </p>
-        )}
+        <form onSubmit={handleSubmit(handleLogin)} className="space-y-5">
+          {/* Email */}
+          <div className="relative">
+            <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">
+              Email
+            </label>
+            <Controller
+              name="username"
+              control={control}
+              render={({ field }) => (
+                <>
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                      <MailIcon size={20} />
+                    </div>
+                    <input
+                      {...field}
+                      type="email"
+                      placeholder="Enter your email"
+                      maxLength={50}
+                      aria-invalid={errors.username ? "true" : "false"}
+                      className={`w-full pl-10 pr-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors ${
+                        errors.username
+                          ? "border-red-500"
+                          : "border-gray-300 dark:border-gray-600"
+                      } text-gray-900 dark:text-white bg-white dark:bg-gray-700`}
+                    />
+                  </div>
+                  {errors.username && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.username.message}
+                    </p>
+                  )}
+                </>
+              )}
+            />
+          </div>
 
-        {/* Step 1: Email */}
-        {step === 1 && (
-          <form 
-            onSubmit={handleValidateEmail} 
-            method="post"
-            className="space-y-6"
+          {/* Password */}
+          <div className="relative">
+            <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">
+              Password
+            </label>
+            <Controller
+              name="password"
+              control={control}
+              render={({ field }) => (
+                <>
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                      <LockIcon size={20} />
+                    </div>
+                    <input
+                      {...field}
+                      type={visible ? "text" : "password"}
+                      placeholder="Enter your password"
+                      maxLength={50}
+                      aria-invalid={errors.password ? "true" : "false"}
+                      className={`w-full pl-10 pr-10 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors ${
+                        errors.password
+                          ? "border-red-500"
+                          : "border-gray-300 dark:border-gray-600"
+                      } text-gray-900 dark:text-white bg-white dark:bg-gray-700`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setVisible((v) => !v)}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 focus:outline-none"
+                      aria-label={visible ? "Hide password" : "Show password"}
+                    >
+                      {visible ? (
+                        <EyeOffIcon size={20} />
+                      ) : (
+                        <EyeIcon size={20} />
+                      )}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.password.message}
+                    </p>
+                  )}
+
+                  <Link
+                    className="flex float-end text-gray-800 hover:underline dark:hover:text-orange-500 dark:text-gray-300 text-sm m-2"
+                    to={"/auth/reset-passwd"}
+                  >
+                    Forgot password?
+                  </Link>
+                </>
+              )}
+            />
+          </div>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-2 mt-4 rounded-lg text-white transition ${
+              loading
+                ? "bg-orange-400 cursor-not-allowed"
+                : "bg-orange-600 hover:bg-orange-700"
+            }`}
           >
-            <div className="flex flex-col">
-              <label 
-                htmlFor="email" 
-                className="block mb-2 px-4 text-sm tracking-wide text-gray-600 dark:text-gray-100"
-              >
-                Email:
-                <input
-                  id="email"
-                  name="email"
-                  autoComplete="email"
-                  aria-describedby="email"
-                  type="email"
-                  placeholder="e.g, janedoe@example.com"
-                  disabled={sending}
-                  className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 
-                        bg-transparent border-b border-gray-300 
-                        focus:border-orange-600 focus:outline-none focus:ring-0
-                        dark:text-white"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </label>
+            {loading ? "Signing in..." : "Sign In"}
+          </button>
+        </form>
 
-              <p
-                id="email"
-              >
-                {/* Errors in validation here */}
-              </p>
-            </div>
-            <button
-              type="submit"
-              disabled={sending || !email}
-              className="w-full py-2 text-white bg-orange-500 rounded-lg shadow-lg hover:bg-orange-600 focus:ring-2 focus:ring-orange-400 focus:outline-none disabled:opacity-50"
-            >
-              Next
-            </button>
-          </form>
-        )}
-
-        {/* Step 2: Password */}
-        {step === 2 && (
-          <form onSubmit={handleLogin} className="space-y-6 animate-slideIn">
-            <div className="flex flex-col">
-              <label htmlFor="password">
-                Password:
-                <input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  placeholder="••••••••"
-                  aria-describedby="password-hint"
-                  disabled={sending}
-                  className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 
-                        border-b-2 border-orange-500 
-                        focus:border-orange-600 focus:outline-none focus:ring-0
-                        dark:text-white"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </label>
-
-              <p
-                id="password-hint"
-              >
-                {/* Password validation error if any */}
-              </p>
-
-              {/* Forgot password */}
-              <div className="mt-2 text-sm text-right"    >
-                <button className="font-medium px-1 text-orange-500 text-sm hover:underline dark:text-orange-400">
-                  <span>Forgot password?</span>
-                </button>
-              </div>
-            </div>
-            <button
-              type="submit"
-              disabled={sending || !password}
-              className="w-full py-3 text-white bg-orange-500 rounded-lg shadow-md hover:bg-orange-600 focus:ring-2 focus:ring-orange-400 focus:outline-none disabled:opacity-50"
-            >
-              Sign in
-            </button>
-          </form>
-        )}
-
-        {/* SSO Section */}
-        <SSO_Login/>
+        {/* Sign Up Link */}
+        <div className="text-center mt-6 text-sm text-gray-700 dark:text-gray-300">
+          <span>Don’t have an account? </span>
+          <Link
+            to="/auth/check-email"
+            className="text-orange-600 font-semibold hover:underline"
+          >
+            Sign up
+          </Link>
+        </div>
       </div>
     </div>
   );

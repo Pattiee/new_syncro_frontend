@@ -1,41 +1,53 @@
-import { useState, lazy, Suspense, useEffect } from 'react';
-import { LogOut } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import { CustomLoader2 } from '../../components/loaders/CustomLoader2';
+import { useState, lazy, Suspense, useEffect } from "react";
+import { LogOut } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import { CustomLoader2 } from "../../components/loaders/CustomLoader2";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { clearCart } from "../../slices/cartSlice";
 
 const SHOP_NAME = process.env.REACT_APP_SHOP_NAME || "Your Online Shop";
 
 // Lazy imports
-const Profile = lazy(() => import('./tabs/Profile'));
-const Orders = lazy(() => import('./tabs/Orders'));
-const Transactions = lazy(() => import('./tabs/Transactions'));
-const SettingsTab = lazy(() => import('./tabs/SettingsTab'));
+const Profile = lazy(() => import("./tabs/Profile"));
+const Orders = lazy(() => import("./tabs/Orders"));
+const Transactions = lazy(() => import("./tabs/Transactions"));
+const SettingsTab = lazy(() => import("./tabs/SettingsTab"));
 
 const Account = () => {
   const { user, loading, logout } = useAuth();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!user && !loading) {
+      dispatch(clearCart());
+      navigate("/", { replace: true });
+    }
+  }, [user, loading]);
 
   // Load saved tab from localStorage or default to "profile"
   const [activeTab, setActiveTab] = useState(
-    () => localStorage.getItem('activeTab') || 'profile'
+    () => localStorage.getItem("activeTab") || "profile"
   );
 
   // Persist active tab
   useEffect(() => {
-    localStorage.setItem('activeTab', activeTab);
+    localStorage.setItem("activeTab", activeTab);
   }, [activeTab]);
 
-  const handleLogout = () => {
-    if (!loading) logout();
+  const handleLogout = async () => {
+    if (user && !loading) await logout();
   };
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'orders':
+      case "orders":
         return <Orders />;
-      case 'transactions':
+      case "transactions":
         return <Transactions />;
-      case 'settings':
+      case "settings":
         return <SettingsTab />;
       default:
         return <Profile />;
@@ -56,14 +68,14 @@ const Account = () => {
               {SHOP_NAME}
             </Link>
 
-            {['profile', 'orders', 'transactions', 'settings'].map(tab => (
+            {["profile", "orders", "transactions", "settings"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`px-3 py-1 rounded-md text-sm font-medium transition ${
                   activeTab === tab
-                    ? 'text-gray-900 dark:text-white font-semibold'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    ? "text-gray-900 dark:text-white font-semibold"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 }`}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}

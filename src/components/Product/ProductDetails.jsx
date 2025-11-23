@@ -1,7 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useFormater } from "../../hooks/useFormater";
 
-const ProductDetails = ({ product = {} }) => {
+const ProductDetails = ({ product = {}, discountedPrice = 0 }) => {
   const {
     condition = "N/A",
     category,
@@ -10,30 +11,38 @@ const ProductDetails = ({ product = {} }) => {
     percent_discount,
     specs,
   } = product;
+  const { currencyFormater, percentageFormater } = useFormater();
 
-  const stockLabel =
-    stock <= 5
-      ? `Hurry! Only ${stock} left`
-      : `${stock ?? 0} units available`;
+  // const stockLabel =
+  //   stock <= 5 ? `Hurry! Only ${stock} left` : `${stock ?? 0} units available`;
 
   const isLowStock = stock !== undefined && stock <= 5;
   const hasDiscount = percent_discount && percent_discount > 0;
+
+  const priceTag = (
+    <div className="flex items-center gap-1">
+      <span>{currencyFormater.format(discountedPrice)}</span>
+      <span className="text-sm font-medium line-through text-gray-400">
+        {currencyFormater.format(price)}
+      </span>
+    </div>
+  );
 
   const details = [
     { label: "Condition", value: condition },
     category && { label: "Category", value: category },
     stock !== undefined && {
       label: "Stock",
-      value: stockLabel,
+      value: stock || 0,
       valueClass: isLowStock ? "text-red-600 dark:text-red-400" : "",
     },
     price !== undefined && {
       label: "Price",
-      value: `$${price.toFixed(2)}`,
+      value: priceTag,
     },
     hasDiscount && {
       label: "Discount",
-      value: `${percent_discount}% OFF`,
+      value: `${percentageFormater.format(percent_discount)} Off`,
       valueClass: "text-green-600 dark:text-green-400 font-medium",
     },
     {
@@ -57,11 +66,7 @@ const ProductDetails = ({ product = {} }) => {
       >
         <dl className="divide-y divide-gray-200 dark:divide-gray-700">
           {details.map((item, index) => (
-            <DetailItem
-              key={item.label}
-              index={index}
-              {...item}
-            />
+            <DetailItem key={item.label} index={index} {...item} />
           ))}
         </dl>
       </motion.div>

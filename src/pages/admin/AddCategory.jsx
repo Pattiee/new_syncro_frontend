@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { addCategory } from '../../services/products.service'
-import { useSelector } from 'react-redux';
-import { set } from 'zod';
-import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
-import { ADMIN_LINKS_FRONTEND } from '../../links';
+import React, { useEffect, useState } from "react";
+import { addCategory } from "../../api/products.api";
+import { useSelector } from "react-redux";
+import { set } from "zod";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { ADMIN_LINKS_FRONTEND } from "../../links";
 
 const SHOP_NAME = process.env.REACT_APP_SHOP_NAME;
 
 export const AddCategory = () => {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
-  const [createdBy, setCreatedBy] = useState('');
+  const [name, setName] = useState("");
+  const [createdBy, setCreatedBy] = useState("");
   const [loading, setLoading] = useState(false);
-  const user = useSelector(state => state.auth?.user);
+  const user = useSelector((state) => state.auth?.user);
 
   useEffect(() => {
     setCreatedBy(user?.username ?? SHOP_NAME);
@@ -26,18 +26,19 @@ export const AddCategory = () => {
     const categoryData = {
       name: name,
       createdBy: createdBy,
-    }
-    
-    await addCategory(categoryData).then(res => {
-      const responseName = res.data;
-      setName('');
-      toast.success(responseName);
-      navigate(ADMIN_LINKS_FRONTEND.CATEGORIES);
-    }).catch(err => {
-      
-    }).finally(() => {
-      setLoading(false);
-    });
+    };
+
+    await addCategory(categoryData)
+      .then((res) => {
+        const responseName = res.data;
+        setName("");
+        toast.success(responseName);
+        navigate(ADMIN_LINKS_FRONTEND.CATEGORIES);
+      })
+      .catch((err) => {})
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   return (
@@ -67,7 +68,7 @@ export const AddCategory = () => {
         </div> */}
         <button
           type="submit"
-          disabled={name.includes('`~')}
+          disabled={name.includes("`~")}
           className="w-full px-4 py-2 text-white transition duration-200 bg-orange-500 rounded-md hover:bg-orange-600"
         >
           Submit

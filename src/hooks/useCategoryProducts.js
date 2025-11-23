@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { getProducts } from "../services/products.service";
+import { getProducts } from "../api/products.api";
 import { useDebounce } from "./useDebounce";
 
 export const useCategoryProducts = (slug = "") => {
@@ -13,7 +13,8 @@ export const useCategoryProducts = (slug = "") => {
   const [errMessage, setErrMessage] = useState("");
   const { debouncedValue } = useDebounce({ value: searchQuery });
 
-  const loadCategoryProducts = useCallback(async (pageNum = 0, append = false) => {
+  const loadCategoryProducts = useCallback(
+    async (pageNum = 0, append = false) => {
       if (!category) return;
       try {
         if (!append) setLoading(true);
@@ -33,11 +34,13 @@ export const useCategoryProducts = (slug = "") => {
         console.log("Fetched category products data:", data);
 
         if (data && data?.content) {
-          setProducts(prev =>
+          setProducts((prev) =>
             append
               ? [
                   ...prev,
-                  ...data.content.filter(p => !prev.some(old => old.id === p.id)),
+                  ...data.content.filter(
+                    (p) => !prev.some((old) => old.id === p.id)
+                  ),
                 ]
               : data.content
           );

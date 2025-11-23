@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ADMIN_LINKS_FRONTEND } from '../../links';
-import { getCategories } from '../../services/products.service';
-import { CategoryCard } from '../../components/categories/CategoryCard';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { ADMIN_LINKS_FRONTEND } from "../../links";
+import { getCategories } from "../../api/products.api";
+import { CategoryCard } from "../../components/categories/CategoryCard";
 
 export const Categories = () => {
   const [categories, setCategories] = useState([]);
@@ -14,7 +14,7 @@ export const Categories = () => {
         const res = await getCategories({});
         setCategories(res.data || []);
       } catch (err) {
-        console.error('Failed to load categories', err);
+        console.error("Failed to load categories", err);
       } finally {
         setLoading(false);
       }
@@ -29,9 +29,9 @@ export const Categories = () => {
       <header className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
           Categories
-          <span className='px-2'>{ categories.length }</span>
+          <span className="px-2">{categories.length}</span>
         </h1>
-        
+
         <Link
           to={ADMIN_LINKS_FRONTEND.ADD_CATEGORY || ""}
           className="px-3 py-1 text-sm font-medium text-white bg-orange-600 rounded hover:bg-orange-700"

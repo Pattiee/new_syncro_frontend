@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from 'react'
-import toast from 'react-hot-toast';
-import { createPassword } from '../../services/auth.service';
-import { useNavigate } from 'react-router-dom';
-import Validator from '../../helpers/Validator';
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { createPassword } from "../../services/auth.service";
+import { useNavigate } from "react-router-dom";
+import Validator from "../../helpers/Validator";
+import { EyeOffIcon } from "lucide-react";
+import { EyeIcon } from "lucide-react";
 
 export const CreatePassword = ({ title }) => {
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [passwdValid, setPasswdValid] = useState(false);
@@ -23,26 +25,30 @@ export const CreatePassword = ({ title }) => {
   }, [password]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     if (password !== confirm) {
-      toast.error('Passwords do not match')
+      toast.error("Passwords do not match");
       return;
     }
     const body = {};
-    body.password = password
+    body.password = password;
 
-    if (!loading) setLoading(true);
-    await createPassword(body).then(res => {
-      if (res.data) {
-        toast.success(res.data);
-        setPassword('');
-        setConfirm('');
-        navigate("/", { replace: true });
-      }
-    }).catch(err => {
-      console.error(err);
-    }).finally(() => setLoading(false));
-  }
+    setLoading(true);
+    await createPassword(body)
+      .then((res) => {
+        console.log(res);
+        if (res.data) {
+          toast.success(res.data);
+          setPassword("");
+          setConfirm("");
+          navigate("/", { replace: true });
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      })
+      .finally(() => setLoading(false));
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center dark:bg-gray-900 transition-colors">
@@ -55,17 +61,33 @@ export const CreatePassword = ({ title }) => {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4 text-left">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <div className="relative">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
               Password
             </label>
-            <input
-              type={show ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 dark:bg-gray-700 dark:text-gray-100"
-              required
-            />
+
+            <div className="relative flex">
+              <input
+                name="password"
+                type={show ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full pr-10 bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 focus:ring-orange-400 focus:outline-none px-4 py-2 border border-gray-300 rounded-lg"
+                required
+              />
+
+              {/* Show or hide password */}
+              <button
+                type="button"
+                onClick={() => setShow((v) => !v)}
+                className="flex absolute inset-y-0 right-0 items-center px-3 text-gray-500"
+              >
+                {show ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
+              </button>
+            </div>
           </div>
 
           <div>
@@ -73,9 +95,9 @@ export const CreatePassword = ({ title }) => {
               Confirm Password
             </label>
             <input
-              type={show ? 'text' : 'password'}
+              type={show ? "text" : "password"}
               value={confirm}
-              disabled={!passwdValid}
+              disabled={!password}
               onChange={(e) => setConfirm(e.target.value)}
               className="w-full px-4 py-2 border disabled:bg-gray-300 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 dark:bg-gray-700 dark:text-gray-100"
               required
@@ -91,14 +113,17 @@ export const CreatePassword = ({ title }) => {
               onChange={() => setShow(!show)}
               className="mr-2 accent-orange-600"
             />
-            <label htmlFor="showPassword" className="text-sm text-gray-600 dark:text-gray-300">
+            <label
+              htmlFor="showPassword"
+              className="text-sm text-gray-600 dark:text-gray-300"
+            >
               Show passwords
             </label>
           </div>
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || password !== confirm}
             className="w-full bg-orange-600 disabled:bg-orange-300 hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-600 text-white font-semibold py-2 rounded-lg transition-colors"
           >
             Create Password
@@ -106,5 +131,5 @@ export const CreatePassword = ({ title }) => {
         </form>
       </div>
     </div>
-  )
-}
+  );
+};

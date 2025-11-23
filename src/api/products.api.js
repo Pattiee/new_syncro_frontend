@@ -3,24 +3,33 @@ import AxiosConfig from "../config/axiosConfig";
 
 const PRODUCTS_SERVICE_BASE_URL = process.env.REACT_APP_PRODUCTS_URL;
 
-// AddProduct
-export const addProduct = async (formData) => {
-    return await AxiosConfig.productsAxiosInstance.post(PRODUCTS_SERVICE_BASE_URL, formData);
-}
+// CreateProduct
+export const createProduct = async (formData) => {
+  return await AxiosConfig.productsAxiosInstance.post(
+    PRODUCTS_SERVICE_BASE_URL,
+    formData
+  );
+};
 
 // addCategory
 export const addCategory = async (categoryData) => {
   try {
-    return await AxiosConfig.productsAxiosInstance.post(`${PRODUCTS_SERVICE_BASE_URL}/categories`, categoryData);
+    return await AxiosConfig.productsAxiosInstance.post(
+      `${PRODUCTS_SERVICE_BASE_URL}/categories`,
+      categoryData
+    );
   } catch (error) {
     toast.error(error?.message);
     return;
   }
-}
+};
 
 // Get all products and/or with optional filters
 export const getProducts = async (queryParams) => {
-  return await AxiosConfig.productsAxiosInstance.get(PRODUCTS_SERVICE_BASE_URL, { params: queryParams });
+  return await AxiosConfig.productsAxiosInstance.get(
+    PRODUCTS_SERVICE_BASE_URL,
+    { params: queryParams }
+  );
 };
 
 // getCategories
@@ -28,17 +37,22 @@ export const getCategories = async ({ id }) => {
   try {
     const params = {};
     params.id = id;
-    return await AxiosConfig.productsAxiosInstance.get(`${PRODUCTS_SERVICE_BASE_URL}/categories`, { params });
+    return await AxiosConfig.productsAxiosInstance.get(
+      `${PRODUCTS_SERVICE_BASE_URL}/categories`,
+      { params }
+    );
   } catch (error) {
     toast.error(error.message);
     return;
   }
-}
+};
 
 // Get featured products
 export const getFavoriteProducts = async (userId) => {
   try {
-    return await AxiosConfig.productsAxiosInstance.get(`${PRODUCTS_SERVICE_BASE_URL}/${userId}/favorites`);
+    return await AxiosConfig.productsAxiosInstance.get(
+      `${PRODUCTS_SERVICE_BASE_URL}/${userId}/favorites`
+    );
   } catch (error) {
     toast.error(error.message);
     return;
@@ -52,17 +66,22 @@ export const getProductById = async (productId) => {
     const params = {};
     params.id = productId;
     try {
-      return await AxiosConfig.productsAxiosInstance.get(PRODUCTS_SERVICE_BASE_URL, { params });
+      return await AxiosConfig.productsAxiosInstance.get(
+        PRODUCTS_SERVICE_BASE_URL,
+        { params }
+      );
     } catch (error) {
       toast.error(error.message);
       return;
     }
-  };
+  }
 };
 
 // Delete product using path variable `id`
 export const deleteProductById = async (productId) => {
   if (productId) {
-    return await AxiosConfig.productsAxiosInstance.delete(`${PRODUCTS_SERVICE_BASE_URL}/${productId}`);
-  };
+    return await AxiosConfig.productsAxiosInstance.delete(
+      `${PRODUCTS_SERVICE_BASE_URL}/${productId}`
+    );
+  }
 };

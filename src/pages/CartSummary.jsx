@@ -1,12 +1,12 @@
-import { useNavigate } from 'react-router-dom';
-import { useCart } from '../hooks/useCart';
-import { CartItem } from '../components/cards/CartItem';
-import { useDispatch } from 'react-redux';
-import { clearCart, removeItem } from '../slices/cartSlice';
-import { useEffect, useState } from 'react';
-import { ShoppingCart, Trash2, ArrowLeft, CreditCard } from 'lucide-react';
-import { useFormater } from '../hooks/useFormater';
-import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from "react-router-dom";
+import { useCart } from "../hooks/useCart";
+import { CartItem } from "../components/cards/CartItem";
+import { useDispatch } from "react-redux";
+import { clearCart, removeItem } from "../slices/cartSlice";
+import { useEffect, useState } from "react";
+import { ShoppingCart, Trash2, ArrowLeft, CreditCard } from "lucide-react";
+import { useFormater } from "../hooks/useFormater";
+import { useAuth } from "../hooks/useAuth";
 
 const CartSummary = () => {
   const [vat, setVat] = useState(0);
@@ -15,23 +15,25 @@ const CartSummary = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user, loading } = useAuth();
-  const { cartItems, cartTotals} = useCart();
+  const { cartItems, cartTotals } = useCart();
   const { currencyFormater, percentageFormater } = useFormater();
 
-  useEffect(() => {    
+  useEffect(() => {
+    if (!user && !loading) {
+      navigate("/auth/login", { replace: true });
+      return;
+    }
     const vat = cartTotals * vatRate;
     setVat(vat.toFixed(2));
-    
+
     setSubTotal(cartTotals + vat);
-    if (cartItems.length < 1) navigate('/', { replace: true });
-  }, [cartItems, navigate, vatRate]);
+    if (cartItems.length < 1) navigate("/", { replace: true });
+  }, [user, loading, cartItems, navigate, vatRate]);
 
   const handleClearCart = () => dispatch(clearCart());
   const handleRemoveCartItem = (id) => dispatch(removeItem(id));
-  const handleNavigateHome = () => navigate('/');
-  const handleCheckout = () => navigate('/checkout');
-
-  if (!user && !loading) navigate("/auth/login", {replace: true});
+  const handleNavigateHome = () => navigate("/");
+  const handleCheckout = () => navigate("/checkout");
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-gray-50 dark:bg-gray-900 px-4">
@@ -106,7 +108,10 @@ const CartSummary = () => {
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-gray-500">
-            <ShoppingCart size={60} className="mb-4 text-gray-300 dark:text-gray-600" />
+            <ShoppingCart
+              size={60}
+              className="mb-4 text-gray-300 dark:text-gray-600"
+            />
             <p>Your cart is empty.</p>
             <button
               onClick={handleNavigateHome}
