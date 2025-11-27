@@ -78,9 +78,13 @@ export const AuthProvider = ({ children }) => {
         navigate("/auth/verify-email");
       }
     } catch (err) {
-      toast.error(
-        err?.response?.data || err?.message || "Unknown error occurred"
-      );
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Unknown error occurred";
+
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -95,7 +99,13 @@ export const AuthProvider = ({ children }) => {
       navigate("/auth/verify-email", { replace: true });
       return res;
     } catch (err) {
-      toast.error(err?.response?.data || err?.message || "Registration failed");
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Registration failed";
+
+      toast.error(message);
       throw err;
     } finally {
       setLoading(false);
@@ -105,22 +115,27 @@ export const AuthProvider = ({ children }) => {
   // Login
   const loginUser = async (payload) => {
     setLoading(true);
-    await login(payload)
-      .then((res) => {
-        // console.log(res);
-        if (res?.data) {
-          toast.success("Login successful");
-          setUser(res?.data);
-          setAuthenticated(true);
-          navigate("/", { replace: true });
-        }
-      })
-      .catch((err) => {
-        toast.error(
-          err?.response?.data || err?.message || "An error occured, try again."
-        );
-      })
-      .finally(() => setLoading(false));
+
+    try {
+      const res = await login(payload);
+
+      if (res?.data) {
+        toast.success("Login successful");
+        setUser(res.data);
+        setAuthenticated(true);
+        navigate("/", { replace: true });
+      }
+    } catch (err) {
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Login failed";
+
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Verify email
@@ -131,7 +146,13 @@ export const AuthProvider = ({ children }) => {
       navigate("/auth/login", { replace: true });
       return res;
     } catch (err) {
-      toast.error(err?.response?.data || "Verification failed");
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Verification failed";
+
+      toast.error(message);
       throw err;
     }
   };
@@ -143,7 +164,13 @@ export const AuthProvider = ({ children }) => {
       toast.success("Password reset link sent to your email");
       return res;
     } catch (err) {
-      toast.error(err?.response?.data || "Reset request failed");
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Reset request failed";
+
+      toast.error(message);
       throw err;
     }
   };
@@ -155,7 +182,13 @@ export const AuthProvider = ({ children }) => {
       toast.success("Password successfully reset. You can log in now.");
       navigate("/auth/login", { replace: true });
     } catch (err) {
-      toast.error(err?.response?.data || "Password reset failed");
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Password reset failed";
+
+      toast.error(message);
       throw err;
     }
   };

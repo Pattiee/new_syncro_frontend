@@ -18,5 +18,10 @@ export const useFormater = () => {
     maximumFractionDigits: 0,
   });
 
-  return { currencyFormater, percentageFormater };
+  const dateFormater = new Intl.DateTimeFormat(lang, {
+    dateStyle: "full",
+    formatMatcher: "best fit",
+  });
+
+  return { currencyFormater, percentageFormater, dateFormater };
 };

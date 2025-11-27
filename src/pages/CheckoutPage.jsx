@@ -181,8 +181,10 @@ export const CheckoutPage = () => {
         if (data) {
           dispatch(clearCart());
           setPaymentSuccess(true);
-          console.log(data);
-          navigate("/account");
+          toast.success("Order placed successfully!");
+          setTimeout(() => {
+            navigate(`/order/${data}`);
+          }, 500);
         }
       } else {
         console.log("CREATE ORDER ERROR: ", createOrderResult.reason);
@@ -193,6 +195,8 @@ export const CheckoutPage = () => {
       setPlacingOrder(false);
     }
   };
+
+  // navigate(`/orders/details?id=${data.orderId}`);
 
   const handleRemoveCartItem = (id) => dispatch(removeItem(id));
   const handleClearCart = () => {
