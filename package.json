@@ -34,7 +34,6 @@
     "zod": "^3.25.62"
   },
   "scripts": {
-    "preinstall": "npx only-allow pnpm",
     "start": "craco start",
     "build": "craco build",
     "test": "craco test"
