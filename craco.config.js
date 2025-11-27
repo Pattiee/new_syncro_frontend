@@ -1,30 +1,31 @@
-const CompressionPlugin = require('compression-webpack-plugin');
+const CompressionPlugin = require("compression-webpack-plugin");
+
+const compressionTest = /\.(js|css|html|svg)$/;
 
 module.exports = {
   webpack: {
-    configure: (webpackConfig) => {
-      webpackConfig.plugins.push(
-        // Gzip compression
+    configure: (config) => {
+      const commonOptions = {
+        test: compressionTest,
+        threshold: 1024,
+        minRatio: 0.8,
+      };
+
+      config.plugins.push(
         new CompressionPlugin({
-          filename: '[path][base].gz',
-          algorithm: 'gzip',
-          test: /\.(js|css|html|svg)$/,
-          threshold: 1024,
-          minRatio: 0.8,
+          ...commonOptions,
+          filename: "[path][base].gz",
+          algorithm: "gzip",
         }),
-        // Brotli compression
         new CompressionPlugin({
-          filename: '[path][base].br',
-          algorithm: 'brotliCompress',
-          test: /\.(js|css|html|svg)$/,
-          compressionOptions: { 
-            level: 11, 
-          },
-          threshold: 1024,
-          minRatio: 0.8,
+          ...commonOptions,
+          filename: "[path][base].br",
+          algorithm: "brotliCompress",
+          compressionOptions: { level: 11 },
         })
       );
-      return webpackConfig;
+
+      return config;
     },
   },
 };
