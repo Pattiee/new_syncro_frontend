@@ -8,11 +8,14 @@ import { MAIN_LINKS_FRONTEND } from "../links";
 import { useDispatch, useSelector } from "react-redux";
 import { createNewOrder } from "../services/order.service";
 import { MpesaModal } from "../components/modals/MpesaModal";
-import { OrderConfirmationModal } from "../components/modals/OrderConfirmationModal";
+import { PaymentConfirmationModal } from "../components/modals/PaymentConfirmationModal";
 import toast from "react-hot-toast";
 import { getCurrentUsersPhoneNumber } from "../services/user.service";
 import { useFormater } from "../hooks/useFormater";
 import axios from "axios";
+import { CurrencyIcon } from "lucide-react";
+import { PlaneIcon } from "lucide-react";
+import { PlaneLandingIcon } from "lucide-react";
 
 export const CheckoutPage = () => {
   const [subTotal, setSubTotal] = useState(0.0);
@@ -21,12 +24,12 @@ export const CheckoutPage = () => {
   const [mobileNumber, setMobileNumber] = useState("");
   const [useRegisteredNumber, setUseRegisteredNumber] = useState(true);
   const [registeredNumber, setRegisteredNumber] = useState("0716227064");
-  const [showOrderConfirmationModal, setShowOrderConfirmationModal] =
+  const [showPaymentConfirmationModal, setShowPaymentConfirmationModal] =
     useState(false);
   const [showPhoneInput, setShowPhoneInput] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [showMpesaModal, setShowMpesaModal] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentReceived, setPaymentReceived] = useState(false);
   const [vat, setVat] = useState(0);
   const [shippingFee, setShippingFee] = useState(0.0);
   const [grandTotal, setGrandTotal] = useState(0.0);
@@ -72,25 +75,6 @@ export const CheckoutPage = () => {
     loadUserData();
   }, [user, loading, navigate, placingOrder]);
 
-  const downloadPdf = async () => {
-    try {
-      const response = await axios.get("http://localhost:8080/generate-pdf", {
-        responseType: "blob", // Receive as a binary blob
-      });
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "downloaded_document.pdf"); // Set desired filename
-      document.body.appendChild(link);
-      link.click();
-      link.remove(); // Clean up the temporary link
-      window.URL.revokeObjectURL(url); // Release the object URL
-    } catch (error) {
-      console.error("Error downloading PDF:", error);
-    }
-  };
-
   // Open in new tab
   const downloadPdfAndOpen = async () => {
     try {
@@ -112,7 +96,7 @@ export const CheckoutPage = () => {
       // The browser window now manages the blob's lifecycle (or the user closes the tab)
       // Revoking too soon might prevent the document from loading.
       // You can defer the revocation slightly if needed, but it often works immediately.
-      // window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error fetching or opening PDF:", error);
     }
@@ -133,27 +117,28 @@ export const CheckoutPage = () => {
       paymentInfoData.mobileNumber = paymentMobileNumber;
 
       setPaymentInfo(paymentInfoData);
-      setShowOrderConfirmationModal(true);
+      setShowPaymentConfirmationModal(true);
     } else {
       return toast.error("Sorry, banks payments coming soon...");
       // TODO: Bank
     }
   };
 
-  const handlePlaceOrder = async () => {
+  const handlePaymentConfirmed = async () => {
+    // Close order confirmation modal
+    setShowPaymentConfirmationModal(false);
+
     if (!user && !loading) return navigate("/auth/login");
     if (!paymentInfo) return toast.error("Error building payment info");
 
-    // Close order confirmation modal
-    setShowOrderConfirmationModal(false);
-    const orderRequestItems = cartItems.map((item) => ({
+    const orderItemsRequest = cartItems.map((item) => ({
       id: item.id,
       skuCode: item.skuCode,
       quantity: item.qty,
     }));
 
     const data = {
-      items: orderRequestItems,
+      items: orderItemsRequest,
       paymentInfo: paymentInfo,
       shippingAddress: {
         id: "1234567890",
@@ -179,12 +164,16 @@ export const CheckoutPage = () => {
         const { data } = createOrderResult.value;
         console.log("CREATE ORDER RESULT: ", data);
         if (data) {
-          dispatch(clearCart());
-          setPaymentSuccess(true);
-          toast.success("Order placed successfully!");
-          setTimeout(() => {
-            navigate(`/order/${data}`);
-          }, 500);
+          if (data.paymentReceived) {
+            toast.success("Payment received");
+            dispatch(clearCart());
+            setPaymentReceived(data.paymentReceived);
+            setTimeout(() => {
+              navigate(`/order/${data.orderId}`);
+            }, 1000);
+          } else {
+            toast.error("Payment failed");
+          }
         }
       } else {
         console.log("CREATE ORDER ERROR: ", createOrderResult.reason);
@@ -203,7 +192,7 @@ export const CheckoutPage = () => {
     dispatch(clearCart());
     navigate("/");
   };
-  const handlePaymentSelection = (method) => setPaymentMethod(method);
+  const handlePaymentSelection = (e) => setPaymentMethod(e.target.value);
 
   const handleUseRegisteredNumber = () => {
     setShowPhoneInput(false);
@@ -215,7 +204,7 @@ export const CheckoutPage = () => {
     setShowPhoneInput(true);
   };
 
-  const placeOrder = async () => {
+  const handleInitiatePayment = async () => {
     if (!user && !loading) return navigate("/auth/login", { replace: true });
     await handleValidatePaymentInfo();
   };
@@ -310,17 +299,29 @@ export const CheckoutPage = () => {
                       name="payment"
                       value="mobile"
                       checked={paymentMethod === "mobile"}
-                      onChange={(e) => handlePaymentSelection(e.target.value)}
+                      onChange={handlePaymentSelection}
                     />
                     <Smartphone size={18} /> Pay with Mobile
                   </label>
+
+                  <label className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                    <input
+                      type="radio"
+                      name="payment"
+                      value="on-delivery"
+                      checked={paymentMethod === "on-delivery"}
+                      onChange={handlePaymentSelection}
+                    />
+                    <PlaneLandingIcon size={18} /> Pay on Delivery
+                  </label>
+
                   <label className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
                     <input
                       type="radio"
                       name="payment"
                       value="card"
                       checked={paymentMethod === "card"}
-                      onChange={(e) => handlePaymentSelection(e.target.value)}
+                      onChange={handlePaymentSelection}
                     />
                     <CreditCard size={18} /> Pay with Card
                   </label>
@@ -391,10 +392,10 @@ export const CheckoutPage = () => {
               </button>
 
               <button
-                onClick={placeOrder}
+                onClick={handleInitiatePayment}
                 className="w-full sm:w-auto py-2 px-6 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full transition"
               >
-                Place Order
+                Pay now
               </button>
             </div>
           </>
@@ -405,11 +406,11 @@ export const CheckoutPage = () => {
         )}
 
         {/* Payment Confirmation Modal */}
-        {showOrderConfirmationModal && (
-          <OrderConfirmationModal
+        {showPaymentConfirmationModal && (
+          <PaymentConfirmationModal
             subTotal={grandTotal}
-            setShowModal={setShowOrderConfirmationModal}
-            confirmOrder={handlePlaceOrder}
+            setShowModal={setShowPaymentConfirmationModal}
+            confirmPayment={handlePaymentConfirmed}
             paymentMethod={paymentMethod}
             paymentNumber={mobileNumber || registeredNumber}
           />
@@ -420,7 +421,7 @@ export const CheckoutPage = () => {
       {showMpesaModal && (
         <div>
           <MpesaModal
-            paymentSuccess={paymentSuccess}
+            paymentReceived={paymentReceived}
             mobileNumber={mobileNumber || registeredNumber}
           />
         </div>

@@ -82,11 +82,7 @@ const Navbar = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className={`absolute right-0 mt-2 w-48 rounded-md shadow py-2 ${
-              theme === "light"
-                ? "bg-white text-gray-900"
-                : "bg-gray-800 text-white"
-            }`}
+            className="absolute right-0 mt-2 w-48 bg-white text-gray-900 dark:bg-gray-800 dark:text-white rounded-md shadow py-2"
           >
             {menu?.links?.map((link) => (
               <Link

@@ -1,11 +1,18 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getOrders, cancelOrder } from "../../services/order.service";
+import {
+  getOrders,
+  cancelOrder,
+  getOrderInvoice,
+} from "../../services/order.service";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { useAuth } from "../../hooks/useAuth";
 import { MAIN_LINKS_FRONTEND } from "../../links";
 import { useFormater } from "../../hooks/useFormater";
+import { DownloadIcon } from "lucide-react";
+import { FiDownloadCloud } from "react-icons/fi";
+import { CustomLoader1 } from "../../components/loaders/CustomLoader1";
 
 export const OrderDetails = () => {
   const [order, setOrder] = useState(null);
@@ -52,13 +59,33 @@ export const OrderDetails = () => {
     }
   };
 
-  if (loadingOrder) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-orange-600">Loading...</div>
-      </div>
-    );
-  }
+  const downloadOrderInvoice = async () => {
+    try {
+      const response = await getOrderInvoice(id);
+
+      // Create a Blob from the response data
+      const pdfBlob = new Blob([response.data], { type: "application/pdf" });
+
+      // Generate a temporary URL for the blob
+      const url = window.URL.createObjectURL(pdfBlob);
+
+      // Open the URL in a new tab
+      // The browser will render the PDF inline in the new tab
+      window.open(url, "_blank");
+
+      // const link = document.createElement("a");
+      // link.href = url;
+      // link.setAttribute("download", "downloaded_document.pdf"); // Set desired filename
+      // document.body.appendChild(link);
+      // link.click();
+      // link.remove(); // Clean up the temporary link
+      window.URL.revokeObjectURL(url); // Release the object URL
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+    }
+  };
+
+  if (loadingOrder) <CustomLoader1 />;
 
   return (
     <motion.div>
@@ -83,7 +110,7 @@ export const OrderDetails = () => {
           <div className="overflow-x-auto border-b border-gray-300 dark:border-gray-700 py-6">
             <table className="w-full">
               <thead>
-                <tr className="text-gray-700 border-none bg-gradient-to-r from-orange-300 to-white text-center dark:text-white dark:bg-orange-700 border-b border-gray-200 dark:border-gray-700">
+                <tr className="text-gray-700 border-none text-center bg-gradient-to-r from-white via-orange-300 to-white dark:text-gray-800 dark:bg-gradient-to-r dark:from-gray-800 dark:via-orange-300 dark:to-gray-800 border-b border-gray-200 dark:border-gray-700">
                   <th className="py-2">Product</th>
                   <th className="py-2">Unit Price</th>
                   <th className="py-2">Qty</th>
@@ -123,6 +150,20 @@ export const OrderDetails = () => {
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          {/* Actions */}
+          <div className="flex px-4 py-2 bg-red-100">
+            <div>
+              <button
+                className="flex gap-1"
+                onClick={() => downloadOrderInvoice()}
+              >
+                <FiDownloadCloud size={18} />
+                <span>Download Invoice</span>
+              </button>
+            </div>
+            <div></div>
           </div>
         </div>
       </div>
