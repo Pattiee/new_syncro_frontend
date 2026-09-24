@@ -105,6 +105,11 @@ const AuthPage = ({ title }) => {
   const handleFormSubmit = async (e) => {
     if (step === 1) {
       // await handleValidateEmail(e);
+
+// Added this logic here
+if (!username) return toast.error("Please enter your email.");
+    // Add logic here to verify if email exists if needed, then move forward:
+    setStep(2);
     } else {
       await handleSubmit(e);
     }
