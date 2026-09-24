@@ -106,9 +106,13 @@ const ProductDetailsPage = () => {
   if (!product) return null;
 
   const discounted = product?.percent_discount > 0;
-  const discountPrice = discounted
-    ? (product.price - product.price * product.percent_discount).toFixed(2)
-    : product.price;
+
+//TODO: Just added this correct code down here.
+// percent_discount is a rate of discout
+
+const discountPrice = discounted
+  ? (product.price * (1 - product.percent_discount / 100)).toFixed(2)
+  : product.price;
 
   return (
     <Fragment>
