@@ -28,7 +28,7 @@ const CartSummary = () => {
 
     setSubTotal(cartTotals + vat);
     if (cartItems.length < 1) navigate("/", { replace: true });
-  }, [user, loading, cartItems, navigate, vatRate]);
+  }, [user, loading, cartItems, navigate, cartTotals, vatRate]);
 
   const handleClearCart = () => dispatch(clearCart());
   const handleRemoveCartItem = (id) => dispatch(removeItem(id));
