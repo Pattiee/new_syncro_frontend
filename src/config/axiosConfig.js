@@ -1,4 +1,4 @@
-import { apiGatewayClient } from "../services/apiClient";
+import { apiGatewayClient } from "../config/apiGatewayClient";
 
 // Axios instance for auth-related requests
 const authAxiosInstance = apiGatewayClient;
