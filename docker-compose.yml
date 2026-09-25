@@ -23,21 +23,39 @@ services:
   # 🛡️ Spring Boot API Gateway Services
   gateway:
     container_name: gateway
-    image: syncro-gateway:latest # Replace with your actual Spring Boot image name/tag
-    # build: ./syncro-gateway   # Uncomment if building backend locally from a subfolder
+    image: syncro-gateway:latest
     ports:
       - "8080:8080"
     restart: unless-stopped
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SERVER_PORT=8080
+      # Tells Spring Boot to connect to the MongoDB container using internal networking
+      - SPRING_DATA_MONGODB_URI=mongodb://root:secretpass@mongodb:27017/syncro_db?authSource=admin
     networks:
       - syncro-network
-    # healthcheck:              # Recommended: Add your Spring Boot Actuator endpoint check here
-    #   test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health"]
-    #   interval: 30s
-    #   timeout: 5s
-    #   retries: 3
+    depends_on:
+      - mongodb
+
+  # 🍃 MongoDB Database Service Instance
+  mongodb:
+    container_name: mongodb
+    image: mongo:7.0
+    restart: unless-stopped
+    ports:
+      - "27017:27017" # 🟢 Exposes the port to your host machine so VS Code can connect
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=secretpass
+      - MONGO_INITDB_DATABASE=syncro_db
+    volumes:
+      - mongo-data:/data/db # Persists your database records so data survives container restarts
+    networks:
+      - syncro-network
+
+# 💾 Named Volumes Data Allocation Layout
+volumes:
+  mongo-data:
 
 # 🌐 Isolated Virtual Infrastructure Network Routing Core
 networks:
