@@ -147,13 +147,13 @@ To prevent cache invalidation glitches, stale Webpack distributions, or lockfile
 ### Phase 1: Wiping Local Cache & Dependencies (The Clean Slate)
 Run these commands in your local project root if you encounter mismatched dependency configurations or cache compilation loops:
 
-#### Purge Local Node Structures & Assets:
+#### Purge Local Node Structures, Assets, and Cached Manifest Assemblies:
 ```bash
 # Linux / macOS / Git Bash
-rm -rf node_modules build dist .tsbuildinfo pnpm-lock.yaml
+rm -rf node_modules build dist .tsbuildinfo pnpm-lock.yaml public/manifest.json
 
 # Windows PowerShell
-Remove-Item -Recurse -Force node_modules, build, dist, .tsbuildinfo, pnpm-lock.yaml -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force node_modules, build, dist, .tsbuildinfo, pnpm-lock.yaml, public/manifest.json -ErrorAction SilentlyContinue
 ```
 
 #### Clear the Global Package Manager Cache:
