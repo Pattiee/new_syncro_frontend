@@ -12,6 +12,7 @@ This project has been migrated from JavaScript to **React + TypeScript**, optimi
 *   **Styling Configuration:** Tailwind CSS + Auto-injected Global Dark Mode Listeners
 *   **Build Optimization Engine:** CRACO + Webpack 5 Static Asset Compression (Brotli + Gzip)
 *   **Production Serving Core:** Nginx reverse proxy architecture with native Brotli capability
+*   **Database Infrastructure Core:** MongoDB NoSQL Instance clustered via container bridge nodes
 
 ---
 
@@ -117,16 +118,16 @@ This boots an Nginx server listening on port `3000`, automatically applies local
 
 ## 🐙 Docker Compose Multi-Container Orchestration Matrix
 
-To quickly orchestrate the frontend Nginx reverse proxy shell alongside your Spring Boot microservice environment inside an isolated network stack, use the root-level `docker-compose.yml` configurations:
+To quickly orchestrate the frontend Nginx reverse proxy shell alongside your Spring Boot microservice environment and **MongoDB** database tier inside an isolated network stack, use the root-level `docker-compose.yml` configurations:
 
 ### 1. Spin Up the Ecosystem (Clean Background Build)
-Forces Docker to pull fresh dependencies, compile asset bundles using your `.env.production` definitions, and bridge container links:
+Forces Docker to pull fresh dependencies, compile asset bundles using your `.env.production` definitions, hook up volume mounts, and bridge container links:
 ```bash
 docker compose up -d --build
 ```
 
 ### 2. Monitor Container Interactions
-Watch real-time requests passing securely between your Nginx layer and the backend Spring Boot routing nodes:
+Watch real-time requests and database queries passing securely between your Nginx layer, Spring Gateway, and MongoDB nodes:
 ```bash
 docker compose logs -f
 ```
