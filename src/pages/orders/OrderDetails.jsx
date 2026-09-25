@@ -47,7 +47,7 @@ export const OrderDetails = () => {
     };
 
     loadOrder();
-  }, [id, user, loading]);
+  }, [id, user, loading, navigate]);
 
   const handleCancelOrder = async () => {
     try {
