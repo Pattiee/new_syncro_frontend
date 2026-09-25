@@ -14,7 +14,8 @@ export const CEO_Dashboard = () => {
   const tabsRef = useRef([]);
   const underlineRef = useRef(null);
 
-  const tabs = ["Branches", "User Accounts", "Role Manager", "Finance"];
+// Memoize tabs so it doesn't cause unnecessary re-renders in useEffect
+  const tabs = useMemo(() => ["Branches", "User Accounts", "Role Manager", "Finance"], []);
 
   const renderTabContent = () => {
     switch (activeTab) {
