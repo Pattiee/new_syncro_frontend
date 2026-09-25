@@ -112,3 +112,71 @@ docker run -d -p 3000:3000 --name syncro-web syncro-frontend
 ```
 
 This boots an Nginx server listening on port `3000`, automatically applies local browser security filters, hooks up real-time WebSocket connection channels, and proxies requests starting with `/api/` cleanly to your Spring Boot backend service container named `gateway`.
+
+---
+
+## 🏁 Step-by-Step Local & Container Run Procedures
+
+To prevent cache invalidation glitches, stale Webpack distributions, or lockfile mismatches between host operating systems and container nodes, execute these steps in order:
+
+### Phase 1: Wiping Local Cache & Dependencies (The Clean Slate)
+Run these commands in your local project root if you encounter mismatched dependency configurations or cache compilation loops:
+
+1. **Purge Local Node Structures & Assets:**
+   ```bash
+   # Linux / macOS / Git Bash
+   rm -rf node_modules build dist .tsbuildinfo
+   
+   # Windows PowerShell
+   Remove-Item -Recurse -Force node_modules, build, dist, .tsbuildinfo -ErrorAction SilentlyContinue
+   ```
+2. **Clear the Global Package Manager Cache:**
+   ```bash
+   pnpm store prune
+   ```
+
+---
+
+### Phase 2: Standard Local Desktop Execution
+To install fresh versions of your modules and boot the development workflow locally on your system hardware:
+
+1. **Trigger a Pristine Installation Pass:**
+   ```bash
+   pnpm install --frozen-lockfile
+   ```
+2. **Launch the Real-Time Dev Workspace Engine:**
+   ```bash
+   pnpm start
+   ```
+   * Open [http://localhost:3000](http://localhost:3000) to view your environment page. Webpack will proxy your requests to `http://localhost:8080` based on your `.env.development` configurations.
+
+---
+
+### Phase 3: Building & Deploying the Container (Production Emulation)
+To verify that your multi-stage Docker layers compile correctly, bundle your static `.br`/`.gz` assets, and route through Nginx:
+
+1. **Wipe Existing Local Containers & Stale Volumes:**
+   ```bash
+   # Stop and drop any active container matching your deployment runtime name
+   docker rm -f syncro-web 2>/dev/null || true
+   
+   # Clean up hanging builder cache layers to force a completely fresh assembly
+   docker builder prune -f
+   ```
+2. **Execute a Fresh Docker Image Build Command:**
+   ```bash
+   docker build --no-cache -t syncro-frontend .
+   ```
+   * *Note: The `--no-cache` parameter guarantees that every deployment cycle pulls exact packages matching your `pnpm-lock.yaml` file instead of pulling cached container images.*
+3. **Boot Your Pre-Compressed Nginx Container Instance:**
+   ```bash
+   docker run -d -p 3000:3000 --name syncro-web syncro-frontend
+   ```
+4. **Verify Runtime Health Status Records:**
+   ```bash
+   # Check active log layers to verify Nginx started without issues
+   docker logs syncro-web
+   
+   # Confirm the built-in health-check directive passes successfully
+   docker ps --filter name=syncro-web
+   ```
