@@ -25,7 +25,7 @@ export const Branches = () => {
         };
         
         loadData();
-    }, []);
+    }, [loadingBranches]);
     
 
     return (
