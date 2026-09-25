@@ -1,70 +1,114 @@
-# Getting Started with Create React App
+# Syncro Frontend Shell 🚀
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project has been migrated from JavaScript to **React + TypeScript**, optimized using **CRACO** for static asset compression, and configured for secure **Docker** multi-stage deployments.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 🛠️ Tech Stack & Architecture Baseline
 
-### `npm start`
+*   **Runtime Environment:** Node.js `^18.0.0` (Configured via `.nvmrc`)
+*   **Package Manager:** `pnpm` (Configured via `.npmrc` to prevent lockfiles mutations)
+*   **State Management:** Redux Toolkit + Redux Persist (Securely encrypted via Crypto-JS transforms)
+*   **Styling Configuration:** Tailwind CSS + Auto-injected Global Dark Mode Listeners
+*   **Build Optimization Engine:** CRACO + Webpack 5 Static Asset Compression (Brotli + Gzip)
+*   **Production Serving Core:** Nginx reverse proxy architecture with native Brotli capability
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🚀 Available Development Scripts
 
-### `npm test`
+In the project directory, use `pnpm` to execute the following scripts:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### `pnpm start`
+Runs the app in the local development mode via CRACO.  
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser. The workspace triggers hot reloading instantly upon file changes.
 
-### `npm run build`
+### `pnpm type-check`
+Runs a strict compilation validation check across all `.ts` and `.tsx` modules inside your `/src` layout directory to catch hidden compilation type errors without building files.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### `pnpm build`
+Compiles the application for production inside the `/build` directory. It optimizes, minifies, hashes filenames, and outputs pre-compressed assets (`.gz` and `.br`) via the configured `craco.config.js` pipelines.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🔄 Cross-Platform Automatic Node Switching Setup
 
-### `npm run eject`
+This project requires **Node.js 18**. To avoid manual configuration mistakes when changing folders, append the appropriate code snippet below to your global machine environment profile.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Option A: For Linux / macOS (Zsh Setup)
+1. Open your terminal profile: `nano ~/.zshrc`
+2. Append this code to the bottom of the file:
+   ```bash
+   autoload -U add-zsh-hook
+   load-nvmrc() {
+     local nvmrc_path="$(nvm_find_nvmrc)"
+     if [ -n "$nvmrc_path" ]; then
+       local nvmrc_node_version=$(nvm version "$(cat "${nvmrc_path}")")
+       if [ "$nvmrc_node_version" = "N/A" ]; then
+         nvm install
+       elif [ "$nvmrc_node_version" != "$(nvm current)" ]; then
+         nvm use
+       fi
+     elif [ "$(nvm current)" != "$(nvm version default)" ]; then
+       echo "Reverting to default Node version"
+       nvm use default
+     fi
+   }
+   add-zsh-hook chpwd load-nvmrc
+   load-nvmrc
+   ```
+3. Refresh your shell environment configurations: `source ~/.zshrc`
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Option B: For Linux / Subsystems (Bash Setup)
+1. Open your terminal profile: `nano ~/.bashrc`
+2. Append this code to the bottom of the file:
+   ```bash
+   cd() {
+     builtin cd "$@" || return
+     if [ -f .nvmrc ]; then
+       local target_node="$(cat .nvmrc | tr -d 'v')"
+       if [[ "$(node -v)" != *"v${target_node}"* ]]; then
+          echo "🔄 .nvmrc detected. Switching shell to Node ${target_node}..."
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          nvm use
+       fi
+     fi
+   }
+   ```
+3. Refresh your shell environment configurations: `source ~/.bashrc`
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Option C: For Windows (PowerShell Setup)
+1. Open your global user profile script: `notepad $PROFILE`
+2. Paste this wrapper function directly into the text layout and save it:
+   ```powershell
+   function prompted-cd {
+       param([string]$path)
+       if ($path) { Set-Location $path } else { Set-Location ~ }
+       
+       if (Test-Path ".nvmrc") {
+           $targetNode = (Get-Content .nvmrc).Trim().Replace("v", "")
+           Write-Host "🔄 .nvmrc detected. Switching shell to Node $targetNode..." -ForegroundColor Orange
+           nvm use $targetNode
+       }
+   }
+   Set-Alias cd prompted-cd -Option ReadOnly -Force
+   ```
+3. Close and reopen your terminal app window.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+---
 
-## Learn More
+## 🐳 Docker Deployment Strategy
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+The application bundles its code using a strict, multi-stage layout image optimized to save CPU bandwidth by utilizing pre-compressed Brotli blocks.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### 1. Build the Production Container
+```bash
+docker build -t syncro-frontend .
+```
 
-### Code Splitting
+### 2. Launch the Container Locally
+```bash
+docker run -d -p 3000:3000 --name syncro-web syncro-frontend
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This boots an Nginx server listening on port `3000`, automatically applies local browser security filters, hooks up real-time WebSocket connection channels, and proxies requests starting with `/api/` cleanly to your Spring Boot backend service container named `gateway`.
