@@ -1,17 +1,35 @@
-import axios from "axios";
-import { store } from "../store"; // Import your actual configured Redux store object
+import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from "axios";
+import { store } from "../store";
 
-export const apiGatewayClient = axios.create({
-  baseURL: process.env.REACT_APP_API_GATEWAY_BASE_URL,
+const GATEWAY_BASE_URL = process.env.REACT_APP_API_GATEWAY_BASE_URL as string;
+
+// Optional: Kept for structural continuity, though usually managed per-request
+const abortController = new AbortController();
+const axiosCancelToken = axios.CancelToken;
+const cancelTokenSource = axiosCancelToken.source();
+
+axios.defaults.withCredentials = true;
+
+export const apiGatewayClient: AxiosInstance = axios.create({
+  baseURL: GATEWAY_BASE_URL,
+  withCredentials: true,
 });
 
-apiGatewayClient.interceptors.request.use((config) => {
-  // Read the token directly from the global state snapshot without hooks
-  const token = store.getState().auth.token; 
+// attach token from Redux store before each request
+apiGatewayClient.interceptors.request.use(
+  (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+    // Access the state snapshot directly to bypass React Hook restrictions
+    const token = store.getState().auth.token;
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (err: AxiosError): Promise<AxiosError> => {
+    return Promise.reject(err);
   }
+);
 
-  return config;
-});
+export default apiGatewayClient;
