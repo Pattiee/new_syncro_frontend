@@ -13,12 +13,16 @@ build
 Dockerfile
 .dockerignore
 
-# Additional Recommended Exclusions for Security and Performance
+# Environment Files (Bypasses local secrets to guarantee container security)
 .env
 .env.local
+.env.development
 .env.development.local
 .env.test.local
+.env.production
 .env.production.local
+
+# System and Code Editor Exclusions
 .idea
 .vscode
 *.log
