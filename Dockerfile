@@ -1,5 +1,5 @@
 # ---------- Stage 1: Build ----------
-FROM node:18-alpine AS build
+FROM node:22-alpine AS build
 
 # Keep image small and secure
 RUN apk add --no-cache libc6-compat && apk update && apk upgrade --available
