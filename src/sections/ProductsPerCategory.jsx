@@ -84,7 +84,7 @@ const ProductsPerCategory = ({ productCategory = "", data }) => {
       clearInterval(intervalRef.current);
       container?.removeEventListener("scroll", handleScroll);
     };
-  }, [currentPage, hovering, data, loading]);
+  }, [currentPage, hovering, data, loading, handleScroll, nextSlide]);
 
   return (
     <section
