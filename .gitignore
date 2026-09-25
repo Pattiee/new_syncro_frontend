@@ -5,6 +5,9 @@
 .modules.yaml
 /pnpm-lock.yaml
 
+# vercel deployment caches
+.vercel/
+
 # testing
 /coverage
 
