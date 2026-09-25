@@ -67,7 +67,9 @@ const Footer = () => {
           <ul className="space-y-2 text-sm">
             <li>
               <a
-                href="#"
+                href="https://instagram.com"
+target="_blank"
+                rel="noopener noreferrer"
                 className="transition hover:text-orange-500 dark:hover:text-orange-300"
               >
                 Instagram
@@ -75,7 +77,9 @@ const Footer = () => {
             </li>
             <li>
               <a
-                href="#"
+                href="https://facebook.com"
+target="_blank"
+                rel="noopener noreferrer"
                 className="transition hover:text-orange-500 dark:hover:text-orange-300"
               >
                 Facebook
@@ -83,7 +87,9 @@ const Footer = () => {
             </li>
             <li>
               <a
-                href="#"
+                href="https://twitter.com"
+target="_blank"
+                rel="noopener noreferrer"
                 className="transition hover:text-orange-500 dark:hover:text-orange-300"
               >
                 Twitter
@@ -91,7 +97,9 @@ const Footer = () => {
             </li>
             <li>
               <a
-                href="#"
+                href="https://YouTube.com"
+target="_blank"
+                rel="noopener noreferrer"
                 className="transition hover:text-orange-500 dark:hover:text-orange-300"
               >
                 YouTube
