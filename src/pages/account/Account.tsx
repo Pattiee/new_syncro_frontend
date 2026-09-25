@@ -1,31 +1,32 @@
 import { useState, lazy, Suspense, useEffect } from "react";
 import { LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
 import { CustomLoader2 } from "../../components/loaders/CustomLoader2";
 import { clearCart } from "../../slices/cartSlice";
-import { selectCurrentUser, selectAuthStatus, clearAuth } from "../../store/authSlice"; // Adjust paths to match your auth slice location
+import { selectCurrentUser, selectAuthStatus, clearAuth } from "../../store/authSlice"; 
 import { logoutBackendApi } from "../../services/auth.service";
 import toast from "react-hot-toast";
+// 🟢 Import your custom typed Redux hooks
+import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks"; 
 
 const SHOP_NAME = (process.env.REACT_APP_SHOP_NAME as string) || "Your Online Shop";
 
-// Lazy imports typed automatically by React.lazy
+// Lazy imports
 const Profile = lazy(() => import("./tabs/Profile"));
 const Orders = lazy(() => import("./tabs/Orders"));
 const Transactions = lazy(() => import("./tabs/Transactions"));
 const SettingsTab = lazy(() => import("./tabs/SettingsTab"));
 
-// 1. Enforce specific string limits for allowed tabs
 type AllowedTabs = "profile" | "orders" | "transactions" | "settings";
 
 const Account: React.FC = () => {
-  const user = useSelector(selectCurrentUser);
-  const authStatus = useSelector(selectAuthStatus);
+  // 🟢 Swapped generic hooks for custom typed hooks
+  const user = useAppSelector(selectCurrentUser);
+  const authStatus = useAppSelector(selectAuthStatus);
+  const dispatch = useAppDispatch();
+  
   const loading = authStatus === "loading";
-
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
   // Redirect users out if their session drops
   useEffect(() => {
@@ -46,11 +47,10 @@ const Account: React.FC = () => {
     localStorage.setItem("activeTab", activeTab);
   }, [activeTab]);
 
-  // Robust fallback-based logout handler adhering to our best-practice discussion
   const handleLogout = async () => {
     if (!user || loading) return;
     const loadingToast = toast.loading("Logging out...");
-    
+
     try {
       await logoutBackendApi();
     } catch (err) {
@@ -108,7 +108,7 @@ const Account: React.FC = () => {
             ))}
           </div>
 
-          {/* Logout section using our snake_case email user metrics */}
+          {/* Logout section */}
           {user && !loading && (
             <div className="flex gap-3 items-center">
               <span className="font-medium text-gray-800 dark:text-white">
