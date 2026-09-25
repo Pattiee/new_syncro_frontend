@@ -28,7 +28,7 @@ export const CheckEmail = ({ title }) => {
 
   useEffect(() => {
     if (title) document.title = title;
-  }, [pathname]);
+  }, [pathname, title]);
 
   const onSubmit = async (data) => checkEmailRegistration(data);
 
