@@ -1,7 +1,26 @@
+# Dependency and Package Manager Caches
 node_modules
 .pnpm-store
+
+# Local Production Build Outputs
 dist
 build
+
+# Version Control Records
 .git
+
+# Container System Files
 Dockerfile
 .dockerignore
+
+# Additional Recommended Exclusions for Security and Performance
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.idea
+.vscode
+*.log
+npm-debug.log*
+pnpm-debug.log*
