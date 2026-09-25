@@ -26,9 +26,11 @@ const AddToCartBtn = ({ product }) => {
     if (!user && !loading) return navigate("/auth/login");
     if (maxReached || outOfStock) return toast.error("No more stock available");
 
-    const discounted = product?.percent_discount > 0;
+const prod_percent_discount = product?.percent_discount || 0;
+
+    const discounted = prod_percent_discount > 0;
     const productPrice = discounted
-      ? product.price - product.percent_discount * product.price
+      ? product.price - (1 - prod_percent_discount / 100) * product.price
       : product.price;
 
     const item = {
