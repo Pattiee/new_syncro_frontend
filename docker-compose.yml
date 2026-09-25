@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # 🛍️ React Frontend Application (Served via Nginx Reverse Proxy with Brotli)
+  frontend:
+    container_name: syncro-web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    networks:
+      - syncro-network
+    depends_on:
+      - gateway
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # 🛡️ Spring Boot API Gateway Services
+  gateway:
+    container_name: gateway
+    image: syncro-gateway:latest # Replace with your actual Spring Boot image name/tag
+    # build: ./syncro-gateway   # Uncomment if building backend locally from a subfolder
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SERVER_PORT=8080
+    networks:
+      - syncro-network
+    # healthcheck:              # Recommended: Add your Spring Boot Actuator endpoint check here
+    #   test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health"]
+    #   interval: 30s
+    #   timeout: 5s
+    #   retries: 3
+
+# 🌐 Isolated Virtual Infrastructure Network Routing Core
+networks:
+  syncro-network:
+    driver: bridge
