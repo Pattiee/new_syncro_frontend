@@ -1,14 +1,25 @@
 {
   "compilerOptions": {
-    "target": "ES6",                          // Compiles code to a universally compatible modern JavaScript version
-    "allowJs": true,                          // 🟢 CRITICAL: Allows .js and .jsx files to co-exist with your new code
-    "checkJs": false,                         // Prevents TypeScript from flagging syntax errors in your unmigrated JS files
-    "jsx": "react-jsx",                       // Tells the compiler how to handle JSX layout code for React
-    "moduleResolution": "node",               // Uses Node's standard module lookup strategy for resolving imports
-    "strict": false,                          // 🟢 CRITICAL: Keeps strict type checking off initially so your project compiles
-    "noImplicitAny": false,                   // Allows variables to fall back to 'any' type temporarily while you migrate
-    "esModuleInterop": true,                  // Enables clean compatibility imports between CommonJS and ES Modules
-    "skipLibCheck": true                      // Skips type checking on third-party node_modules to save build speed
+    "target": "es2022",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": false,                         // 🔴 STRICT: Do not allow JavaScript files to be compiled
+    "checkJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,                           // 🔴 STRICT: Turn on all strict type-checking options
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,                           // Let CRACO / Webpack handle production output bundles
+    "jsx": "react-jsx",
+    "noImplicitAny": true,                    // 🔴 STRICT: Error on expressions and declarations with an implied 'any' type
+    "strictNullChecks": true,                 // 🔴 STRICT: Null and undefined variables are handled with absolute strictness
+    "noUnusedLocals": true,                   // Flag errors on unused local variables
+    "noUnusedParameters": true                // Flag errors on unused function parameters
   },
-  "include": ["src"]                          // Tells the compiler to look inside your src directory only
+  "include": ["src"]
 }
