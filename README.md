@@ -6,8 +6,8 @@ This project has been migrated from JavaScript to **React + TypeScript**, optimi
 
 ## 🛠️ Tech Stack & Architecture Baseline
 
-*   **Runtime Environment:** Node.js `^18.0.0` (Configured via `.nvmrc`)
-*   **Package Manager:** `pnpm` (Configured via `.npmrc` to prevent lockfiles mutations)
+*   **Runtime Environment:** Node.js `^22.0.0` (LTS baseline configured via `.nvmrc`)
+*   **Package Manager:** `pnpm` (Configured via `.npmrc` to prevent lockfile mutations)
 *   **State Management:** Redux Toolkit + Redux Persist (Securely encrypted via Crypto-JS transforms)
 *   **Styling Configuration:** Tailwind CSS + Auto-injected Global Dark Mode Listeners
 *   **Build Optimization Engine:** CRACO + Webpack 5 Static Asset Compression (Brotli + Gzip)
@@ -33,7 +33,7 @@ Compiles the application for production inside the `/build` directory. It optimi
 
 ## 🔄 Cross-Platform Automatic Node Switching Setup
 
-This project requires **Node.js 18**. To avoid manual configuration mistakes when changing folders, append the appropriate code snippet below to your global machine environment profile.
+This project requires **Node.js 22 (LTS)**. To avoid manual configuration mistakes when changing folders, append the appropriate code snippet below to your global machine environment profile.
 
 ### Option A: For Linux / macOS (Zsh Setup)
 1. Open your terminal profile: `nano ~/.zshrc`
@@ -149,10 +149,10 @@ Run these commands in your local project root if you encounter mismatched depend
 #### Purge Local Node Structures & Assets:
 ```bash
 # Linux / macOS / Git Bash
-rm -rf node_modules build dist .tsbuildinfo
+rm -rf node_modules build dist .tsbuildinfo pnpm-lock.yaml
 
 # Windows PowerShell
-Remove-Item -Recurse -Force node_modules, build, dist, .tsbuildinfo -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force node_modules, build, dist, .tsbuildinfo, pnpm-lock.yaml -ErrorAction SilentlyContinue
 ```
 
 #### Clear the Global Package Manager Cache:
@@ -165,7 +165,7 @@ To install fresh versions of your modules and boot the development workflow loca
 
 #### Trigger a Pristine Installation Pass:
 ```bash
-pnpm install --frozen-lockfile
+pnpm install
 ```
 
 #### Launch the Real-Time Dev Workspace Engine:
@@ -190,7 +190,7 @@ docker builder prune -f
 ```bash
 docker build --no-cache -t syncro-frontend .
 ```
-*Note: The `--no-cache` parameter guarantees that every deployment cycle pulls exact packages matching your `pnpm-lock.yaml` file instead of pulling cached container images.*
+*Note: The `--no-cache` parameter guarantees that every deployment cycle pulls exact packages instead of pulling cached container images.*
 
 #### Boot Your Pre-Compressed Nginx Container Instance:
 ```bash
