@@ -1,10 +1,18 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-// 1. Define a strict type for your allowed theme states
 export type ThemeMode = "light" | "dark";
 
-// Read from localStorage and assert that it must match our explicit ThemeMode type, defaulting to "light"
-const initialState: ThemeMode = (localStorage.getItem("themeState") as ThemeMode) || "light";
+// Helper function to check browser/system level dark mode preferences
+const getSystemThemeFallback = (): ThemeMode => {
+  if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    return "dark";
+  }
+  return "light";
+};
+
+// Initial state reads localStorage first; if empty, it adapts to the system's current theme perfectly
+const initialState: ThemeMode = 
+  (localStorage.getItem("themeState") as ThemeMode) || getSystemThemeFallback();
 
 const themeSlice = createSlice({
   name: "theme",
@@ -12,7 +20,7 @@ const themeSlice = createSlice({
   reducers: {
     toggleTheme(state: ThemeMode): ThemeMode {
       const nextTheme = state === "light" ? "dark" : "light";
-      localStorage.setItem("themeState", nextTheme); // Synchronise local storage directly during mutations
+      localStorage.setItem("themeState", nextTheme);
       return nextTheme;
     },
     setTheme(_state: ThemeMode, action: PayloadAction<ThemeMode>): ThemeMode {
