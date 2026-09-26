@@ -2,7 +2,6 @@
   "name": "syncro",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@12.7.0",
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
     "@reduxjs/toolkit": "^2.7.0",
