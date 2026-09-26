@@ -1,0 +1,3 @@
+{
+  "installCommand": "npm install pnpm@8.15.4 && ./node_modules/.bin/pnpm install"
+}
