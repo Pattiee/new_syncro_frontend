@@ -3,7 +3,7 @@ import { LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { CustomLoader2 } from "../../components/loaders/CustomLoader2";
 import { clearCart } from "../../slices/cartSlice";
-import { selectCurrentUser, selectAuthStatus, clearAuth } from "../../store/authSlice"; 
+import { selectCurrentUser, selectAuthStatus, clearAuth } from "../../slices/authSlice"; 
 import { logoutBackendApi } from "../../services/auth.service";
 import toast from "react-hot-toast";
 // 🟢 Import your custom typed Redux hooks

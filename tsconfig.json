@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es2022",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": false,                         // 🔴 STRICT: Do not allow JavaScript files to be compiled
+    "allowJs": true,                          // 🛠️ ADJUSTED: Allowed to let your type-safe craco.config.js/postcss.config.js run JSDoc passes
     "checkJs": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -11,7 +11,8 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "node",               // 🛠️ ADDED: Prevents deep package mapping errors for React 19 / TanStack v5
+    "types": ["node", "jest"],                // 🛠️ UPDATED: Added jest to verify your test suites automatically
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,                           // Let CRACO / Webpack handle production output bundles

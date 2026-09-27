@@ -9,8 +9,8 @@ WORKDIR /app
 # Copy only dependency files first for optimal build layer caching
 COPY package.json pnpm-lock.yaml* ./
 
-# Enable pnpm dynamically based on your explicit engine versions
-RUN corepack enable && corepack prepare pnpm@8.15.4 --activate
+# 🛠️ FIX: Corepack is configured to prepare version 12.7.0 to match your package.json criteria
+RUN corepack enable && corepack prepare pnpm@12.7.0 --activate
 
 # Install dependencies strictly matching the lockfile
 RUN pnpm install --frozen-lockfile
@@ -22,7 +22,7 @@ COPY . .
 RUN pnpm build
 
 # ---------- Stage 2: Serve (With Native Brotli Support) ----------
-# 🟢 CRITICAL: Swapped to an image containing pre-compiled ngx_brotli binaries
+# Swapped to an image containing pre-compiled ngx_brotli binaries
 FROM fholzer/nginx-brotli:1.27.0-alpine AS production
 
 WORKDIR /usr/share/nginx/html
@@ -30,7 +30,7 @@ WORKDIR /usr/share/nginx/html
 # Clean out default static placeholder files
 RUN rm -rf ./*
 
-# 🟢 CRITICAL: Changed from /app/dist to /app/build to match CRACO output layouts
+# Changed from /app/dist to /app/build to match CRACO output layouts
 COPY --from=build /app/build .
 
 # Inject custom Nginx config containing your static compression rules

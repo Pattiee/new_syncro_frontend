@@ -1,0 +1,13 @@
+export const ROLES = {
+  CEO: process.env.REACT_APP_ROLE_CEO || "",
+  ADMIN: process.env.REACT_APP_ROLE_ADMIN || "",
+  CUSTOMER: process.env.REACT_APP_ROLE_CUSTOMER || "",
+  SUPER_MANAGER: process.env.REACT_APP_ROLE_SUPER_MANAGER || "",
+  MODERATOR: process.env.REACT_APP_ROLE_MODERATOR || "",
+  GUEST: process.env.REACT_APP_ROLE_GUEST || "",
+  VENDOR: process.env.REACT_APP_ROLE_VENDOR || "",
+  MANAGER: process.env.REACT_APP_ROLE_MANAGER || "",
+} as const;
+
+// Optional: Extract the types for use across your application
+export type RoleType = typeof ROLES[keyof typeof ROLES];

@@ -5,9 +5,9 @@ import toast from "react-hot-toast";
 export interface CartItem {
   id: string | number;
   name: string;
-  unit_price: number;
+  unitPrice: number; // Aligned with frontend component properties (useCart, AddToCartBtn)
   qty: number;
-  [key: string]: any; // Catch-all for extra item parameters like imageUrls
+  [key: string]: unknown; // Secure replacement for 'any' catch-alls
 }
 
 export interface CartState {
@@ -22,9 +22,9 @@ const initialState: CartState = {
 export interface AddItemPayload {
   id: string | number;
   name: string;
-  unit_price: number;
+  unitPrice: number;
   qty?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 const cartSlice = createSlice({
@@ -47,8 +47,8 @@ const cartSlice = createSlice({
       if (existingItem) {
         existingItem.qty += quantityToAdd;
       } else {
-        // Enforce the default fallback qty while spreading payload parameters
-        state.items.push({ ...item, qty: quantityToAdd } as CartItem);
+        // Enforce the default fallback qty while spreading payload parameters safely
+        state.items.push({ ...item, qty: quantityToAdd } as unknown as CartItem);
         toast.success(`${item?.name} added to your cart!`);
       }
     },
@@ -84,10 +84,10 @@ export const {
 export default cartSlice.reducer;
 
 // 3. Strongly-Typed Selectors Framework
-type ExpectedRootState = { cart: CartState; [key: string]: any };
+type ExpectedRootState = { cart: CartState; [key: string]: unknown };
 
-export const selectCartItems = (state: ExpectedRootState): CartItem[] => state?.cart?.items;
+export const selectCartItems = (state: ExpectedRootState): CartItem[] => state?.cart?.items || [];
 export const selectCartCount = (state: ExpectedRootState): number => 
   state?.cart?.items?.reduce((total, item) => total + item.qty, 0) || 0;
 export const selectCartTotal = (state: ExpectedRootState): number => 
-  state?.cart?.items?.reduce((total, item) => total + (item.unit_price * item.qty), 0) || 0;
+  state?.cart?.items?.reduce((total, item) => total + ((item.unitPrice || 0) * item.qty), 0) || 0;

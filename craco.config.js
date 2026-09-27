@@ -1,17 +1,25 @@
+// @ts-check
 const CompressionPlugin = require("compression-webpack-plugin");
 
+/** @type {RegExp} */
 const compressionTest = /\.(js|css|html|svg)$/;
 
-module.exports = {
+// 🛠️ FIX: Cast using a composite utility profile shape to perfectly bypass the CRACO export mapping issues
+/** @type {{ webpack?: { configure?: (config: import('webpack').Configuration) => import('webpack').Configuration } }} */
+const config = {
   webpack: {
-    configure: (config) => {
+    configure: (webpackConfig) => {
       const commonOptions = {
         test: compressionTest,
         threshold: 1024,
         minRatio: 0.8,
       };
 
-      config.plugins.push(
+      if (!webpackConfig.plugins) {
+        webpackConfig.plugins = [];
+      }
+
+      webpackConfig.plugins.push(
         new CompressionPlugin({
           ...commonOptions,
           filename: "[path][base].gz",
@@ -25,7 +33,9 @@ module.exports = {
         })
       );
 
-      return config;
+      return webpackConfig;
     },
   },
 };
+
+module.exports = config;

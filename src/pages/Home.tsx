@@ -1,0 +1,33 @@
+import React from "react";
+import { useProducts } from "../hooks/useProducts";
+import Hero from "../sections/Hero";
+import { Products } from "../sections/Products";
+
+const heroSection: React.JSX.Element = <Hero />;
+const productsElement: React.JSX.Element = <Products />;
+
+interface HomeProps {
+  heroSectElem?: React.JSX.Element;
+  prodsElem?: React.JSX.Element;
+}
+
+export const Home: React.FC<HomeProps> = ({ 
+  heroSectElem = heroSection, 
+  prodsElem = productsElement 
+}) => {
+  const { products } = useProducts();
+
+  return (
+    <div className="min-h-screen text-gray-800 bg-transparent dark:text-gray-100">
+      {/* Hero Section */}
+      <section>{heroSectElem}</section>
+
+      <section className="px-6">
+        {/* Products */}
+        {prodsElem}
+      </section>
+    </div>
+  );
+};
+
+export default Home;

@@ -1,0 +1,272 @@
+import React, { Fragment, Suspense, useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { motion } from "framer-motion";
+import ProductReviews from "../components/Product/ProductReviews";
+import RelatedProducts from "../components/Product/RelatedProducts";
+import ProductDetails from "../components/Product/ProductDetails";
+import { ProductImageCarousel } from "../components/carousels/ProductImageCarousel";
+import { deleteProductById, getProducts } from "../api/products.api";
+import { useDispatch } from "react-redux";
+import toast from "react-hot-toast";
+import { ROLES } from "../roles";
+import AddToCartBtn from "../components/AddToCartBtn";
+import { useAuth } from "../hooks/useAuth";
+import { CustomLoader2 } from "../components/loaders/CustomLoader2";
+import { PhoneCall, Trash2Icon } from "lucide-react";
+import { useFormater } from "../hooks/useFormater";
+import { RecentlyViewed } from "../sections/RecentlyViewed";
+import { useProducts } from "../hooks/useProducts";
+import { ProductImagesModal } from "../components/modals/ProductImagesModal";
+
+// Structural interface matching your backend Product DTO
+export interface ProductType {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  condition: "New" | "Refurbished";
+  percent_discount: number;
+  imageUrls: string[];
+  vid: string | number; // Vendor ID
+  stock?: number;
+  specs?: string;
+}
+
+export const ProductDetailsPage: React.FC = () => {
+  const [product, setProduct] = useState<ProductType | null>(null);
+  const [loadingProduct, setLoadingProduct] = useState<boolean>(true);
+  const [deleting, setDeleting] = useState<boolean>(false);
+  const [isOwner, setIsOwner] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [productCategory, setProductCategory] = useState<string>("");
+  
+  const [searchParams] = useSearchParams();
+  const productId = searchParams.get("id");
+  
+  const { user } = useAuth() as {
+    user: { id: string | number; roles: string[] } | null;
+    loading: boolean;
+  };
+  
+  const { currencyFormater, percentageFormater } = useFormater();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  // Force top scroll on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [productId]);
+
+  // Determine if current user is owner or moderator
+  useEffect(() => {
+    if (product && user) {
+      const hasRequiredRole =
+        user.roles.includes(ROLES.VENDOR) ||
+        user.roles.includes(ROLES.MODERATOR);
+      const currentIsUserVendor = hasRequiredRole && user.id === product.vid;
+      setIsOwner(currentIsUserVendor);
+    }
+  }, [user, product]);
+
+  // Fetch product data
+  useEffect(() => {
+    const fetchProduct = async () => {
+      setLoadingProduct(true);
+      try {
+        const response = await getProducts({ id: productId });
+        const data = response?.data?.body as ProductType | undefined;
+        if (data) {
+          setProduct(data);
+          setProductCategory(data.category || "");
+        } else {
+          navigate("/", { replace: true });
+        }
+      } catch (err) {
+        console.error(err);
+        navigate("/", { replace: true });
+      } finally {
+        setLoadingProduct(false);
+      }
+    };
+
+    if (productId) {
+      fetchProduct();
+    }
+  }, [productId, navigate]);
+
+  const handleDeleteProduct = async () => {
+    if (!product || deleting) return;
+    if (!isOwner) return;
+    setDeleting(true);
+
+    try {
+      const res = await deleteProductById(product.id.trim());
+      toast.success(res?.data || "Product deleted successfully");
+      navigate("/", { replace: true });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete product.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleContactSeller = () => {
+    if (!user) return navigate("/login");
+    toast.success("Coming soon...");
+  };
+
+  const handleShowModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
+
+  if (loadingProduct) {
+    return <CustomLoader2 message="Loading product details." />;
+  }
+
+  if (!product) return null;
+
+  const discounted = product.percent_discount > 0;
+
+  // Corrected precedence calculation structure using type safe nullish coalescing
+  const discountPrice = discounted
+    ? product.price * (1 - (product.percent_discount ?? 0) / 100)
+    : product.price;
+
+  return (
+    <Fragment>
+      <Suspense fallback={<CustomLoader2 message="Loading product details..." />}>
+        <motion.div
+          className="max-w-6xl px-6 py-16 mx-auto bg-transparent"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          {/* Product Card */}
+          <div className="grid grid-cols-1 gap-8 p-6 bg-white drop-shadow-2xl md:grid-cols-2 dark:bg-gray-900 md:p-10 rounded-2xl">
+            {!isModalOpen && (
+              <ProductImageCarousel
+                images={product.imageUrls || []}
+                name={product.name}
+                showModal={isModalOpen}
+                onShowModal={handleShowModal}
+              />
+            )}
+
+            <div className="h-full p-2 rounded-2xl flex flex-col justify-between">
+              <div className="p-2 rounded-lg">
+                <div className="flex justify-between items-center">
+                  <h1 className="mb-3 text-3xl font-bold text-gray-800 dark:text-white">
+                    {product.name}
+                  </h1>
+
+                  {product.condition && (
+                    <span
+                      className={`text-xs font-semibold px-3 py-1 rounded-full shadow-sm ${
+                        product.condition.toLowerCase() === "new"
+                          ? "bg-green-100 text-green-700 dark:bg-green-200"
+                          : "bg-yellow-100 text-yellow-800 dark:bg-yellow-200"
+                      }`}
+                    >
+                      {product.condition === "New"
+                        ? "New Product"
+                        : "Refurbished"}
+                    </span>
+                  )}
+                </div>
+
+                <p className="mb-4 text-xs tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                  {product.category}
+                </p>
+
+                <div className="mb-3 mt-2">
+                  <div className="flex items-center gap-2">
+                    <p className="text-2xl font-semibold text-orange-600 dark:text-orange-400">
+                      {currencyFormater.format(discountPrice)}
+                    </p>
+                    {discounted && (
+                      <span className="px-2 py-1 text-xs font-medium text-green-600 bg-green-100 rounded-full dark:bg-green-200">
+                        -{percentageFormater.format(product.percent_discount)} OFF
+                      </span>
+                    )}
+                  </div>
+                  {discounted && (
+                    <p className="text-sm text-gray-400 line-through">
+                      {currencyFormater.format(product.price)}
+                    </p>
+                  )}
+                </div>
+
+                {product.stock !== undefined && (
+                  <p
+                    className={`text-sm font-medium mt-2 ${
+                      product.stock <= 5
+                        ? "text-red-500"
+                        : "text-gray-600 dark:text-gray-300"
+                    }`}
+                  >
+                    {product.stock <= 5
+                      ? `Hurry! Only ${product.stock} left in stock.`
+                      : `${product.stock} units remaining`}
+                  </p>
+                )}
+
+                <p className="mb-6 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+                  {product.specs}
+                </p>
+              </div>
+
+              {/* Actions */}
+              {!isModalOpen && (
+                <div className="flex gap-2 px-4 py-2 rounded-lg items-center justify-start mt-auto">
+                  {!isOwner && (
+                    <AddToCartBtn
+                      product={product}
+                      className="px-4 py-2 text-sm rounded-md shadow hover:shadow-md transition-colors"
+                    />
+                  )}
+
+                  {isOwner ? (
+                    <button
+                      disabled={deleting}
+                      onClick={handleDeleteProduct}
+                      className="flex items-center gap-1 px-4 py-2 text-sm rounded-md border border-red-400 text-red-400 hover:bg-red-50 disabled:opacity-50 transition-colors"
+                    >
+                      <Trash2Icon size={16} />
+                      {deleting ? "Deleting..." : "Delete Product"}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleContactSeller}
+                      className="flex items-center gap-1 px-4 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <PhoneCall size={16} />
+                      Contact Seller
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Auxiliary Page Layout Components */}
+          <div className="mt-12 space-y-12">
+            <ProductDetails product={product} />
+            <RelatedProducts category={productCategory} currentProductId={product.id} />
+            <ProductReviews productId={product.id} />
+            <RecentlyViewed />
+          </div>
+        </motion.div>
+      </Suspense>
+
+      {/* Fullscale Imagery Modal context */}
+      <ProductImagesModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        images={product.imageUrls || []}
+        name={product.name}/>
+
+</Fragment>
+);
+}
+
+export default ProductDetailsPage;

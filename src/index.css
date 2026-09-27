@@ -3,47 +3,47 @@
 @tailwind utilities;
 
 @layer base {
-    * {
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-    }
+  /* Global reset & typography */
+  html, body {
+    @apply transition-colors duration-300;
   }
 
-  /* Custom utility class */
-.input-field {
-  @apply w-full p-4 text-lg bg-white border-2 border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500;
+  body, * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Gotham', sans-serif;
+    
+    /* Disable text selection app-wide */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Remove number input spinners */
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    display: none;
+    margin: 0;
+    padding: 0;
+  }
 }
 
-/* Global styles */
-body,
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Gotham', sans-serif;
-}
+/* Custom component/utility classes */
+@layer components {
+  .input-field {
+    @apply w-full p-4 text-lg bg-white border-2 border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500;
+  }
 
-html, body {
-  @apply transition-colors duration-300;
-}
-
-/* global.css or component CSS */
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
-
-/* Remove number input spinners */
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button{
-  -webkit-appearance: none;
-  display: none;
-  margin: 0;
-  padding: 0;
+  /* Custom scrollbar utility */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
 }

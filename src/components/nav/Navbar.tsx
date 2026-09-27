@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ceoLinks, managerLinks, vendorLinks } from "../../links";
 import NavbarCartIcon from "../cart/NavbarCartIcon";
 import { useCart } from "../../hooks/useCart";
-import { selectCurrentUser } from "../../store/authSlice"; // Adjust path to match your slice location
+import { selectCurrentUser } from "../../slices/authSlice"; // Adjust path to match your slice location
 
 const SHOP_NAME = (process.env.REACT_APP_SHOP_NAME as string) || "";
 

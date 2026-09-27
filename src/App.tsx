@@ -2,11 +2,11 @@ import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
-import { routes } from "./routes";
+import { routes } from './routes';
 import { useCart } from "./hooks/useCart";
 import ProtectedRoute from "./utils/ProtectedRoute"; // Note: Swap with RequireAuth if you fully migrate to our layout guard
 
-import Navbar from "./components/nav/NavBar";
+import Navbar from "./components/nav/Navbar";
 import { ContactsNavbar } from "./components/nav/ContactsNavbar";
 import Footer from "./sections/Footer";
 import Home from "./pages/Home";

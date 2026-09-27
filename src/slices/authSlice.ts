@@ -2,45 +2,49 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 // 1. Define strict type interfaces for state sub-entities
 export interface UserProfile {
-  id: string;
+  id: string | number;
+  username: string;
   email: string;
-  first_name?: string;
-  last_name?: string;
-  roles: string[];
-  [key: string]: any; // Allows flexibility for custom payload shapes
+  givenName?: string;  // Aligned with Profile.tsx, UserCard.tsx, and AuthStatus.tsx properties
+  familyName?: string; // Aligned with your frontend component data streams
+  phone?: string;
+  roles: (string | null)[];
+  avatarUrl?: string;
+  usernameVerified?: boolean;
+  [key: string]: unknown; // Secure type safe replacement for 'any' wildcard parameters
 }
 
 export interface AuthState {
-  is_authenticated: boolean;
+  isAuthenticated: boolean;
   token: string | null;
-  refresh_token: string | null;
-  is_loading: boolean;
-  user_profile: UserProfile | null;
+  refreshToken: string | null;
+  isLoading: boolean;
+  userProfile: UserProfile | null;
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
 }
 
 // 2. Safely read and validate pre-existing sessions from localStorage
-const storedToken = localStorage.getItem("auth_token");
-const storedRefreshToken = localStorage.getItem("auth_refresh_token");
-const storedProfile = localStorage.getItem("auth_user_profile");
+const storedToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+const storedRefreshToken = typeof window !== "undefined" ? localStorage.getItem("auth_refresh_token") : null;
+const storedProfile = typeof window !== "undefined" ? localStorage.getItem("auth_user_profile") : null;
 
 const initialState: AuthState = {
-  is_authenticated: !!storedToken,
+  isAuthenticated: !!storedToken,
   token: storedToken,
-  refresh_token: storedRefreshToken,
-  is_loading: false, // Default to false on mount to avoid freezing layout states
-  user_profile: storedProfile ? JSON.parse(storedProfile) : null,
+  refreshToken: storedRefreshToken,
+  isLoading: false, // Default to false on mount to avoid freezing layout states
+  userProfile: storedProfile ? JSON.parse(storedProfile) : null,
   status: "idle",
   error: null,
 };
 
-// 3. Define payload schemas for payload mutations
+// 3. Define payload schemas for state mutations
 export interface SetAuthPayload {
-  is_authenticated: boolean;
+  isAuthenticated: boolean;
   token: string;
-  refresh_token: string;
-  user_profile: UserProfile | null;
+  refreshToken: string;
+  userProfile: UserProfile | null;
 }
 
 export const authSlice = createSlice({
@@ -48,46 +52,52 @@ export const authSlice = createSlice({
   initialState,
   reducers: {
     setAuth: (state, action: PayloadAction<Partial<SetAuthPayload>>) => {
-      state.is_authenticated = action.payload?.is_authenticated ?? false;
+      state.isAuthenticated = action.payload?.isAuthenticated ?? false;
       state.token = action.payload?.token ?? null;
-      state.refresh_token = action.payload?.refresh_token ?? null;
-      state.user_profile = action.payload?.user_profile ?? null;
+      state.refreshToken = action.payload?.refreshToken ?? null;
+      state.userProfile = action.payload?.userProfile ?? null;
       state.status = "succeeded";
       state.error = null;
 
       // Synchronize persistence configurations safely 
-      if (action.payload?.token) {
-        localStorage.setItem("auth_token", action.payload.token);
-      }
-      if (action.payload?.refresh_token) {
-        localStorage.setItem("auth_refresh_token", action.payload.refresh_token);
-      }
-      if (action.payload?.user_profile) {
-        localStorage.setItem("auth_user_profile", JSON.stringify(action.payload.user_profile));
+      if (typeof window !== "undefined") {
+        if (action.payload?.token) {
+          localStorage.setItem("auth_token", action.payload.token);
+        }
+        if (action.payload?.refreshToken) {
+          localStorage.setItem("auth_refresh_token", action.payload.refreshToken);
+        }
+        if (action.payload?.userProfile) {
+          localStorage.setItem("auth_user_profile", JSON.stringify(action.payload.userProfile));
+        }
       }
     },
     clearAuth: (state) => {
-      state.is_authenticated = false;
+      state.isAuthenticated = false;
       state.token = null;
-      state.refresh_token = null;
-      state.user_profile = null;
+      state.refreshToken = null;
+      state.userProfile = null;
       state.status = "idle";
       state.error = null;
 
       // Complete persistence purge cycles
-      localStorage.removeItem("auth_token");
-      localStorage.removeItem("auth_refresh_token");
-      localStorage.removeItem("auth_user_profile");
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("auth_refresh_token");
+        localStorage.removeItem("auth_user_profile");
+      }
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
-      state.is_loading = action.payload;
+      state.isLoading = action.payload;
     },
     setStatus: (state, action: PayloadAction<AuthState["status"]>) => {
       state.status = action.payload;
     },
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
-      if (action.payload) state.status = "failed";
+      if (action.payload) {
+        state.status = "failed";
+      }
     },
   },
 });
@@ -98,11 +108,11 @@ export const { setAuth, clearAuth, setLoading, setStatus, setError } = authSlice
 // Reducer Target Export Block
 export default authSlice.reducer;
 
-// 4. Strongly-Typed Selectors Framework (Assumes RootState matches your global configuration mapping)
-type ExpectedRootState = { auth: AuthState; [key: string]: any };
+// 4. Strongly-Typed Selectors Framework
+type ExpectedRootState = { auth: AuthState; [key: string]: unknown };
 
-export const selectCurrentUser = (state: ExpectedRootState): UserProfile | null => state?.auth?.user_profile;
+export const selectCurrentUser = (state: ExpectedRootState): UserProfile | null => state?.auth?.userProfile;
 export const selectAuthStatus = (state: ExpectedRootState): AuthState["status"] => state?.auth?.status;
 export const selectAuthError = (state: ExpectedRootState): string | null => state?.auth?.error;
-export const selectIsAuthenticated = (state: ExpectedRootState): boolean => state?.auth?.is_authenticated;
-export const selectIsLoading = (state: ExpectedRootState): boolean => state?.auth?.is_loading;
+export const selectIsAuthenticated = (state: ExpectedRootState): boolean => state?.auth?.isAuthenticated;
+export const selectIsLoading = (state: ExpectedRootState): boolean => state?.auth?.isLoading;

@@ -13,7 +13,8 @@ services:
     networks:
       - syncro-network
     depends_on:
-      - gateway
+      gateway:
+        condition: service_healthy # 🛠️ Upgraded: Wait until backend fully completes initial setup routines
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/"]
       interval: 30s
@@ -30,12 +31,20 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SERVER_PORT=8080
-      # Tells Spring Boot to connect to the MongoDB container using internal networking
+      # Tells Spring Boot to connect to the MongoDB container using internal networking channels
       - SPRING_DATA_MONGODB_URI=mongodb://root:secretpass@mongodb:27017/syncro_db?authSource=admin
     networks:
       - syncro-network
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy # 🛠️ Upgraded: Protects Spring boot boot passes from hitting offline sockets
+    # Added baseline health checks for the gateway instance layout
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
 
   # 🍃 MongoDB Database Service Instance
   mongodb:
@@ -43,7 +52,7 @@ services:
     image: mongo:7.0
     restart: unless-stopped
     ports:
-      - "27017:27017" # 🟢 Exposes the port to your host machine so VS Code can connect
+      - "27017:27017" # Exposes the port to your host machine so VS Code Preset Connections pass successfully
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=secretpass
@@ -52,6 +61,13 @@ services:
       - mongo-data:/data/db # Persists your database records so data survives container restarts
     networks:
       - syncro-network
+    # Added defensive health tracking parameters to database initialization stages
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 # 💾 Named Volumes Data Allocation Layout
 volumes:
