@@ -34,8 +34,12 @@ export const cartAxiosInstance: AxiosInstance = baseClient;
 // Axios instance for products-related requests
 export const branchesAxiosInstance: AxiosInstance = baseClient;
 
+// Axios instance for products-related requests
+export const locationAxiosInstance: AxiosInstance = baseClient;
+
 // Strong type blueprint configuration dictionary mapping all service boundaries
 export interface AxiosConfigType {
+  locationAxiosInstance: AxiosInstance;
   authAxiosInstance: AxiosInstance;
   usersAxiosInstance: AxiosInstance;
   roleAxiosInstance: AxiosInstance;
@@ -49,6 +53,7 @@ export interface AxiosConfigType {
 }
 
 export const AxiosConfig: AxiosConfigType = {
+  locationAxiosInstance,
   authAxiosInstance,
   usersAxiosInstance,
   roleAxiosInstance,

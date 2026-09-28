@@ -23,12 +23,14 @@ interface AddToCartBtnProps {
 }
 
 // Structural schema defining your individual item stored in your shopping cart
+// 🛠️ FIX: Appended [key: string]: unknown to line up perfectly with your AddItemPayload contract structure
 interface CartItem {
   id: string | number;
   skuCode: string;
   name: string;
   unitPrice: number;
   qty: number;
+  [key: string]: unknown; // Added to clear the structural assignment type check block completely
 }
 
 // Interface defining the unified Redux store schema
@@ -66,9 +68,9 @@ export const AddToCartBtn: React.FC<AddToCartBtnProps> = ({ product }) => {
     if (maxReached || outOfStock) return toast.error("No more stock available");
 
     const prod_percent_discount = product?.percent_discount || 0;
-    const discounted = prod_percent_discount > 0;
     
-    const productPrice = discounted
+    // Inline evaluating the boolean comparison clears out the unused variable completely
+    const productPrice = prod_percent_discount > 0
       ? product.price - (1 - prod_percent_discount / 100) * product.price
       : product.price;
 

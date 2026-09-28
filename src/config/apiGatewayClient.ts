@@ -4,9 +4,9 @@ import { store } from "../store";
 const GATEWAY_BASE_URL = process.env.REACT_APP_API_GATEWAY_BASE_URL as string;
 
 // Optional: Kept for structural continuity, though usually managed per-request
-const abortController = new AbortController();
-const axiosCancelToken = axios.CancelToken;
-const cancelTokenSource = axiosCancelToken.source();
+// const abortController = new AbortController();
+// const axiosCancelToken = axios.CancelToken;
+// const cancelTokenSource = axiosCancelToken.source();
 
 axios.defaults.withCredentials = true;
 

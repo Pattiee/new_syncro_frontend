@@ -69,7 +69,7 @@ export const FloatingCheckoutButton: React.FC = () => {
   
   const handleCompleteOrder = async (): Promise<void> => {
     toast.success("Placing order...");
-    // navigate('/checkout'); // Optional redirect behavior if needed
+    navigate('/checkout');
   };
 
   return (
@@ -79,8 +79,9 @@ export const FloatingCheckoutButton: React.FC = () => {
       className='fixed flex items-center justify-center px-4 py-2 text-white bg-orange-500 rounded-full shadow-lg bottom-6 right-6 hover:bg-orange-600 transition z-50'
     >
       <ShoppingCart className='mr-2' size={20} />
+      
       {/* Example currency print formatting wrapper: */}
-      {/* <span className="mr-2 font-medium">{currencyFormater.format(cartTotal)}</span> */}
+      <span className="mr-2 font-medium">{currencyFormater.format(cartTotal)}</span>
       <span>Complete Order</span>
     </button>
   );

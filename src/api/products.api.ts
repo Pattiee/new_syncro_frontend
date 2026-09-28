@@ -121,11 +121,7 @@ export const getProductById = async (productId: string | number | undefined): Pr
  */
 export const deleteProductById = async (productId: string | number | undefined): Promise<AxiosResponse<any> | undefined> => {
   if (productId) {
-    return await AxiosConfig.deleteProductById = async (productId) => {
-      return await AxiosConfig.productsAxiosInstance.delete(
-        `${PRODUCTS_SERVICE_BASE_URL}/${productId}`
-      );
-    };
-  }
+      return await AxiosConfig.productsAxiosInstance.delete(`${PRODUCTS_SERVICE_BASE_URL}/${productId}`);
+  };
   return undefined;
 };

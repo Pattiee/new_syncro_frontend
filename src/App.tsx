@@ -10,7 +10,9 @@ import Navbar from "./components/nav/Navbar";
 import { ContactsNavbar } from "./components/nav/ContactsNavbar";
 import Footer from "./sections/Footer";
 import Home from "./pages/Home";
-import { useThemeSync } from "./hooks/useThemeSync"; // 🟢 Injected your new theme synchronization hook
+import FloatingCart from "./components/FloatingCart";
+import FloatingCheckoutButton from "./components/FloatingCheckoutButton";
+// import { useThemeSync } from "./hooks/useThemeSync"; // 🟢 Injected your new theme synchronization hook
 
 // 1. Define explicit structure interfaces for dynamic app routing tables
 export interface RouteChildConfig {
@@ -37,8 +39,8 @@ const App: React.FC = () => {
   const { pathname } = useLocation();
   const { cartItems } = useCart();
 
-  // 🟢 Initialize theme classes on the HTML document node automatically
-  useThemeSync();
+  // TODO: Initialize theme classes on the HTML document node automatically
+  // useThemeSync();
 
   // 2. Map route visibility exclusions using strict typing
   const hidden: VisibilityMap = {
@@ -56,8 +58,7 @@ const App: React.FC = () => {
   const isContactNavVisible = !hidden.contactNav.some((r) => pathname.startsWith(r));
   
   // Note: These fallback on optional lengths in case your useCart hook initializes empty arrays
-  const isFloatingCartVisible =
-    !hidden.cart.some((r) => pathname.startsWith(r)) && (cartItems?.length ?? 0) > 0;
+  const isFloatingCartVisible = !hidden.cart.some((r) => pathname.startsWith(r)) && (cartItems?.length ?? 0) > 0;
     
   const isFloatingCheckoutBtnVisible = visibleCheckoutButton.some((r) => pathname.startsWith(r));
 
@@ -97,8 +98,8 @@ const App: React.FC = () => {
         </Routes>
       </main>
 
-      {/* {isFloatingCartVisible && <FloatingCart />} */}
-      {/* {isFloatingCheckoutBtnVisible && <FloatingCheckoutButton />} */}
+      {isFloatingCartVisible && <FloatingCart />}
+      {isFloatingCheckoutBtnVisible && <FloatingCheckoutButton />}
       {isFooterVisible && <Footer />}
     </div>
   );

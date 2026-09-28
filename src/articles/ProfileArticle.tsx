@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { Loader } from '../components/Loader';
-import { useAuth } from '../contexts/AuthContext';
+import { CustomLoader2 } from '../components/loaders/CustomLoader2';
+import { useAuth } from '../hooks/useAuth';
 
 // Reuse your structural interface matching your baseline authenticated user entity fields
 export interface ProfileArticleUser {
@@ -28,7 +28,7 @@ export const ProfileArticle: React.FC = () => {
   };
 
   return (
-    <Suspense fallback={<Loader />}>
+    <Suspense fallback={<CustomLoader2 />}>
       <div className='flex flex-col'>
         <div className='profile-info'>
           {/* Inject nested profile metadata strings safely if needed */}

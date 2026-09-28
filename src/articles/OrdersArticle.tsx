@@ -1,6 +1,6 @@
 import React from 'react';
 import { OrderCard, UserOrderCardData } from '../components/orders/OrderCard';
-import { Loader } from '../components/Loader';
+import { CustomLoader2 } from '../components/loaders/CustomLoader2';
 
 // Define the incoming props contract for the component wrapper
 export interface OrdersArticleProps {
@@ -26,7 +26,7 @@ export const OrdersArticle: React.FC<OrdersArticleProps> = ({
         </h2>
 
         {loading ? (
-          <Loader />
+          <CustomLoader2 />
         ) : activeOrdersCount <= 0 ? (
           <p className="text-gray-500 dark:text-gray-400">You've got no orders yet.</p>
         ) : (

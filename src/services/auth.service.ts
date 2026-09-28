@@ -9,6 +9,28 @@ interface RegisterParams {
   username: string;
 }
 
+// ==========================================================
+// Explicit Structural Type Contracts For Authentication Payloads
+// ==========================================================
+
+export interface LoginRequest {
+  username?: string;
+  email?: string;
+  password?: string;
+  [key: string]: unknown;
+}
+
+export interface RegisterRequest {
+  username?: string;
+  email: string;
+  password?: string;
+  givenName?: string;
+  familyName?: string;
+  [key: string]: unknown; // Secure fallback mapping for dynamic parameters
+}
+
+
+
 interface ResetPasswordPayload {
   token?: string;
   password?: string;
